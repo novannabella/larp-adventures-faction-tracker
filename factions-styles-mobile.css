@@ -270,23 +270,14 @@ textarea {
   padding: 6px 8px 8px;
 }
 
-.mini-row-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-}
-
-.mini-row-label {
-  font-size: 11px;
-  color: var(--muted);
-}
-
 .mini-row-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 6px 8px;
+}
+
+.mini-row-body.two-cols {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* Subsections */
@@ -309,30 +300,52 @@ textarea {
   color: var(--muted);
 }
 
-/* Seasonal grid */
-.section-intro {
-  margin: 0 0 6px;
-  font-size: 11px;
-  color: var(--muted);
+/* Events */
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.season-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px 10px;
-  margin-top: 2px;
-}
-
-.season-card {
+.event-card {
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(6, 10, 26, 0.9);
-  padding: 6px 8px 8px;
+  padding: 8px 8px 10px;
 }
 
-.season-title {
-  font-size: 11px;
+.event-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.event-title {
+  font-size: 12px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 4px;
+}
+
+.event-subtitle {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.event-body {
+  margin-top: 4px;
+}
+
+.sort-label {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Seasonal section */
+.section-intro {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
 }
