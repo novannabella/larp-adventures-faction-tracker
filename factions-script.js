@@ -2,7 +2,7 @@
 const state = {
   factionName: "",
   gameYear: 1,
-  currentTurn: 1,
+  currentEventNumber: 1,
   factionNotes: "",
   coffers: {
     food: 0,
@@ -13,28 +13,23 @@ const state = {
     gold: 0
   },
   hexes: [],
-  // Per-turn actions
-  turnSummary: "",
-  builds: [],
-  movements: [],
-  offensiveAction: {
-    type: "",
-    target: "",
-    notes: ""
-  },
-  // One-year seasonal outcomes
+  events: [],
+  // Seasonal gains for the current game year
   seasons: {
-    Spring: { landSearch: "", factionEvent: "", populationEvent: "", weather: "", notes: "" },
-    Summer: { landSearch: "", factionEvent: "", populationEvent: "", weather: "", notes: "" },
-    Fall:   { landSearch: "", factionEvent: "", populationEvent: "", weather: "", notes: "" },
-    Winter: { landSearch: "", factionEvent: "", populationEvent: "", weather: "", notes: "" }
+    Spring: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Summer: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Fall:   { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Winter: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" }
   }
 };
 
-// simple id counter for hexes/builds/movements
 let nextHexId = 1;
+let nextEventId = 1;
 let nextBuildId = 1;
 let nextMovementId = 1;
+
+let eventSortDirection = "asc"; // "asc" or "desc"
+let currentSeason = "Spring";
 
 // ---------- DOM HELPERS ----------
 function $(id) {
@@ -46,14 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
-  wireTurnActions();
   wireSeasons();
+  wireEvents();
 
-  // Initial render
   renderHexList();
-  renderBuildList();
-  renderMovementList();
-  renderSeasonBlocks();
+  renderEventList();
+  syncSeasonUI();
 });
 
 // ---------- TOP CONTROLS ----------
@@ -83,7 +76,7 @@ function handleSaveState() {
     : "faction";
 
   a.href = url;
-  a.download = `${faction}_state_y${state.gameYear}_t${state.currentTurn}.json`;
+  a.download = `${faction}_state_y${state.gameYear}_evt${state.currentEventNumber}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -109,16 +102,14 @@ function handleLoadFile(e) {
 }
 
 function loadStateObject(obj) {
-  // Shallow validation / merge
   if (typeof obj !== "object" || !obj) {
     alert("Invalid state file.");
     return;
   }
 
-  // Basic fields
   state.factionName = obj.factionName || "";
   state.gameYear = obj.gameYear || 1;
-  state.currentTurn = obj.currentTurn || 1;
+  state.currentEventNumber = obj.currentEventNumber || 1;
   state.factionNotes = obj.factionNotes || "";
 
   state.coffers = {
@@ -130,68 +121,82 @@ function loadStateObject(obj) {
     gold: Number(obj.coffers?.gold ?? 0)
   };
 
-  state.hexes = Array.isArray(obj.hexes) ? obj.hexes.map((h) => ({
-    id: h.id || `hex_${nextHexId++}`,
-    name: h.name || "",
-    coords: h.coords || "",
-    terrain: h.terrain || "",
-    primary: h.primary || "",
-    secondary: h.secondary || "",
-    tertiary: h.tertiary || "",
-    structure: h.structure || "",
-    notes: h.notes || ""
-  })) : [];
+  state.hexes = Array.isArray(obj.hexes)
+    ? obj.hexes.map((h) => ({
+        id: h.id || `hex_${nextHexId++}`,
+        name: h.name || "",
+        coords: h.coords || "",
+        terrain: h.terrain || "",
+        primary: h.primary || "",
+        secondary: h.secondary || "",
+        tertiary: h.tertiary || "",
+        structure: h.structure || "",
+        notes: h.notes || ""
+      }))
+    : [];
 
-  state.turnSummary = obj.turnSummary || "";
-
-  state.builds = Array.isArray(obj.builds) ? obj.builds.map((b) => ({
-    id: b.id || `build_${nextBuildId++}`,
-    hexId: b.hexId || "",
-    description: b.description || "",
-    turn: b.turn || state.currentTurn
-  })) : [];
-
-  state.movements = Array.isArray(obj.movements) ? obj.movements.map((m) => ({
-    id: m.id || `mov_${nextMovementId++}`,
-    unitName: m.unitName || "",
-    from: m.from || "",
-    to: m.to || "",
-    notes: m.notes || "",
-    turn: m.turn || state.currentTurn
-  })) : [];
-
-  state.offensiveAction = {
-    type: obj.offensiveAction?.type || "",
-    target: obj.offensiveAction?.target || "",
-    notes: obj.offensiveAction?.notes || ""
-  };
+  state.events = Array.isArray(obj.events)
+    ? obj.events.map((ev) => ({
+        id: ev.id || `ev_${nextEventId++}`,
+        name: ev.name || "",
+        date: ev.date || "",
+        type: ev.type || "",
+        summary: ev.summary || "",
+        builds: Array.isArray(ev.builds)
+          ? ev.builds.map((b) => ({
+              id: b.id || `b_${nextBuildId++}`,
+              hexId: b.hexId || "",
+              description: b.description || ""
+            }))
+          : [],
+        movements: Array.isArray(ev.movements)
+          ? ev.movements.map((m) => ({
+              id: m.id || `m_${nextMovementId++}`,
+              unitName: m.unitName || "",
+              from: m.from || "",
+              to: m.to || "",
+              notes: m.notes || ""
+            }))
+          : [],
+        offensiveAction: {
+          type: ev.offensiveAction?.type || "",
+          target: ev.offensiveAction?.target || "",
+          notes: ev.offensiveAction?.notes || ""
+        }
+      }))
+    : [];
 
   const seasons = obj.seasons || {};
   ["Spring", "Summer", "Fall", "Winter"].forEach((season) => {
     const s = seasons[season] || {};
     state.seasons[season] = {
-      landSearch: s.landSearch || "",
-      factionEvent: s.factionEvent || "",
-      populationEvent: s.populationEvent || "",
-      weather: s.weather || "",
+      food: Number(s.food ?? 0),
+      wood: Number(s.wood ?? 0),
+      stone: Number(s.stone ?? 0),
+      ore: Number(s.ore ?? 0),
+      silver: Number(s.silver ?? 0),
+      gold: Number(s.gold ?? 0),
       notes: s.notes || ""
     };
   });
 
-  // Reset counters so new items don't clash
+  // Recalculate counters
   nextHexId = calcNextNumericId(state.hexes, "hex_");
-  nextBuildId = calcNextNumericId(state.builds, "build_");
-  nextMovementId = calcNextNumericId(state.movements, "mov_");
+  nextEventId = calcNextNumericId(state.events, "ev_");
+  nextBuildId = Math.max(
+    calcNextNumericId(flattenBuilds(state.events), "b_"),
+    1
+  );
+  nextMovementId = Math.max(
+    calcNextNumericId(flattenMovements(state.events), "m_"),
+    1
+  );
 
-  // Render
   syncFactionInfoToUI();
   syncCoffersToUI();
-  syncTurnActionsToUI();
-  syncSeasonsToUI();
   renderHexList();
-  renderBuildList();
-  renderMovementList();
-  renderSeasonBlocks();
+  renderEventList();
+  syncSeasonUI();
 }
 
 function calcNextNumericId(arr, prefix) {
@@ -206,11 +211,27 @@ function calcNextNumericId(arr, prefix) {
   return maxId + 1;
 }
 
+function flattenBuilds(events) {
+  const list = [];
+  events.forEach((ev) => {
+    (ev.builds || []).forEach((b) => list.push(b));
+  });
+  return list;
+}
+
+function flattenMovements(events) {
+  const list = [];
+  events.forEach((ev) => {
+    (ev.movements || []).forEach((m) => list.push(m));
+  });
+  return list;
+}
+
 // ---------- FACTION INFO ----------
 function wireFactionInfo() {
   const nameInput = $("factionName");
   const yearInput = $("gameYear");
-  const turnInput = $("currentTurn");
+  const eventNumInput = $("currentEventNumber");
   const notesInput = $("factionNotes");
 
   if (nameInput) {
@@ -225,10 +246,9 @@ function wireFactionInfo() {
     });
   }
 
-  if (turnInput) {
-    turnInput.addEventListener("input", () => {
-      state.currentTurn = parseInt(turnInput.value, 10) || 1;
-      // also keep builds/movements pointed at the current turn by default if newly added
+  if (eventNumInput) {
+    eventNumInput.addEventListener("input", () => {
+      state.currentEventNumber = parseInt(eventNumInput.value, 10) || 1;
     });
   }
 
@@ -238,14 +258,14 @@ function wireFactionInfo() {
     });
   }
 
-  // Sync initial UI
   syncFactionInfoToUI();
 }
 
 function syncFactionInfoToUI() {
   if ($("factionName")) $("factionName").value = state.factionName || "";
   if ($("gameYear")) $("gameYear").value = state.gameYear || 1;
-  if ($("currentTurn")) $("currentTurn").value = state.currentTurn || 1;
+  if ($("currentEventNumber"))
+    $("currentEventNumber").value = state.currentEventNumber || 1;
   if ($("factionNotes")) $("factionNotes").value = state.factionNotes || "";
 }
 
@@ -377,10 +397,9 @@ function renderHexList() {
       </div>
     `;
 
-    // Attach listeners
     body.querySelector(".hex-name-input").addEventListener("input", (e) => {
       hex.name = e.target.value;
-      renderHexList(); // re-render header text
+      renderHexList();
     });
 
     body.querySelector(".hex-coords-input").addEventListener("input", (e) => {
@@ -451,13 +470,15 @@ function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
   state.hexes.splice(idx, 1);
 
-  // Clear references from builds
-  state.builds.forEach((b) => {
-    if (b.hexId === id) b.hexId = "";
+  // clear any references from builds
+  state.events.forEach((ev) => {
+    ev.builds.forEach((b) => {
+      if (b.hexId === id) b.hexId = "";
+    });
   });
 
   renderHexList();
-  renderBuildList();
+  renderEventList();
 }
 
 // Dropdown helpers
@@ -529,155 +550,395 @@ function structureOptions(current) {
     .join("");
 }
 
-// ---------- TURN ACTIONS ----------
-function wireTurnActions() {
-  const turnSummary = $("turnSummary");
-  const offensiveType = $("offensiveType");
-  const offensiveTarget = $("offensiveTarget");
-  const offensiveNotes = $("offensiveNotes");
-
-  if (turnSummary) {
-    turnSummary.addEventListener("input", () => {
-      state.turnSummary = turnSummary.value;
+// ---------- EVENTS & TURN ACTIONS ----------
+function wireEvents() {
+  const sortSelect = $("eventSortOrder");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", () => {
+      eventSortDirection = sortSelect.value === "desc" ? "desc" : "asc";
+      renderEventList();
     });
   }
 
-  if (offensiveType) {
-    offensiveType.addEventListener("change", () => {
-      state.offensiveAction.type = offensiveType.value;
-    });
+  const addEventBtn = $("addEventBtn");
+  if (addEventBtn) {
+    addEventBtn.addEventListener("click", addEvent);
   }
-
-  if (offensiveTarget) {
-    offensiveTarget.addEventListener("input", () => {
-      state.offensiveAction.target = offensiveTarget.value;
-    });
-  }
-
-  if (offensiveNotes) {
-    offensiveNotes.addEventListener("input", () => {
-      state.offensiveAction.notes = offensiveNotes.value;
-    });
-  }
-
-  const addBuildBtn = $("addBuildBtn");
-  if (addBuildBtn) {
-    addBuildBtn.addEventListener("click", addBuild);
-  }
-
-  const addMovementBtn = $("addMovementBtn");
-  if (addMovementBtn) {
-    addMovementBtn.addEventListener("click", addMovement);
-  }
-
-  syncTurnActionsToUI();
 }
 
-function syncTurnActionsToUI() {
-  if ($("turnSummary")) $("turnSummary").value = state.turnSummary || "";
-  if ($("offensiveType"))
-    $("offensiveType").value = state.offensiveAction.type || "";
-  if ($("offensiveTarget"))
-    $("offensiveTarget").value = state.offensiveAction.target || "";
-  if ($("offensiveNotes"))
-    $("offensiveNotes").value = state.offensiveAction.notes || "";
+function addEvent() {
+  const id = `ev_${nextEventId++}`;
+  state.events.push({
+    id,
+    name: "",
+    date: "",
+    type: "",
+    summary: "",
+    builds: [],
+    movements: [],
+    offensiveAction: {
+      type: "",
+      target: "",
+      notes: ""
+    }
+  });
+  renderEventList();
 }
 
-// Builds
-function renderBuildList() {
-  const container = $("buildList");
+function deleteEvent(id) {
+  const idx = state.events.findIndex((ev) => ev.id === id);
+  if (idx === -1) return;
+  if (!confirm("Delete this event and all its actions?")) return;
+  state.events.splice(idx, 1);
+  renderEventList();
+}
+
+function renderEventList() {
+  const container = $("eventList");
   if (!container) return;
   container.innerHTML = "";
 
-  state.builds.forEach((build) => {
-    const row = document.createElement("div");
-    row.className = "mini-row";
-    row.dataset.id = build.id;
+  const eventsCopy = [...state.events];
 
-    const top = document.createElement("div");
-    top.className = "mini-row-top";
+  eventsCopy.sort((a, b) => {
+    const da = a.date ? new Date(a.date).getTime() : 0;
+    const db = b.date ? new Date(b.date).getTime() : 0;
+    if (da === db) {
+      // fall back to id index in original array
+      const idxA = state.events.indexOf(a);
+      const idxB = state.events.indexOf(b);
+      return idxA - idxB;
+    }
+    return da - db;
+  });
 
-    const label = document.createElement("div");
-    label.className = "mini-row-label";
-    label.textContent = `Build / Turn ${build.turn || state.currentTurn}`;
-    top.appendChild(label);
+  if (eventSortDirection === "desc") {
+    eventsCopy.reverse();
+  }
 
-    const btns = document.createElement("div");
-    const del = document.createElement("button");
-    del.className = "button small secondary";
-    del.textContent = "Delete";
-    del.addEventListener("click", () => deleteBuild(build.id));
-    btns.appendChild(del);
-    top.appendChild(btns);
+  eventsCopy.forEach((ev, idx) => {
+    const actualIndex = state.events.indexOf(ev);
+    const displayNumber = idx + 1; // position in sorted list
+
+    const card = document.createElement("div");
+    card.className = "event-card";
+    card.dataset.id = ev.id;
+
+    const header = document.createElement("div");
+    header.className = "event-header-row";
+
+    const titleBox = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "event-title";
+    const displayName = ev.name || "Unnamed Event";
+    title.textContent = `Event ${displayNumber}: ${displayName}`;
+
+    const sub = document.createElement("div");
+    sub.className = "event-subtitle";
+    const dateStr = ev.date || "No date";
+    const typeStr = ev.type || "Type: —";
+    sub.textContent = `${dateStr} · ${typeStr}`;
+
+    titleBox.appendChild(title);
+    titleBox.appendChild(sub);
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "button small secondary";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => deleteEvent(ev.id));
+
+    header.appendChild(titleBox);
+    header.appendChild(delBtn);
 
     const body = document.createElement("div");
-    body.className = "mini-row-body";
+    body.className = "event-body";
 
-    // Hex selector
-    const fieldHex = document.createElement("div");
-    fieldHex.className = "field";
-    fieldHex.innerHTML = `
-      <label>Hex</label>
-      <select class="build-hex-select">
-        ${buildHexOptions(build.hexId)}
-      </select>
+    body.innerHTML = `
+      <div class="section-row">
+        <div class="field">
+          <label>Event Name</label>
+          <input type="text" class="ev-name-input" value="${ev.name || ""}" />
+        </div>
+        <div class="field">
+          <label>Event Date</label>
+          <input type="date" class="ev-date-input" value="${ev.date || ""}" />
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div class="field">
+          <label>Event Type</label>
+          <select class="ev-type-select">
+            ${eventTypeOptions(ev.type)}
+          </select>
+        </div>
+        <div class="field">
+          <label>Event Notes / Summary</label>
+          <textarea class="ev-summary-input" placeholder="Overall summary of what happened.">${ev.summary || ""}</textarea>
+        </div>
+      </div>
+
+      <div class="subsection-header">
+        <div class="inline">
+          <span class="subsection-title">Builds</span>
+          <button class="button small ev-add-build-btn">+ Add Build</button>
+        </div>
+        <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
+      </div>
+      <div class="mini-list ev-builds-list"></div>
+
+      <div class="subsection-header">
+        <div class="inline">
+          <span class="subsection-title">Movements</span>
+          <button class="button small ev-add-movement-btn">+ Add Movement</button>
+        </div>
+        <p class="subsection-note">Track unit movements between hexes for this event.</p>
+      </div>
+      <div class="mini-list ev-movements-list"></div>
+
+      <div class="subsection-header">
+        <span class="subsection-title">Offensive Action</span>
+        <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
+      </div>
+      <div class="section-row">
+        <div class="field">
+          <label>Action Type</label>
+          <select class="ev-off-type-select">
+            ${offensiveTypeOptions(ev.offensiveAction.type)}
+          </select>
+        </div>
+        <div class="field">
+          <label>Target Hex / Location</label>
+          <input type="text" class="ev-off-target-input" value="${ev.offensiveAction.target || ""}" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
+        </div>
+      </div>
+      <div class="section-row">
+        <div class="field">
+          <label>Action Notes / Result</label>
+          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${ev.offensiveAction.notes || ""}</textarea>
+        </div>
+      </div>
     `;
 
-    // Description
-    const fieldDesc = document.createElement("div");
-    fieldDesc.className = "field";
-    fieldDesc.innerHTML = `
-      <label>Description</label>
-      <input type="text" class="build-desc-input" value="${build.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
-    `;
-
-    // Turn
-    const fieldTurn = document.createElement("div");
-    fieldTurn.className = "field";
-    fieldTurn.innerHTML = `
-      <label>Turn</label>
-      <input type="number" class="build-turn-input" value="${build.turn || state.currentTurn}" min="1" />
-    `;
-
-    body.appendChild(fieldHex);
-    body.appendChild(fieldDesc);
-    body.appendChild(fieldTurn);
-
-    row.appendChild(top);
-    row.appendChild(body);
-    container.appendChild(row);
-
-    // Wire events
-    body.querySelector(".build-hex-select").addEventListener("change", (e) => {
-      build.hexId = e.target.value;
+    // Wire basic fields
+    body.querySelector(".ev-name-input").addEventListener("input", (e) => {
+      ev.name = e.target.value;
+      renderEventList();
     });
-    body.querySelector(".build-desc-input").addEventListener("input", (e) => {
-      build.description = e.target.value;
+
+    body.querySelector(".ev-date-input").addEventListener("input", (e) => {
+      ev.date = e.target.value;
+      renderEventList();
     });
-    body.querySelector(".build-turn-input").addEventListener("input", (e) => {
-      build.turn = parseInt(e.target.value, 10) || 1;
-      renderBuildList(); // refresh label
+
+    body.querySelector(".ev-type-select").addEventListener("change", (e) => {
+      ev.type = e.target.value;
+      renderEventList();
     });
+
+    body.querySelector(".ev-summary-input").addEventListener("input", (e) => {
+      ev.summary = e.target.value;
+    });
+
+    // Offensive action
+    body.querySelector(".ev-off-type-select").addEventListener("change", (e) => {
+      ev.offensiveAction.type = e.target.value;
+      renderEventList();
+    });
+
+    body.querySelector(".ev-off-target-input").addEventListener("input", (e) => {
+      ev.offensiveAction.target = e.target.value;
+    });
+
+    body.querySelector(".ev-off-notes-input").addEventListener("input", (e) => {
+      ev.offensiveAction.notes = e.target.value;
+    });
+
+    // Builds
+    const buildsContainer = body.querySelector(".ev-builds-list");
+    const addBuildBtn = body.querySelector(".ev-add-build-btn");
+
+    addBuildBtn.addEventListener("click", () => {
+      const bid = `b_${nextBuildId++}`;
+      ev.builds.push({
+        id: bid,
+        hexId: "",
+        description: ""
+      });
+      renderEventList();
+    });
+
+    ev.builds.forEach((b) => {
+      const row = document.createElement("div");
+      row.className = "mini-row";
+      row.dataset.id = b.id;
+
+      const bodyRow = document.createElement("div");
+      bodyRow.className = "mini-row-body two-cols";
+
+      const fieldHex = document.createElement("div");
+      fieldHex.className = "field";
+      fieldHex.innerHTML = `
+        <label>Hex</label>
+        <select class="build-hex-select">
+          ${buildHexOptions(b.hexId)}
+        </select>
+      `;
+
+      const fieldDesc = document.createElement("div");
+      fieldDesc.className = "field";
+      fieldDesc.innerHTML = `
+        <label>Description</label>
+        <input type="text" class="build-desc-input" value="${b.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
+      `;
+
+      bodyRow.appendChild(fieldHex);
+      bodyRow.appendChild(fieldDesc);
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "button small secondary";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        const idxB = ev.builds.findIndex((x) => x.id === b.id);
+        if (idxB !== -1) {
+          ev.builds.splice(idxB, 1);
+          renderEventList();
+        }
+      });
+
+      row.appendChild(bodyRow);
+      row.appendChild(delBtn);
+      buildsContainer.appendChild(row);
+
+      bodyRow.querySelector(".build-hex-select").addEventListener("change", (e) => {
+        b.hexId = e.target.value;
+      });
+      bodyRow.querySelector(".build-desc-input").addEventListener("input", (e) => {
+        b.description = e.target.value;
+      });
+    });
+
+    // Movements
+    const movContainer = body.querySelector(".ev-movements-list");
+    const addMovBtn = body.querySelector(".ev-add-movement-btn");
+
+    addMovBtn.addEventListener("click", () => {
+      const mid = `m_${nextMovementId++}`;
+      ev.movements.push({
+        id: mid,
+        unitName: "",
+        from: "",
+        to: "",
+        notes: ""
+      });
+      renderEventList();
+    });
+
+    ev.movements.forEach((m) => {
+      const row = document.createElement("div");
+      row.className = "mini-row";
+      row.dataset.id = m.id;
+
+      const bodyRow = document.createElement("div");
+      bodyRow.className = "mini-row-body";
+
+      const fieldUnit = document.createElement("div");
+      fieldUnit.className = "field";
+      fieldUnit.innerHTML = `
+        <label>Unit</label>
+        <input type="text" class="mov-unit-input" value="${m.unitName || ""}" placeholder="e.g. 1st Company, Grove Patrol" />
+      `;
+
+      const fieldFrom = document.createElement("div");
+      fieldFrom.className = "field";
+      fieldFrom.innerHTML = `
+        <label>From</label>
+        <input type="text" class="mov-from-input" value="${m.from || ""}" placeholder="Hex name or coords" />
+      `;
+
+      const fieldTo = document.createElement("div");
+      fieldTo.className = "field";
+      fieldTo.innerHTML = `
+        <label>To</label>
+        <input type="text" class="mov-to-input" value="${m.to || ""}" placeholder="Hex name or coords" />
+      `;
+
+      const fieldNotes = document.createElement("div");
+      fieldNotes.className = "field";
+      fieldNotes.innerHTML = `
+        <label>Notes</label>
+        <input type="text" class="mov-notes-input" value="${m.notes || ""}" placeholder="Scouting, escort, etc." />
+      `;
+
+      bodyRow.appendChild(fieldUnit);
+      bodyRow.appendChild(fieldFrom);
+      bodyRow.appendChild(fieldTo);
+      bodyRow.appendChild(fieldNotes);
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "button small secondary";
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        const idxM = ev.movements.findIndex((x) => x.id === m.id);
+        if (idxM !== -1) {
+          ev.movements.splice(idxM, 1);
+          renderEventList();
+        }
+      });
+
+      row.appendChild(bodyRow);
+      row.appendChild(delBtn);
+      movContainer.appendChild(row);
+
+      bodyRow.querySelector(".mov-unit-input").addEventListener("input", (e) => {
+        m.unitName = e.target.value;
+      });
+      bodyRow.querySelector(".mov-from-input").addEventListener("input", (e) => {
+        m.from = e.target.value;
+      });
+      bodyRow.querySelector(".mov-to-input").addEventListener("input", (e) => {
+        m.to = e.target.value;
+      });
+      bodyRow.querySelector(".mov-notes-input").addEventListener("input", (e) => {
+        m.notes = e.target.value;
+      });
+    });
+
+    card.appendChild(header);
+    card.appendChild(body);
+    container.appendChild(card);
   });
+
+  // ensure sort select reflects current direction
+  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
 }
 
-function addBuild() {
-  const id = `build_${nextBuildId++}`;
-  state.builds.push({
-    id,
-    hexId: "",
-    description: "",
-    turn: state.currentTurn
-  });
-  renderBuildList();
+function eventTypeOptions(current) {
+  const list = [
+    "",
+    "Day Event",
+    "Campout",
+    "Festival Event",
+    "Virtual Event"
+  ];
+  return list
+    .map((val) => {
+      const label = val || "-- Select Type --";
+      const selected = val === current ? "selected" : "";
+      return `<option value="${val}" ${selected}>${label}</option>`;
+    })
+    .join("");
 }
 
-function deleteBuild(id) {
-  const idx = state.builds.findIndex((b) => b.id === id);
-  if (idx === -1) return;
-  if (!confirm("Delete this build entry?")) return;
-  state.builds.splice(idx, 1);
-  renderBuildList();
+function offensiveTypeOptions(current) {
+  const list = ["", "Land Search", "Invasion", "Quest"];
+  return list
+    .map((val) => {
+      const label = val || "None";
+      const selected = val === current ? "selected" : "";
+      return `<option value="${val}" ${selected}>${label}</option>`;
+    })
+    .join("");
 }
 
 function buildHexOptions(selectedId) {
@@ -692,241 +953,83 @@ function buildHexOptions(selectedId) {
   return none + options;
 }
 
-// Movements
-function renderMovementList() {
-  const container = $("movementList");
-  if (!container) return;
-  container.innerHTML = "";
-
-  state.movements.forEach((mov) => {
-    const row = document.createElement("div");
-    row.className = "mini-row";
-    row.dataset.id = mov.id;
-
-    const top = document.createElement("div");
-    top.className = "mini-row-top";
-
-    const label = document.createElement("div");
-    label.className = "mini-row-label";
-    label.textContent = `Movement / Turn ${mov.turn || state.currentTurn}`;
-    top.appendChild(label);
-
-    const btns = document.createElement("div");
-    const del = document.createElement("button");
-    del.className = "button small secondary";
-    del.textContent = "Delete";
-    del.addEventListener("click", () => deleteMovement(mov.id));
-    btns.appendChild(del);
-    top.appendChild(btns);
-
-    const body = document.createElement("div");
-    body.className = "mini-row-body";
-
-    const fieldUnit = document.createElement("div");
-    fieldUnit.className = "field";
-    fieldUnit.innerHTML = `
-      <label>Unit</label>
-      <input type="text" class="mov-unit-input" value="${mov.unitName || ""}" placeholder="e.g. 1st Company, Grove Patrol" />
-    `;
-
-    const fieldFrom = document.createElement("div");
-    fieldFrom.className = "field";
-    fieldFrom.innerHTML = `
-      <label>From</label>
-      <input type="text" class="mov-from-input" value="${mov.from || ""}" placeholder="Hex name or coords" />
-    `;
-
-    const fieldTo = document.createElement("div");
-    fieldTo.className = "field";
-    fieldTo.innerHTML = `
-      <label>To</label>
-      <input type="text" class="mov-to-input" value="${mov.to || ""}" placeholder="Hex name or coords" />
-    `;
-
-    const fieldNotes = document.createElement("div");
-    fieldNotes.className = "field";
-    fieldNotes.innerHTML = `
-      <label>Notes</label>
-      <input type="text" class="mov-notes-input" value="${mov.notes || ""}" placeholder="Scouting, escort, etc." />
-    `;
-
-    const fieldTurn = document.createElement("div");
-    fieldTurn.className = "field";
-    fieldTurn.innerHTML = `
-      <label>Turn</label>
-      <input type="number" class="mov-turn-input" value="${mov.turn || state.currentTurn}" min="1" />
-    `;
-
-    body.appendChild(fieldUnit);
-    body.appendChild(fieldFrom);
-    body.appendChild(fieldTo);
-    body.appendChild(fieldNotes);
-    body.appendChild(fieldTurn);
-
-    row.appendChild(top);
-    row.appendChild(body);
-    container.appendChild(row);
-
-    // Wire events
-    body.querySelector(".mov-unit-input").addEventListener("input", (e) => {
-      mov.unitName = e.target.value;
-    });
-    body.querySelector(".mov-from-input").addEventListener("input", (e) => {
-      mov.from = e.target.value;
-    });
-    body.querySelector(".mov-to-input").addEventListener("input", (e) => {
-      mov.to = e.target.value;
-    });
-    body.querySelector(".mov-notes-input").addEventListener("input", (e) => {
-      mov.notes = e.target.value;
-    });
-    body.querySelector(".mov-turn-input").addEventListener("input", (e) => {
-      mov.turn = parseInt(e.target.value, 10) || 1;
-      renderMovementList();
-    });
-  });
-}
-
-function addMovement() {
-  const id = `mov_${nextMovementId++}`;
-  state.movements.push({
-    id,
-    unitName: "",
-    from: "",
-    to: "",
-    notes: "",
-    turn: state.currentTurn
-  });
-  renderMovementList();
-}
-
-function deleteMovement(id) {
-  const idx = state.movements.findIndex((m) => m.id === id);
-  if (idx === -1) return;
-  if (!confirm("Delete this movement entry?")) return;
-  state.movements.splice(idx, 1);
-  renderMovementList();
-}
-
-// ---------- SEASONS ----------
+// ---------- SEASONS (RESOURCE GAINS) ----------
 function wireSeasons() {
-  // seasons themselves render as blocks; each block wires its own listeners
-  renderSeasonBlocks();
-  syncSeasonsToUI();
+  const seasonSelect = $("seasonSelect");
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", () => {
+      saveSeasonFromUI(); // save old season
+      currentSeason = seasonSelect.value || "Spring";
+      syncSeasonUI(); // load new
+    });
+  }
+
+  // Inputs for current season
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
+
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const val = parseInt(el.value, 10);
+      state.seasons[currentSeason][key] =
+        isNaN(val) || val < 0 ? 0 : val;
+      el.value = state.seasons[currentSeason][key];
+    });
+  });
+
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    notesEl.addEventListener("input", () => {
+      state.seasons[currentSeason].notes = notesEl.value;
+    });
+  }
 }
 
-function renderSeasonBlocks() {
-  const container = $("seasonGrid");
-  if (!container) return;
-  container.innerHTML = "";
+function saveSeasonFromUI() {
+  const s = state.seasons[currentSeason];
+  if (!s) return;
 
-  ["Spring", "Summer", "Fall", "Winter"].forEach((season) => {
-    const card = document.createElement("div");
-    card.className = "season-card";
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
 
-    card.innerHTML = `
-      <div class="season-title">${season}</div>
-      <div class="section-row">
-        <div class="field">
-          <label>Land Search Roll</label>
-          <input type="text" class="season-landSearch" data-season="${season}" />
-        </div>
-        <div class="field">
-          <label>Faction Event Roll</label>
-          <input type="text" class="season-factionEvent" data-season="${season}" />
-        </div>
-      </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Population Event Roll</label>
-          <input type="text" class="season-populationEvent" data-season="${season}" />
-        </div>
-        <div class="field">
-          <label>Weather / Conditions</label>
-          <input type="text" class="season-weather" data-season="${season}" />
-        </div>
-      </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Notes</label>
-          <textarea class="season-notes" data-season="${season}" placeholder="Encounters, results, modifiers, etc."></textarea>
-        </div>
-      </div>
-    `;
-
-    container.appendChild(card);
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    const val = parseInt(el.value, 10);
+    s[key] = isNaN(val) || val < 0 ? 0 : val;
   });
 
-  // Wire after we insert them
-  ["Spring", "Summer", "Fall", "Winter"].forEach((season) => {
-    document
-      .querySelectorAll(`.season-landSearch[data-season="${season}"]`)
-      .forEach((el) => {
-        el.addEventListener("input", () => {
-          state.seasons[season].landSearch = el.value;
-        });
-      });
-
-    document
-      .querySelectorAll(`.season-factionEvent[data-season="${season}"]`)
-      .forEach((el) => {
-        el.addEventListener("input", () => {
-          state.seasons[season].factionEvent = el.value;
-        });
-      });
-
-    document
-      .querySelectorAll(`.season-populationEvent[data-season="${season}"]`)
-      .forEach((el) => {
-        el.addEventListener("input", () => {
-          state.seasons[season].populationEvent = el.value;
-        });
-      });
-
-    document
-      .querySelectorAll(`.season-weather[data-season="${season}"]`)
-      .forEach((el) => {
-        el.addEventListener("input", () => {
-          state.seasons[season].weather = el.value;
-        });
-      });
-
-    document
-      .querySelectorAll(`.season-notes[data-season="${season}"]`)
-      .forEach((el) => {
-        el.addEventListener("input", () => {
-          state.seasons[season].notes = el.value;
-        });
-      });
-  });
-
-  // Fill them with existing values
-  syncSeasonsToUI();
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    s.notes = notesEl.value || "";
+  }
 }
 
-function syncSeasonsToUI() {
-  ["Spring", "Summer", "Fall", "Winter"].forEach((season) => {
-    const s = state.seasons[season] || {};
-    const ls = document.querySelector(
-      `.season-landSearch[data-season="${season}"]`
-    );
-    const fe = document.querySelector(
-      `.season-factionEvent[data-season="${season}"]`
-    );
-    const pe = document.querySelector(
-      `.season-populationEvent[data-season="${season}"]`
-    );
-    const we = document.querySelector(
-      `.season-weather[data-season="${season}"]`
-    );
-    const nt = document.querySelector(
-      `.season-notes[data-season="${season}"]`
-    );
+function syncSeasonUI() {
+  if ($("seasonSelect")) $("seasonSelect").value = currentSeason;
+  const s = state.seasons[currentSeason];
 
-    if (ls) ls.value = s.landSearch || "";
-    if (fe) fe.value = s.factionEvent || "";
-    if (pe) pe.value = s.populationEvent || "";
-    if (we) we.value = s.weather || "";
-    if (nt) nt.value = s.notes || "";
-  });
+  if (!s) return;
+
+  if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
+  if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
+  if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
+  if ($("seasonOre")) $("seasonOre").value = s.ore ?? 0;
+  if ($("seasonSilver")) $("seasonSilver").value = s.silver ?? 0;
+  if ($("seasonGold")) $("seasonGold").value = s.gold ?? 0;
+  if ($("seasonNotes")) $("seasonNotes").value = s.notes || "";
 }
