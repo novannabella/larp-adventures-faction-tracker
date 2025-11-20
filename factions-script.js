@@ -554,7 +554,6 @@ function updateEventSortHeaderLabel() {
   if (addEventBtn) {
     addEventBtn.addEventListener("click", addEventFromForm);
   }
-}
 
 function addEventFromForm() {
   const nameInput = $("newEventName");
