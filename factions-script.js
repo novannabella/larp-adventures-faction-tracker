@@ -276,182 +276,213 @@ function syncCoffersToUI() {
   if ($("gold")) $("gold").value = c.gold ?? 0;
 }
 
-
-// Upkeep table loaded from upkeep.csv (in same directory)
+// ---------- HEXES & UPKEEP ----------
 let upkeepTable = {};
 
-// Load upkeep data once from CSV
 function loadUpkeepTable() {
-  if (typeof fetch === "undefined") {
-    return;
-  }
   fetch("upkeep.csv")
-    .then((resp) => resp.text())
+    .then((r) => r.text())
     .then((text) => {
-      upkeepTable = parseUpkeepCsv(text);
-      // Re-render lands so upkeep columns update
-      renderHexList();
+      const lines = text.split(/?
+/).filter((l) => l.trim().length);
+      if (lines.length < 2) return;
+
+      const header = lines[0].split(",").map((h) => h.trim());
+      const idxUpgrade = header.indexOf("Upgrade");
+      const idxFood = header.indexOf("Food");
+      const idxWood = header.indexOf("Wood");
+      const idxStone = header.indexOf("Stone");
+      const idxGold = header.indexOf("Gold");
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim());
+        const name = cols[idxUpgrade] || "";
+        if (!name) continue;
+        const food = parseInt(cols[idxFood] || "0", 10) || 0;
+        const wood = parseInt(cols[idxWood] || "0", 10) || 0;
+        const stone = parseInt(cols[idxStone] || "0", 10) || 0;
+        const gold = parseInt(cols[idxGold] || "0", 10) || 0;
+        upkeepTable[name] = { food, wood, stone, gold };
+      }
     })
-    .catch((err) => {
-      console.error("Failed to load upkeep.csv", err);
+    .catch(() => {
       upkeepTable = {};
     });
 }
 
-function parseUpkeepCsv(text) {
-  const table = {};
-  if (!text) return table;
-
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-  if (lines.length < 2) return table;
-
-  const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
-  const idxUpgrade = header.indexOf("upgrade");
-  const idxFood = header.indexOf("food");
-  const idxWood = header.indexOf("wood");
-  const idxStone = header.indexOf("stone");
-  const idxGold = header.indexOf("gold");
-
-  function num(cols, idx) {
-    if (idx === -1 || idx >= cols.length) return 0;
-    const raw = String(cols[idx] ?? "").trim();
-    if (!raw) return 0;
-    const n = Number(raw);
-    return isNaN(n) ? 0 : n;
-  }
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line.trim()) continue;
-    const cols = line.split(",");
-    const name = String(cols[idxUpgrade] ?? "").trim();
-    if (!name) continue;
-
-    table[name] = {
-      food: num(cols, idxFood),
-      wood: num(cols, idxWood),
-      stone: num(cols, idxStone),
-      gold: num(cols, idxGold)
-    };
-  }
-
-  return table;
-}
-
-function calcHexUpkeep(hex) {
-  const result = { food: 0, wood: 0, stone: 0, gold: 0 };
-  if (!hex || !hex.structure) return result;
-
-  const names = String(hex.structure)
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  names.forEach((name) => {
-    const u = upkeepTable[name];
-    if (!u) return; // Upgrades without upkeep just count as zero
-    result.food += u.food || 0;
-    result.wood += u.wood || 0;
-    result.stone += u.stone || 0;
-    result.gold += u.gold || 0;
-  });
-
-  return result;
-}
-
-// Wire the top hex form (terrain/structures multi-add + Add Hex button)
 function wireHexForm() {
+  const terrainAddBtn = $("addHexTerrainBtn");
+  const structAddBtn = $("addHexStructureBtn");
   const terrainSelect = $("newHexTerrainSelect");
-  const terrainOut = $("newHexTerrainList");
-  const terrainBtn = $("addHexTerrainBtn");
+  const structSelect = $("newHexStructureSelect");
+  const terrainList = $("newHexTerrainList");
+  const structList = $("newHexStructures");
+  const addHexBtn = $("addHexBtn");
 
-  if (terrainBtn && !terrainBtn._wired) {
-    terrainBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (!terrainSelect || !terrainOut) return;
+  if (terrainAddBtn && !terrainAddBtn._wired) {
+    terrainAddBtn.addEventListener("click", () => {
+      if (!terrainSelect || !terrainList) return;
       const val = terrainSelect.value;
       if (!val) return;
-      const current = terrainOut.value
-        ? terrainOut.value.split(",").map((s) => s.trim()).filter(Boolean)
+      const current = terrainList.value
+        ? terrainList.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
-      if (!current.includes(val)) {
-        current.push(val);
-      }
-      terrainOut.value = current.join(", ");
+      if (!current.includes(val)) current.push(val);
+      terrainList.value = current.join(", ");
       terrainSelect.value = "";
     });
-    terrainBtn._wired = true;
+    terrainAddBtn._wired = true;
   }
 
-  const structSelect = $("newHexStructureSelect");
-  const structOut = $("newHexStructures");
-  const structBtn = $("addHexStructureBtn");
-
-  if (structBtn && !structBtn._wired) {
-    structBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (!structSelect || !structOut) return;
+  if (structAddBtn && !structAddBtn._wired) {
+    structAddBtn.addEventListener("click", () => {
+      if (!structSelect || !structList) return;
       const val = structSelect.value;
       if (!val) return;
-      const current = structOut.value
-        ? structOut.value.split(",").map((s) => s.trim()).filter(Boolean)
+      const current = structList.value
+        ? structList.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
-      if (!current.includes(val)) {
-        current.push(val);
-      }
-      structOut.value = current.join(", ");
+      if (!current.includes(val)) current.push(val);
+      structList.value = current.join(", ");
       structSelect.value = "";
     });
-    structBtn._wired = true;
+    structAddBtn._wired = true;
   }
 
-  const addHexBtn = $("addHexBtn");
   if (addHexBtn && !addHexBtn._wired) {
-    addHexBtn.addEventListener("click", (e) => {
-      e.preventDefault();
+    addHexBtn.addEventListener("click", () => {
       addHex();
     });
     addHexBtn._wired = true;
   }
 }
 
-// ---------- HEXES ----------
+function calcHexUpkeep(hex) {
+  const result = { food: 0, wood: 0, stone: 0, gold: 0 };
+  if (!hex.structure) return result;
+
+  const names = hex.structure
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  names.forEach((name) => {
+    const row = upkeepTable[name];
+    if (!row) return;
+    result.food += row.food || 0;
+    result.wood += row.wood || 0;
+    result.stone += row.stone || 0;
+    result.gold += row.gold || 0;
+  });
+
+  return result;
+}
+
+function addHex() {
+  const nameInput = $("newHexName");
+  const numInput = $("newHexNumber");
+  const terrainList = $("newHexTerrainList");
+  const structList = $("newHexStructures");
+  const notesInput = $("newHexNotes");
+
+  if (!nameInput || !numInput || !terrainList || !structList || !notesInput)
+    return;
+
+  const name = nameInput.value.trim();
+  const hexNumber = numInput.value.trim();
+  const terrain = terrainList.value.trim();
+  const structure = structList.value.trim();
+  const notes = notesInput.value.trim();
+
+  if (!name && !hexNumber && !terrain && !structure && !notes) return;
+
+  const id = `hex_${nextHexId++}`;
+  state.hexes.push({
+    id,
+    name,
+    hexNumber,
+    terrain,
+    structure,
+    notes,
+    detailsOpen: false
+  });
+
+  nameInput.value = "";
+  numInput.value = "";
+  terrainList.value = "";
+  structList.value = "";
+  notesInput.value = "";
+
+  renderHexList();
+}
+
+function editHex(hexId) {
+  const hex = state.hexes.find((h) => h.id === hexId);
+  if (!hex) return;
+
+  $("newHexName").value = hex.name || "";
+  $("newHexNumber").value = hex.hexNumber || "";
+  $("newHexTerrainList").value = hex.terrain || "";
+  $("newHexStructures").value = hex.structure || "";
+  $("newHexNotes").value = hex.notes || "";
+
+  const terrainSelect = $("newHexTerrainSelect");
+  const structSelect = $("newHexStructureSelect");
+  if (terrainSelect) terrainSelect.value = "";
+  if (structSelect) structSelect.value = "";
+
+  state.hexes = state.hexes.filter((h) => h.id !== hexId);
+  renderHexList();
+
+  const card = $("controlledHexesCard");
+  if (card) {
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function deleteHex(id) {
+  if (!confirm("Delete this hex from the faction?")) return;
+  state.hexes = state.hexes.filter((h) => h.id !== id);
+  renderHexList();
+}
 
 function renderHexList() {
-  const container = $("hexList");
-  if (!container) return;
+  const tbody = $("hexListBody");
+  if (!tbody) return;
 
-  container.innerHTML = "";
+  tbody.innerHTML = "";
 
   state.hexes.forEach((hex) => {
     const upkeep = calcHexUpkeep(hex);
 
-    const row = document.createElement("div");
-    row.className = "faction-land-row";
+    const row = document.createElement("tr");
+    row.className = "hex-main-row";
 
-    const nameCell = document.createElement("div");
-    nameCell.className = "fl-cell fl-name";
+    const nameCell = document.createElement("td");
     nameCell.textContent = hex.name || "(Unnamed)";
 
-    const hexCell = document.createElement("div");
-    hexCell.className = "fl-cell fl-hex";
-    hexCell.textContent = hex.hexNumber || "—";
+    const hexCell = document.createElement("td");
+    hexCell.textContent = hex.hexNumber || "";
 
-    const foodCell = document.createElement("div");
-    foodCell.className = "fl-cell fl-food";
-    foodCell.textContent = upkeep.food ? String(upkeep.food) : "";
+    const foodCell = document.createElement("td");
+    foodCell.textContent = upkeep.food ? upkeep.food : "";
 
-    const woodCell = document.createElement("div");
-    woodCell.className = "fl-cell fl-wood";
-    woodCell.textContent = upkeep.wood ? String(upkeep.wood) : "";
+    const woodCell = document.createElement("td");
+    woodCell.textContent = upkeep.wood ? upkeep.wood : "";
 
-    const stoneCell = document.createElement("div");
-    stoneCell.className = "fl-cell fl-stone";
-    stoneCell.textContent = upkeep.stone ? String(upkeep.stone) : "";
+    const stoneCell = document.createElement("td");
+    stoneCell.textContent = upkeep.stone ? upkeep.stone : "";
 
-    const goldCell = document.createElement("div");
-    goldCell.className = "fl-cell fl-gold";
-    goldCell.textContent = upkeep.gold ? String(upkeep.gold) : "";
+    const goldCell = document.createElement("td");
+    goldCell.textContent = upkeep.gold ? upkeep.gold : "";
+
+    const detailsCell = document.createElement("td");
+    detailsCell.style.textAlign = "center";
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.className = "button small secondary";
+    detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
+    detailsCell.appendChild(detailsBtn);
 
     row.appendChild(nameCell);
     row.appendChild(hexCell);
@@ -459,149 +490,65 @@ function renderHexList() {
     row.appendChild(woodCell);
     row.appendChild(stoneCell);
     row.appendChild(goldCell);
+    row.appendChild(detailsCell);
 
-    container.appendChild(row);
-  });
-}
+    const detailsRow = document.createElement("tr");
+    detailsRow.className = "hex-details-row";
+    detailsRow.style.display = hex.detailsOpen ? "" : "none";
 
-function addHex() {
-  const nameInput = $("newHexName");
-  const numInput = $("newHexNumber");
-  const terrainOut = $("newHexTerrainList");
-  const structOut = $("newHexStructures");
-  const notesInput = $("newHexNotes");
+    const detailsTd = document.createElement("td");
+    detailsTd.colSpan = 7;
+    detailsTd.innerHTML = `
+      <strong>Terrain:</strong> ${hex.terrain || "—"}<br/>
+      <strong>Structures:</strong> ${hex.structure || "—"}<br/>
+      <strong>Notes:</strong> ${hex.notes || "—"}<br/><br/>
+      <button class="button small secondary hex-edit-btn">Edit</button>
+      <button class="button small secondary hex-delete-btn">Delete</button>
+    `;
+    detailsRow.appendChild(detailsTd);
 
-  if (!nameInput || !numInput || !terrainOut || !structOut) return;
-
-  const name = nameInput.value.trim();
-  const hexNumber = numInput.value.trim();
-  const terrain = terrainOut.value.trim();
-  const structure = structOut.value.trim();
-  const notes = notesInput ? notesInput.value.trim() : "";
-
-  // Avoid adding a completely empty hex
-  if (!name && !hexNumber && !terrain && !structure && !notes) {
-    return;
-  }
-
-  const id = `hex_${nextHexId++}`;
-  state.hexes.push({
-    id,
-    hexNumber,
-    name,
-    terrain,
-    primary: "",
-    secondary: "",
-    tertiary: "",
-    structure,
-    notes
-  });
-
-  // Clear form
-  nameInput.value = "";
-  numInput.value = "";
-  terrainOut.value = "";
-  structOut.value = "";
-  if (notesInput) notesInput.value = "";
-
-  renderHexList();
-}
-
-function deleteHex(id) {
-  const idx = state.hexes.findIndex((h) => h.id === id);
-  if (idx === -1) return;
-  if (!confirm("Delete this hex from the faction?")) return;
-  state.hexes.splice(idx, 1);
-
-  // clear any references from builds
-  state.events.forEach((ev) => {
-    ev.builds.forEach((b) => {
-      if (b.hexId === id) b.hexId = "";
+    detailsBtn.addEventListener("click", () => {
+      hex.detailsOpen = !hex.detailsOpen;
+      detailsRow.style.display = hex.detailsOpen ? "" : "none";
+      detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
     });
+
+    detailsTd
+      .querySelector(".hex-edit-btn")
+      .addEventListener("click", () => editHex(hex.id));
+    detailsTd
+      .querySelector(".hex-delete-btn")
+      .addEventListener("click", () => deleteHex(hex.id));
+
+    tbody.appendChild(row);
+    tbody.appendChild(detailsRow);
   });
-
-  renderHexList();
-  renderEventList();
-}
-
-// Dropdown helpers
-function terrainOptions(current) {
-  const list = [
-    "",
-    "Plains",
-    "Forest",
-    "Hills",
-    "Mountains",
-    "Swamp",
-    "Coastal",
-    "Lake",
-    "Desert",
-    "Ruins"
-  ];
-  return list
-    .map((val) => {
-      const label = val || "-- Select Terrain --";
-      const selected = val === current ? "selected" : "";
-      return `<option value="${val}" ${selected}>${label}</option>`;
-    })
-    .join("");
-}
-
-function resourceOptions(current) {
-  const list = ["", "Food", "Wood", "Stone", "Ore", "Silver", "Gold", "Special"];
-  return list
-    .map((val) => {
-      const label = val || "-- None --";
-      const selected = val === current ? "selected" : "";
-      return `<option value="${val}" ${selected}>${label}</option>`;
-    })
-    .join("");
-}
-
-function structureOptions(current) {
-  const list = [
-    "",
-    "Village",
-    "Town",
-    "City",
-    "Farm",
-    "Lumber Mill",
-    "Quarry",
-    "Mine (Ore)",
-    "Mine (Silver)",
-    "Mine (Gold)",
-    "Market",
-    "Blacksmith",
-    "Carpenter's Shop",
-    "Mason's Shop",
-    "Watch Tower",
-    "Fort",
-    "Castle",
-    "Dock",
-    "Shipyard",
-    "Fishing Fleet",
-    "Trading Vessel",
-    "War Galley",
-    "Special"
-  ];
-  return list
-    .map((val) => {
-      const label = val || "-- None --";
-      const selected = val === current ? "selected" : "";
-      return `<option value="${val}" ${selected}>${label}</option>`;
-    })
-    .join("");
 }
 
 // ---------- EVENTS & TURN ACTIONS ----------
 function wireEvents() {
-  const sortSelect = $("eventSortOrder");
-  if (sortSelect) {
-    sortSelect.addEventListener("change", () => {
-      eventSortDirection = sortSelect.value === "desc" ? "desc" : "asc";
-      renderEventList();
-    });
+  const addEventBtn = $("addEventBtn");
+  if (addEventBtn) {
+    addEventBtn.addEventListener("click", addEventFromForm);
   }
+  wireEventSortHeader();
+}
+
+function wireEventSortHeader() {
+  const hdr = $("eventDateSortHeader");
+  if (!hdr || hdr._wired) return;
+  hdr.addEventListener("click", () => {
+    eventSortDirection = eventSortDirection === "asc" ? "desc" : "asc";
+    renderEventList();
+  });
+  hdr._wired = true;
+}
+
+function updateEventSortHeaderLabel() {
+  const hdr = $("eventDateSortHeader");
+  if (!hdr) return;
+  hdr.textContent = eventSortDirection === "asc" ? "Date ▲" : "Date ▼";
+}
 
   const addEventBtn = $("addEventBtn");
   if (addEventBtn) {
@@ -995,7 +942,7 @@ function renderEventList() {
     container.appendChild(card);
   });
 
-  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
+  updateEventSortHeaderLabel();
 }
 
 function eventTypeOptions(current) {

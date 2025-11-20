@@ -374,102 +374,54 @@ textarea {
 }
 
 
-/* Add Hex card */
-.add-hex-card {
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(6, 10, 26, 0.7);
-  padding: 12px 12px 14px;
-  margin-bottom: 12px;
+/* Faction land & upkeep table */
+.hex-land-table-wrapper {
+  margin-top: 10px;
+  overflow-x: auto;
 }
 
-/* Hex input rows */
-.hex-input-row-1,
-.hex-input-row-2,
-.hex-input-row-3 {
-  gap: 12px;
-}
-
-/* Faction land list */
-.faction-land-list {
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(4, 7, 20, 0.9);
-  padding: 10px 12px 12px;
-}
-
-.faction-land-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 11px;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-
-.fl-col.fl-land-title {
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.fl-col.fl-upkeep-title {
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.faction-land-subheader {
-  font-size: 11px;
-  color: var(--muted);
-  opacity: 0.9;
-  margin-bottom: 4px;
-}
-
-.faction-land-grid {
-  display: grid;
-  grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
-  column-gap: 8px;
-}
-
-.faction-land-body {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: 4px;
-  padding-top: 4px;
-}
-
-.faction-land-row {
-  display: grid;
-  grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
-  column-gap: 8px;
-  padding: 3px 0;
+.hex-land-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 12px;
-  align-items: center;
 }
 
-.faction-land-row:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.01);
+.hex-land-table th,
+.hex-land-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.fl-cell {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.fl-name {
-  font-weight: 500;
-}
-
-.fl-hex {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, "Liberation Mono", "Courier New", monospace;
+.hex-th-group {
+  text-align: center;
+  font-weight: 600;
   font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
 }
 
-.fl-food,
-.fl-wood,
-.fl-stone,
-.fl-gold {
-  text-align: right;
+.hex-th-details {
+  text-align: center;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.hex-details-row td {
+  padding-top: 6px;
+  padding-bottom: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Event list header row (above cards) */
+.event-list-header {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.section-row.section-row-4col {
+  grid-template-columns: 2fr 1fr 1fr auto;
 }

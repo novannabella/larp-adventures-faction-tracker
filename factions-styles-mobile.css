@@ -375,73 +375,34 @@ textarea {
 }
 
 
-/* Add Hex card (mobile) */
-.add-hex-card {
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(6, 10, 26, 0.9);
-  padding: 10px 10px 12px;
-  margin-bottom: 10px;
+.hex-land-table-wrapper {
+  margin-top: 8px;
+  overflow-x: auto;
 }
 
-/* Faction land list (mobile) */
-.faction-land-list {
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(4, 7, 20, 0.95);
-  padding: 8px 10px 10px;
-}
-
-.faction-land-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 10px;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-
-.faction-land-subheader {
-  font-size: 10px;
-  color: var(--muted);
-  opacity: 0.9;
-  margin-bottom: 4px;
-}
-
-.faction-land-grid {
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
-  column-gap: 4px;
-}
-
-.faction-land-body {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  margin-top: 4px;
-  padding-top: 4px;
-}
-
-.faction-land-row {
-  display: grid;
-  grid-template-columns: 1.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
-  column-gap: 4px;
-  padding: 3px 0;
+.hex-land-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 11px;
-  align-items: center;
 }
 
-.faction-land-row:nth-child(odd) {
-  background: rgba(255, 255, 255, 0.02);
+.hex-land-table th,
+.hex-land-table td {
+  padding: 4px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.fl-cell {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.hex-th-group,
+.hex-th-details {
+  font-size: 10px;
 }
 
-.fl-food,
-.fl-wood,
-.fl-stone,
-.fl-gold {
-  text-align: right;
+/* Stack event add row on mobile */
+.section-row.section-row-4col {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.event-list-header {
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
