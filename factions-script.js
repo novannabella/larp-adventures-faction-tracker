@@ -283,7 +283,7 @@ function loadUpkeepTable() {
   fetch("upkeep.csv")
     .then((r) => r.text())
     .then((text) => {
-      const lines = text.split(/\r?\n/
+      const lines = text.split(/\r?\n/)
 ?
 /).filter((l) => l.trim().length);
       if (lines.length < 2) return;
