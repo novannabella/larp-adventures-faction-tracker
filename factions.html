@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Osterra Faction Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Modern styles (desktop & mobile) -->
+    <link
+      rel="stylesheet"
+      href="factions-styles-desktop.css"
+      media="(min-width: 701px)"
+    />
+    <link
+      rel="stylesheet"
+      href="factions-styles-mobile.css"
+      media="(max-width: 700px)"
+    />
+  </head>
+  <body>
+    <h1>Osterra</h1>
+    <p class="subtitle">Faction & Land Tracker</p>
+
+    <div class="top-controls">
+      <div class="save-load-controls">
+        <button id="loadStateBtn" class="button secondary">
+          Load Faction State
+        </button>
+        <input
+          type="file"
+          id="loadStateFile"
+          accept=".json"
+          style="display:none"
+        />
+        <button id="saveStateBtn" class="button secondary">
+          Save Faction State
+        </button>
+      </div>
+    </div>
+
+    <div class="app">
+      <!-- Faction Info -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Faction Information</h2>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="factionName">Faction Name</label>
+              <input type="text" id="factionName" placeholder="The Grove, Blackthorn Company, ..." />
+            </div>
+
+            <div class="field">
+              <label for="gameYear">Game Year</label>
+              <input type="number" id="gameYear" min="1" value="1" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="currentTurn">Current Turn (Event #)</label>
+              <input type="number" id="currentTurn" min="1" value="1" />
+            </div>
+
+            <div class="field">
+              <label for="factionNotes">Faction Notes</label>
+              <textarea
+                id="factionNotes"
+                placeholder="High-level notes, goals, treaties, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hexes -->
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-header-row">
+            <h2>Controlled Hexes</h2>
+            <button id="addHexBtn" class="button small">+ Add Hex</button>
+          </div>
+
+          <div id="hexList" class="hex-list">
+            <!-- Hex cards injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Coffers / Resources -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Coffers & Resources</h2>
+          <div class="section-row">
+            <div class="field">
+              <label for="food">Food</label>
+              <input type="number" id="food" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="wood">Wood</label>
+              <input type="number" id="wood" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="stone">Stone</label>
+              <input type="number" id="stone" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="ore">Ore</label>
+              <input type="number" id="ore" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="silver">Silver</label>
+              <input type="number" id="silver" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="gold">Gold</label>
+              <input type="number" id="gold" min="0" value="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-Turn Actions -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Turn Actions (Per Event)</h2>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="turnSummary">Turn Summary</label>
+              <textarea
+                id="turnSummary"
+                placeholder="Quick summary of what this turn is about."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Builds -->
+          <div class="subsection-header">
+            <div class="inline">
+              <span class="subsection-title">Builds</span>
+              <button id="addBuildBtn" class="button small">+ Add Build</button>
+            </div>
+            <p class="subsection-note">
+              Structures you are constructing or upgrading this turn.
+            </p>
+          </div>
+
+          <div id="buildList" class="mini-list">
+            <!-- Build rows injected here -->
+          </div>
+
+          <!-- Movement -->
+          <div class="subsection-header">
+            <div class="inline">
+              <span class="subsection-title">Movements</span>
+              <button id="addMovementBtn" class="button small">
+                + Add Movement
+              </button>
+            </div>
+            <p class="subsection-note">
+              Track unit movements between hexes for this event.
+            </p>
+          </div>
+
+          <div id="movementList" class="mini-list">
+            <!-- Movement rows injected here -->
+          </div>
+
+          <!-- Offensive Action -->
+          <div class="subsection-header">
+            <span class="subsection-title">Offensive Action</span>
+            <p class="subsection-note">
+              Land Search, Invasion, or Quest &mdash; only one per turn.
+            </p>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="offensiveType">Action Type</label>
+              <select id="offensiveType">
+                <option value="">None</option>
+                <option value="Land Search">Land Search</option>
+                <option value="Invasion">Invasion</option>
+                <option value="Quest">Quest</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="offensiveTarget">Target Hex / Location</label>
+              <input
+                type="text"
+                id="offensiveTarget"
+                placeholder="e.g. A3 Forest, Ruins at B5, etc."
+              />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="offensiveNotes">Action Notes / Result</label>
+              <textarea
+                id="offensiveNotes"
+                placeholder="Encounter details, combat outcome, treasure, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seasonal Dice Outcomes -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Seasonal Dice Results</h2>
+
+          <p class="section-intro">
+            Record the outcome of seasonal rolls (Land Search, Faction Events,
+            Population Events, Weather, etc.) for this game year.
+          </p>
+
+          <div id="seasonGrid" class="season-grid">
+            <!-- One block per season -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="factions-script.js"></script>
+  </body>
+</html>
