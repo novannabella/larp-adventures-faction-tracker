@@ -373,3 +373,46 @@ textarea {
   font-size: 11px;
   color: var(--muted);
 }
+
+
+/* Coffers grid 3x2 (mobile) */
+.coffers-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Hex add form */
+.add-hex-card {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(6, 10, 26, 0.7);
+  padding: 8px 8px 10px;
+  margin-bottom: 8px;
+}
+
+/* Three-column row collapses to single column on mobile */
+.section-row.section-row-3col {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Seasonal grid 3 columns on mobile */
+.season-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Event list header */
+.event-list-header {
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
+.event-list-header .event-col-name,
+.event-list-header .event-col-date,
+.event-list-header .event-col-type {
+  font-weight: 600;
+}
+
+#eventDateSortHeader {
+  cursor: pointer;
+}

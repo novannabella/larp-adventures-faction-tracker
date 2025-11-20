@@ -2,6 +2,7 @@
 const state = {
   factionName: "",
   factionNotes: "",
+  gameYear: "",
   coffers: {
     food: 0,
     wood: 0,
@@ -41,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
   wireCoffers();
   wireSeasons();
   wireEvents();
+  wireHexAddForm();
+  wireEventSortHeader();
 
   renderHexList();
   renderEventList();
@@ -107,6 +110,7 @@ function loadStateObject(obj) {
 
   state.factionName = obj.factionName || "";
   state.factionNotes = obj.factionNotes || "";
+  state.gameYear = obj.gameYear || "";
 
   state.coffers = {
     food: Number(obj.coffers?.food ?? 0),
@@ -274,7 +278,75 @@ function syncCoffersToUI() {
   if ($("gold")) $("gold").value = c.gold ?? 0;
 }
 
+
+// Wire hex add form & structure multiselect
+function wireHexAddForm() {
+  const terrainSelect = $("newHexTerrain");
+  if (terrainSelect) {
+    // ensure options exist (in case HTML is changed)
+    if (!terrainSelect.options.length) {
+      terrainSelect.innerHTML = terrainOptions("");
+    }
+  }
+
+  const structSelect = $("newHexStructureSelect");
+  if (structSelect) {
+    if (!structSelect.options.length) {
+      structSelect.innerHTML = structureOptions("");
+    }
+  }
+
+  const addStructBtn = $("addHexStructureBtn");
+  if (addStructBtn && !addStructBtn._wired) {
+    addStructBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const sel = $("newHexStructureSelect");
+      const out = $("newHexStructures");
+      if (!sel || !out) return;
+      const val = sel.value;
+      if (!val) return;
+      const current = out.value
+        ? out.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) {
+        current.push(val);
+      }
+      out.value = current.join(", ");
+      sel.value = "";
+    });
+    addStructBtn._wired = true;
+  }
+
+  const addHexBtn = $("addHexBtn");
+  if (addHexBtn && !addHexBtn._wired) {
+    addHexBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      addHex();
+    });
+    addHexBtn._wired = true;
+  }
+}
+
+// Wire event date sort header
+function wireEventSortHeader() {
+  const header = $("eventDateSortHeader");
+  if (header && !header._wired) {
+    header.addEventListener("click", () => {
+      eventSortDirection = eventSortDirection === "asc" ? "desc" : "asc";
+      renderEventList();
+    });
+    header._wired = true;
+  }
+}
+
+function updateEventSortHeaderLabel() {
+  const header = $("eventDateSortHeader");
+  if (!header) return;
+  header.textContent = eventSortDirection === "asc" ? "Date ▲" : "Date ▼";
+}
+
 // ---------- HEXES ----------
+
 function renderHexList() {
   const container = $("hexList");
   if (!container) return;
@@ -298,9 +370,9 @@ function renderHexList() {
 
     const sub = document.createElement("div");
     sub.className = "hex-subtitle";
-    const primary = hex.primary || "None";
-    const structure = hex.structure || "No Structure";
-    sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
+    const terrainLabel = hex.terrain || "No Terrain";
+    const structLabel = hex.structure || "No Structures";
+    sub.textContent = `${terrainLabel} · ${structLabel}`;
 
     titleBox.appendChild(title);
     titleBox.appendChild(sub);
@@ -325,7 +397,7 @@ function renderHexList() {
       <div class="section-row">
         <div class="field">
           <label>Hex Number</label>
-          <input type="text" class="hex-number-input" value="${hex.hexNumber || ""}" placeholder="e.g. A3, B5" />
+          <input type="text" class="hex-number-input" maxlength="5" value="${hex.hexNumber || ""}" placeholder="e.g. A3, B5" />
         </div>
         <div class="field">
           <label>Name</label>
@@ -342,49 +414,30 @@ function renderHexList() {
         </div>
         <div class="field">
           <label>Structure / Upgrade</label>
-          <select class="hex-structure-select">
-            ${structureOptions(hex.structure)}
-          </select>
+          <div class="inline">
+            <select class="hex-structure-select">
+              ${structureOptions("")}
+            </select>
+            <button type="button" class="button small secondary hex-add-structure-btn">Add</button>
+          </div>
+          <input type="text" class="hex-structures-input" value="${hex.structure || ""}" placeholder="Farm, Lumber Mill" />
         </div>
       </div>
 
       <div class="section-row">
         <div class="field">
-          <label>Primary Resource</label>
-          <select class="hex-primary-select">
-            ${resourceOptions(hex.primary)}
-          </select>
-        </div>
-        <div class="field">
-          <label>Secondary Resource</label>
-          <select class="hex-secondary-select">
-            ${resourceOptions(hex.secondary)}
-          </select>
-        </div>
-      </div>
-
-      <div class="section-row">
-        <div class="field">
-          <label>Tertiary Resource</label>
-          <select class="hex-tertiary-select">
-            ${resourceOptions(hex.tertiary)}
-          </select>
-        </div>
-        <div class="field">
-          <label>Notes</label>
-          <textarea class="hex-notes-input" placeholder="Bandits, corruption, ruins, etc.">${hex.notes || ""}</textarea>
+          <label>Resource Notes (Primary / Secondary / Tertiary)</label>
+          <textarea class="hex-notes-input" placeholder="Primary: ..., Secondary: ..., Tertiary: ...">${hex.notes || ""}</textarea>
         </div>
       </div>
     `;
 
-    // Attach listeners WITHOUT re-rendering the whole list
     const numberInput = body.querySelector(".hex-number-input");
     const nameInput = body.querySelector(".hex-name-input");
     const terrainSelect = body.querySelector(".hex-terrain-select");
-    const structureSelect = body.querySelector(".hex-structure-select");
-    const primarySelect = body.querySelector(".hex-primary-select");
-    const secondarySelect = body.querySelector(".hex-secondary-select");
-    const tertiarySelect = body.querySelector(".hex-tertiary-select");
+    const structSelect = body.querySelector(".hex-structure-select");
+    const structInput = body.querySelector(".hex-structures-input");
+    const addStructBtn = body.querySelector(".hex-add-structure-btn");
     const notesInput = body.querySelector(".hex-notes-input");
 
     numberInput.addEventListener("input", (e) => {
@@ -403,31 +456,34 @@ function renderHexList() {
 
     terrainSelect.addEventListener("change", (e) => {
       hex.terrain = e.target.value;
-      const primary = hex.primary || "None";
-      const structure = hex.structure || "No Structure";
-      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
+      const terrainLabel2 = hex.terrain || "No Terrain";
+      const structLabel2 = hex.structure || "No Structures";
+      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
     });
 
-    structureSelect.addEventListener("change", (e) => {
+    structInput.addEventListener("input", (e) => {
       hex.structure = e.target.value;
-      const primary = hex.primary || "None";
-      const structure = hex.structure || "No Structure";
-      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
+      const terrainLabel2 = hex.terrain || "No Terrain";
+      const structLabel2 = hex.structure || "No Structures";
+      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
     });
 
-    primarySelect.addEventListener("change", (e) => {
-      hex.primary = e.target.value;
-      const primary = hex.primary || "None";
-      const structure = hex.structure || "No Structure";
-      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
-    });
-
-    secondarySelect.addEventListener("change", (e) => {
-      hex.secondary = e.target.value;
-    });
-
-    tertiarySelect.addEventListener("change", (e) => {
-      hex.tertiary = e.target.value;
+    addStructBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const val = structSelect.value;
+      if (!val) return;
+      const current = structInput.value
+        ? structInput.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) {
+        current.push(val);
+      }
+      structInput.value = current.join(", ");
+      hex.structure = structInput.value;
+      structSelect.value = "";
+      const terrainLabel2 = hex.terrain || "No Terrain";
+      const structLabel2 = hex.structure || "No Structures";
+      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
     });
 
     notesInput.addEventListener("input", (e) => {
@@ -438,29 +494,51 @@ function renderHexList() {
     div.appendChild(body);
     container.appendChild(div);
   });
-
-  const addHexBtn = $("addHexBtn");
-  if (addHexBtn && !addHexBtn._wired) {
-    addHexBtn.addEventListener("click", addHex);
-    addHexBtn._wired = true;
-  }
 }
 
 function addHex() {
+  const nameInput = $("newHexName");
+  const numInput = $("newHexNumber");
+  const terrainSelect = $("newHexTerrain");
+  const structsInput = $("newHexStructures");
+  const notesInput = $("newHexNotes");
+
+  if (!nameInput || !numInput || !terrainSelect || !structsInput || !notesInput) return;
+
+  const name = nameInput.value.trim();
+  const hexNumber = numInput.value.trim();
+  const terrain = terrainSelect.value;
+  const structure = structsInput.value.trim();
+  const notes = notesInput.value.trim();
+
+  // Avoid adding a completely empty hex
+  if (!name && !hexNumber && !terrain && !structure && !notes) {
+    return;
+  }
+
   const id = `hex_${nextHexId++}`;
   state.hexes.push({
     id,
-    hexNumber: "",
-    name: "",
-    terrain: "",
+    hexNumber,
+    name,
+    terrain,
     primary: "",
     secondary: "",
     tertiary: "",
-    structure: "",
-    notes: ""
+    structure,
+    notes
   });
+
+  // Clear form
+  nameInput.value = "";
+  numInput.value = "";
+  terrainSelect.value = "";
+  structsInput.value = "";
+  notesInput.value = "";
+
   renderHexList();
 }
+
 
 function deleteHex(id) {
   const idx = state.hexes.findIndex((h) => h.id === id);
@@ -550,14 +628,6 @@ function structureOptions(current) {
 
 // ---------- EVENTS & TURN ACTIONS ----------
 function wireEvents() {
-  const sortSelect = $("eventSortOrder");
-  if (sortSelect) {
-    sortSelect.addEventListener("change", () => {
-      eventSortDirection = sortSelect.value === "desc" ? "desc" : "asc";
-      renderEventList();
-    });
-  }
-
   const addEventBtn = $("addEventBtn");
   if (addEventBtn) {
     addEventBtn.addEventListener("click", addEventFromForm);
@@ -950,7 +1020,7 @@ function renderEventList() {
     container.appendChild(card);
   });
 
-  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
+  updateEventSortHeaderLabel();
 }
 
 function eventTypeOptions(current) {
@@ -1006,6 +1076,13 @@ function wireSeasons() {
     });
   }
 
+  const yearEl = $("seasonYear");
+  if (yearEl) {
+    yearEl.addEventListener("input", () => {
+      state.gameYear = yearEl.value;
+    });
+  }
+
   const fields = [
     { id: "seasonFood", key: "food" },
     { id: "seasonWood", key: "wood" },
@@ -1058,6 +1135,11 @@ function saveSeasonFromUI() {
   if (notesEl) {
     s.notes = notesEl.value || "";
   }
+
+  const yearEl = $("seasonYear");
+  if (yearEl) {
+    state.gameYear = yearEl.value || "";
+  }
 }
 
 function syncSeasonUI() {
@@ -1066,6 +1148,7 @@ function syncSeasonUI() {
 
   if (!s) return;
 
+  if ($("seasonYear")) $("seasonYear").value = state.gameYear || "";
   if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
   if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
   if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
