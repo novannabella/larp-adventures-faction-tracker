@@ -662,4 +662,415 @@ function renderEventList() {
 
     const delBtn = document.createElement("button");
     delBtn.className = "button small secondary";
-    d
+    delBtn.textContent = "Delete";
+
+    actionsCell.appendChild(detailsBtn);
+    actionsCell.appendChild(delBtn);
+
+    grid.appendChild(nameCell);
+    grid.appendChild(dateCell);
+    grid.appendChild(typeCell);
+    grid.appendChild(actionsCell);
+
+    header.appendChild(grid);
+
+    // Body (details)
+    const body = document.createElement("div");
+    body.className = "event-body";
+    body.style.display = ev.detailsOpen ? "" : "none";
+
+    body.innerHTML = `
+      <div class="section-row">
+        <div class="field">
+          <label>Event Name</label>
+          <input type="text" class="ev-name-input" value="${ev.name || ""}" />
+        </div>
+        <div class="field">
+          <label>Event Date</label>
+          <input type="date" class="ev-date-input" value="${ev.date || ""}" />
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div class="field">
+          <label>Event Type</label>
+          <select class="ev-type-select">
+            ${eventTypeOptions(ev.type)}
+          </select>
+        </div>
+        <div class="field">
+          <label>Event Notes / Summary</label>
+          <textarea class="ev-summary-input" placeholder="Overall summary of what happened.">${ev.summary || ""}</textarea>
+        </div>
+      </div>
+
+      <div class="subsection-header">
+        <div class="inline">
+          <span class="subsection-title">Builds</span>
+          <button class="button small ev-add-build-btn">+ Add Build</button>
+        </div>
+        <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
+      </div>
+      <div class="mini-list ev-builds-list"></div>
+
+      <div class="subsection-header">
+        <div class="inline">
+          <span class="subsection-title">Movements</span>
+          <button class="button small ev-add-movement-btn">+ Add Movement</button>
+        </div>
+        <p class="subsection-note">Track unit movements between hexes for this event.</p>
+      </div>
+      <div class="mini-list ev-movements-list"></div>
+
+      <div class="subsection-header">
+        <span class="subsection-title">Offensive Action</span>
+        <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
+      </div>
+      <div class="section-row">
+        <div class="field">
+          <label>Action Type</label>
+          <select class="ev-off-type-select">
+            ${offensiveTypeOptions(ev.offensiveAction.type)}
+          </select>
+        </div>
+        <div class="field">
+          <label>Target Hex / Location</label>
+          <input type="text" class="ev-off-target-input" value="${ev.offensiveAction.target || ""}" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
+        </div>
+      </div>
+      <div class="section-row">
+        <div class="field">
+          <label>Action Notes / Result</label>
+          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${ev.offensiveAction.notes || ""}</textarea>
+        </div>
+      </div>
+    `;
+
+    // Header buttons
+    detailsBtn.addEventListener("click", () => {
+      ev.detailsOpen = !ev.detailsOpen;
+      body.style.display = ev.detailsOpen ? "" : "none";
+      detailsBtn.textContent = ev.detailsOpen ? "Hide Details" : "Details";
+    });
+
+    delBtn.addEventListener("click", () => deleteEvent(ev.id));
+
+    // Details fields
+    const nameInput = body.querySelector(".ev-name-input");
+    const dateInput = body.querySelector(".ev-date-input");
+    const typeSelect = body.querySelector(".ev-type-select");
+    const summaryInput = body.querySelector(".ev-summary-input");
+    const offTypeSelect = body.querySelector(".ev-off-type-select");
+    const offTargetInput = body.querySelector(".ev-off-target-input");
+    const offNotesInput = body.querySelector(".ev-off-notes-input");
+
+    nameInput.addEventListener("input", (e) => {
+      ev.name = e.target.value;
+      nameCell.textContent = ev.name || "Unnamed Event";
+    });
+
+    dateInput.addEventListener("input", (e) => {
+      ev.date = e.target.value;
+      dateCell.textContent = ev.date || "No date";
+    });
+
+    typeSelect.addEventListener("change", (e) => {
+      ev.type = e.target.value;
+      typeCell.textContent = ev.type || "Type: —";
+    });
+
+    summaryInput.addEventListener("input", (e) => {
+      ev.summary = e.target.value;
+    });
+
+    offTypeSelect.addEventListener("change", (e) => {
+      ev.offensiveAction.type = e.target.value;
+    });
+
+    offTargetInput.addEventListener("input", (e) => {
+      ev.offensiveAction.target = e.target.value;
+    });
+
+    offNotesInput.addEventListener("input", (e) => {
+      ev.offensiveAction.notes = e.target.value;
+    });
+
+    // Builds
+    const buildsContainer = body.querySelector(".ev-builds-list");
+    const addBuildBtn = body.querySelector(".ev-add-build-btn");
+
+    addBuildBtn.addEventListener("click", () => {
+      const bid = `b_${nextBuildId++}`;
+      ev.builds.push({
+        id: bid,
+        hexId: "",
+        description: ""
+      });
+      renderEventList();
+    });
+
+    ev.builds.forEach((b) => {
+      const row = document.createElement("div");
+      row.className = "mini-row";
+      row.dataset.id = b.id;
+
+      const bodyRow = document.createElement("div");
+      bodyRow.className = "mini-row-body two-cols";
+
+      const fieldHex = document.createElement("div");
+      fieldHex.className = "field";
+      fieldHex.innerHTML = `
+        <label>Hex</label>
+        <select class="build-hex-select">
+          ${buildHexOptions(b.hexId)}
+        </select>
+      `;
+
+      const fieldDesc = document.createElement("div");
+      fieldDesc.className = "field";
+      fieldDesc.innerHTML = `
+        <label>Description</label>
+        <input type="text" class="build-desc-input" value="${b.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
+      `;
+
+      bodyRow.appendChild(fieldHex);
+      bodyRow.appendChild(fieldDesc);
+
+      const delBuildBtn = document.createElement("button");
+      delBuildBtn.className = "button small secondary";
+      delBuildBtn.textContent = "Delete";
+      delBuildBtn.addEventListener("click", () => {
+        const idxB = ev.builds.findIndex((x) => x.id === b.id);
+        if (idxB !== -1) {
+          ev.builds.splice(idxB, 1);
+          renderEventList();
+        }
+      });
+
+      row.appendChild(bodyRow);
+      row.appendChild(delBuildBtn);
+      buildsContainer.appendChild(row);
+
+      bodyRow.querySelector(".build-hex-select").addEventListener("change", (e) => {
+        b.hexId = e.target.value;
+      });
+      bodyRow.querySelector(".build-desc-input").addEventListener("input", (e) => {
+        b.description = e.target.value;
+      });
+    });
+
+    // Movements
+    const movContainer = body.querySelector(".ev-movements-list");
+    const addMovBtn = body.querySelector(".ev-add-movement-btn");
+
+    addMovBtn.addEventListener("click", () => {
+      const mid = `m_${nextMovementId++}`;
+      ev.movements.push({
+        id: mid,
+        unitName: "",
+        from: "",
+        to: "",
+        notes: ""
+      });
+      renderEventList();
+    });
+
+    ev.movements.forEach((m) => {
+      const row = document.createElement("div");
+      row.className = "mini-row";
+      row.dataset.id = m.id;
+
+      const bodyRow = document.createElement("div");
+      bodyRow.className = "mini-row-body";
+
+      const fieldUnit = document.createElement("div");
+      fieldUnit.className = "field";
+      fieldUnit.innerHTML = `
+        <label>Unit</label>
+        <input type="text" class="mov-unit-input" value="${m.unitName || ""}" placeholder="e.g. 1st Company, Grove Patrol" />
+      `;
+
+      const fieldFrom = document.createElement("div");
+      fieldFrom.className = "field";
+      fieldFrom.innerHTML = `
+        <label>From</label>
+        <input type="text" class="mov-from-input" value="${m.from || ""}" placeholder="Hex name or hex number" />
+      `;
+
+      const fieldTo = document.createElement("div");
+      fieldTo.className = "field";
+      fieldTo.innerHTML = `
+        <label>To</label>
+        <input type="text" class="mov-to-input" value="${m.to || ""}" placeholder="Hex name or hex number" />
+      `;
+
+      const fieldNotes = document.createElement("div");
+      fieldNotes.className = "field";
+      fieldNotes.innerHTML = `
+        <label>Notes</label>
+        <input type="text" class="mov-notes-input" value="${m.notes || ""}" placeholder="Scouting, escort, etc." />
+      `;
+
+      bodyRow.appendChild(fieldUnit);
+      bodyRow.appendChild(fieldFrom);
+      bodyRow.appendChild(fieldTo);
+      bodyRow.appendChild(fieldNotes);
+
+      const delMovBtn = document.createElement("button");
+      delMovBtn.className = "button small secondary";
+      delMovBtn.textContent = "Delete";
+      delMovBtn.addEventListener("click", () => {
+        const idxM = ev.movements.findIndex((x) => x.id === m.id);
+        if (idxM !== -1) {
+          ev.movements.splice(idxM, 1);
+          renderEventList();
+        }
+      });
+
+      row.appendChild(bodyRow);
+      row.appendChild(delMovBtn);
+      movContainer.appendChild(row);
+
+      bodyRow.querySelector(".mov-unit-input").addEventListener("input", (e) => {
+        m.unitName = e.target.value;
+      });
+      bodyRow.querySelector(".mov-from-input").addEventListener("input", (e) => {
+        m.from = e.target.value;
+      });
+      bodyRow.querySelector(".mov-to-input").addEventListener("input", (e) => {
+        m.to = e.target.value;
+      });
+      bodyRow.querySelector(".mov-notes-input").addEventListener("input", (e) => {
+        m.notes = e.target.value;
+      });
+    });
+
+    card.appendChild(header);
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+
+  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
+}
+
+function eventTypeOptions(current) {
+  const list = [
+    "",
+    "Day Event",
+    "Campout",
+    "Festival Event",
+    "Virtual Event"
+  ];
+  return list
+    .map((val) => {
+      const label = val || "-- Select Type --";
+      const selected = val === current ? "selected" : "";
+      return `<option value="${val}" ${selected}>${label}</option>`;
+    })
+    .join("");
+}
+
+function offensiveTypeOptions(current) {
+  const list = ["", "Land Search", "Invasion", "Quest"];
+  return list
+    .map((val) => {
+      const label = val || "None";
+      const selected = val === current ? "selected" : "";
+      return `<option value="${val}" ${selected}>${label}</option>`;
+    })
+    .join("");
+}
+
+function buildHexOptions(selectedId) {
+  const none = `<option value="">-- None --</option>`;
+  const options = state.hexes
+    .map((h) => {
+      const label =
+        (h.hexNumber || "(No Hex #)") +
+        (h.name ? ` — ${h.name}` : "");
+      const selected = h.id === selectedId ? "selected" : "";
+      return `<option value="${h.id}" ${selected}>${label}</option>`;
+    })
+    .join("");
+  return none + options;
+}
+
+// ---------- SEASONS (RESOURCE GAINS) ----------
+function wireSeasons() {
+  const seasonSelect = $("seasonSelect");
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", () => {
+      saveSeasonFromUI(); // save old season
+      currentSeason = seasonSelect.value || "Spring";
+      syncSeasonUI(); // load new
+    });
+  }
+
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
+
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const val = parseInt(el.value, 10);
+      state.seasons[currentSeason][key] =
+        isNaN(val) || val < 0 ? 0 : val;
+      el.value = state.seasons[currentSeason][key];
+    });
+  });
+
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    notesEl.addEventListener("input", () => {
+      state.seasons[currentSeason].notes = notesEl.value;
+    });
+  }
+}
+
+function saveSeasonFromUI() {
+  const s = state.seasons[currentSeason];
+  if (!s) return;
+
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
+
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    const val = parseInt(el.value, 10);
+    s[key] = isNaN(val) || val < 0 ? 0 : val;
+  });
+
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    s.notes = notesEl.value || "";
+  }
+}
+
+function syncSeasonUI() {
+  if ($("seasonSelect")) $("seasonSelect").value = currentSeason;
+  const s = state.seasons[currentSeason];
+
+  if (!s) return;
+
+  if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
+  if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
+  if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
+  if ($("seasonOre")) $("seasonOre").value = s.ore ?? 0;
+  if ($("seasonSilver")) $("seasonSilver").value = s.silver ?? 0;
+  if ($("seasonGold")) $("seasonGold").value = s.gold ?? 0;
+  if ($("seasonNotes")) $("seasonNotes").value = s.notes || "";
+}
