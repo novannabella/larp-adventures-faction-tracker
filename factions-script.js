@@ -1,8 +1,6 @@
 // ---------- STATE MODEL ----------
 const state = {
   factionName: "",
-  gameYear: 1,
-  currentEventNumber: 1,
   factionNotes: "",
   coffers: {
     food: 0,
@@ -76,7 +74,7 @@ function handleSaveState() {
     : "faction";
 
   a.href = url;
-  a.download = `${faction}_state_y${state.gameYear}_evt${state.currentEventNumber}.json`;
+  a.download = `${faction}_state.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -108,8 +106,6 @@ function loadStateObject(obj) {
   }
 
   state.factionName = obj.factionName || "";
-  state.gameYear = obj.gameYear || 1;
-  state.currentEventNumber = obj.currentEventNumber || 1;
   state.factionNotes = obj.factionNotes || "";
 
   state.coffers = {
@@ -124,8 +120,8 @@ function loadStateObject(obj) {
   state.hexes = Array.isArray(obj.hexes)
     ? obj.hexes.map((h) => ({
         id: h.id || `hex_${nextHexId++}`,
+        hexNumber: h.hexNumber || h.hex_number || h.coords || "",
         name: h.name || "",
-        coords: h.coords || "",
         terrain: h.terrain || "",
         primary: h.primary || "",
         secondary: h.secondary || "",
@@ -162,7 +158,8 @@ function loadStateObject(obj) {
           type: ev.offensiveAction?.type || "",
           target: ev.offensiveAction?.target || "",
           notes: ev.offensiveAction?.notes || ""
-        }
+        },
+        detailsOpen: !!ev.detailsOpen
       }))
     : [];
 
@@ -230,25 +227,11 @@ function flattenMovements(events) {
 // ---------- FACTION INFO ----------
 function wireFactionInfo() {
   const nameInput = $("factionName");
-  const yearInput = $("gameYear");
-  const eventNumInput = $("currentEventNumber");
   const notesInput = $("factionNotes");
 
   if (nameInput) {
     nameInput.addEventListener("input", () => {
       state.factionName = nameInput.value;
-    });
-  }
-
-  if (yearInput) {
-    yearInput.addEventListener("input", () => {
-      state.gameYear = parseInt(yearInput.value, 10) || 1;
-    });
-  }
-
-  if (eventNumInput) {
-    eventNumInput.addEventListener("input", () => {
-      state.currentEventNumber = parseInt(eventNumInput.value, 10) || 1;
     });
   }
 
@@ -263,9 +246,6 @@ function wireFactionInfo() {
 
 function syncFactionInfoToUI() {
   if ($("factionName")) $("factionName").value = state.factionName || "";
-  if ($("gameYear")) $("gameYear").value = state.gameYear || 1;
-  if ($("currentEventNumber"))
-    $("currentEventNumber").value = state.currentEventNumber || 1;
   if ($("factionNotes")) $("factionNotes").value = state.factionNotes || "";
 }
 
@@ -312,9 +292,9 @@ function renderHexList() {
     const titleBox = document.createElement("div");
     const title = document.createElement("div");
     title.className = "hex-title";
-    const labelName = hex.name || "(Unnamed Hex)";
-    const labelCoords = hex.coords ? ` @ ${hex.coords}` : "";
-    title.textContent = `${labelName}${labelCoords}`;
+    const displayNumber = hex.hexNumber || "(No Hex #)";
+    const displayName = hex.name || "(Unnamed Hex)";
+    title.textContent = `${displayNumber} — ${displayName}`;
 
     const sub = document.createElement("div");
     sub.className = "hex-subtitle";
@@ -344,12 +324,12 @@ function renderHexList() {
     body.innerHTML = `
       <div class="section-row">
         <div class="field">
-          <label>Hex Name</label>
-          <input type="text" class="hex-name-input" value="${hex.name || ""}" />
+          <label>Hex Number</label>
+          <input type="text" class="hex-number-input" value="${hex.hexNumber || ""}" placeholder="e.g. A3, B5" />
         </div>
         <div class="field">
-          <label>Coordinates</label>
-          <input type="text" class="hex-coords-input" value="${hex.coords || ""}" placeholder="e.g. A3, B5" />
+          <label>Name</label>
+          <input type="text" class="hex-name-input" value="${hex.name || ""}" placeholder="e.g. Gravewood Forest" />
         </div>
       </div>
 
@@ -397,42 +377,60 @@ function renderHexList() {
       </div>
     `;
 
-    body.querySelector(".hex-name-input").addEventListener("input", (e) => {
+    // Attach listeners WITHOUT re-rendering the whole list
+    const numberInput = body.querySelector(".hex-number-input");
+    const nameInput = body.querySelector(".hex-name-input");
+    const terrainSelect = body.querySelector(".hex-terrain-select");
+    const structureSelect = body.querySelector(".hex-structure-select");
+    const primarySelect = body.querySelector(".hex-primary-select");
+    const secondarySelect = body.querySelector(".hex-secondary-select");
+    const tertiarySelect = body.querySelector(".hex-tertiary-select");
+    const notesInput = body.querySelector(".hex-notes-input");
+
+    numberInput.addEventListener("input", (e) => {
+      hex.hexNumber = e.target.value;
+      const newNumber = hex.hexNumber || "(No Hex #)";
+      const newName = hex.name || "(Unnamed Hex)";
+      title.textContent = `${newNumber} — ${newName}`;
+    });
+
+    nameInput.addEventListener("input", (e) => {
       hex.name = e.target.value;
-      renderHexList();
+      const newNumber = hex.hexNumber || "(No Hex #)";
+      const newName = hex.name || "(Unnamed Hex)";
+      title.textContent = `${newNumber} — ${newName}`;
     });
 
-    body.querySelector(".hex-coords-input").addEventListener("input", (e) => {
-      hex.coords = e.target.value;
-      renderHexList();
-    });
-
-    body.querySelector(".hex-terrain-select").addEventListener("change", (e) => {
+    terrainSelect.addEventListener("change", (e) => {
       hex.terrain = e.target.value;
-      renderHexList();
+      const primary = hex.primary || "None";
+      const structure = hex.structure || "No Structure";
+      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
     });
 
-    body.querySelector(".hex-structure-select").addEventListener("change", (e) => {
+    structureSelect.addEventListener("change", (e) => {
       hex.structure = e.target.value;
-      renderHexList();
+      const primary = hex.primary || "None";
+      const structure = hex.structure || "No Structure";
+      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
     });
 
-    body.querySelector(".hex-primary-select").addEventListener("change", (e) => {
+    primarySelect.addEventListener("change", (e) => {
       hex.primary = e.target.value;
-      renderHexList();
+      const primary = hex.primary || "None";
+      const structure = hex.structure || "No Structure";
+      sub.textContent = `Primary: ${primary} · Structure: ${structure}`;
     });
 
-    body.querySelector(".hex-secondary-select").addEventListener("change", (e) => {
+    secondarySelect.addEventListener("change", (e) => {
       hex.secondary = e.target.value;
-      renderHexList();
     });
 
-    body.querySelector(".hex-tertiary-select").addEventListener("change", (e) => {
+    tertiarySelect.addEventListener("change", (e) => {
       hex.tertiary = e.target.value;
-      renderHexList();
     });
 
-    body.querySelector(".hex-notes-input").addEventListener("input", (e) => {
+    notesInput.addEventListener("input", (e) => {
       hex.notes = e.target.value;
     });
 
@@ -452,8 +450,8 @@ function addHex() {
   const id = `hex_${nextHexId++}`;
   state.hexes.push({
     id,
+    hexNumber: "",
     name: "",
-    coords: "",
     terrain: "",
     primary: "",
     secondary: "",
@@ -562,17 +560,27 @@ function wireEvents() {
 
   const addEventBtn = $("addEventBtn");
   if (addEventBtn) {
-    addEventBtn.addEventListener("click", addEvent);
+    addEventBtn.addEventListener("click", addEventFromForm);
   }
 }
 
-function addEvent() {
+function addEventFromForm() {
+  const nameInput = $("newEventName");
+  const dateInput = $("newEventDate");
+  const typeSelect = $("newEventType");
+
+  if (!nameInput || !dateInput || !typeSelect) return;
+
+  const name = nameInput.value.trim();
+  const date = dateInput.value;
+  const type = typeSelect.value;
+
   const id = `ev_${nextEventId++}`;
   state.events.push({
     id,
-    name: "",
-    date: "",
-    type: "",
+    name,
+    date,
+    type,
     summary: "",
     builds: [],
     movements: [],
@@ -580,8 +588,14 @@ function addEvent() {
       type: "",
       target: "",
       notes: ""
-    }
+    },
+    detailsOpen: true // newly added event starts expanded
   });
+
+  // Clear form (keep type for convenience)
+  nameInput.value = "";
+  dateInput.value = "";
+
   renderEventList();
 }
 
@@ -604,7 +618,6 @@ function renderEventList() {
     const da = a.date ? new Date(a.date).getTime() : 0;
     const db = b.date ? new Date(b.date).getTime() : 0;
     if (da === db) {
-      // fall back to id index in original array
       const idxA = state.events.indexOf(a);
       const idxB = state.events.indexOf(b);
       return idxA - idxB;
@@ -616,420 +629,37 @@ function renderEventList() {
     eventsCopy.reverse();
   }
 
-  eventsCopy.forEach((ev, idx) => {
-    const actualIndex = state.events.indexOf(ev);
-    const displayNumber = idx + 1; // position in sorted list
-
+  eventsCopy.forEach((ev) => {
     const card = document.createElement("div");
     card.className = "event-card";
     card.dataset.id = ev.id;
 
+    // Header (Name | Date | Type | Details/Delete)
     const header = document.createElement("div");
     header.className = "event-header-row";
 
-    const titleBox = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "event-title";
-    const displayName = ev.name || "Unnamed Event";
-    title.textContent = `Event ${displayNumber}: ${displayName}`;
+    const grid = document.createElement("div");
+    grid.className = "event-header-grid";
 
-    const sub = document.createElement("div");
-    sub.className = "event-subtitle";
-    const dateStr = ev.date || "No date";
-    const typeStr = ev.type || "Type: —";
-    sub.textContent = `${dateStr} · ${typeStr}`;
+    const nameCell = document.createElement("div");
+    nameCell.className = "event-col-name";
+    nameCell.textContent = ev.name || "Unnamed Event";
 
-    titleBox.appendChild(title);
-    titleBox.appendChild(sub);
+    const dateCell = document.createElement("div");
+    dateCell.className = "event-col-date";
+    dateCell.textContent = ev.date || "No date";
+
+    const typeCell = document.createElement("div");
+    typeCell.className = "event-col-type";
+    typeCell.textContent = ev.type || "Type: —";
+
+    const actionsCell = document.createElement("div");
+    actionsCell.className = "event-actions";
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.className = "button small secondary";
+    detailsBtn.textContent = ev.detailsOpen ? "Hide Details" : "Details";
 
     const delBtn = document.createElement("button");
     delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => deleteEvent(ev.id));
-
-    header.appendChild(titleBox);
-    header.appendChild(delBtn);
-
-    const body = document.createElement("div");
-    body.className = "event-body";
-
-    body.innerHTML = `
-      <div class="section-row">
-        <div class="field">
-          <label>Event Name</label>
-          <input type="text" class="ev-name-input" value="${ev.name || ""}" />
-        </div>
-        <div class="field">
-          <label>Event Date</label>
-          <input type="date" class="ev-date-input" value="${ev.date || ""}" />
-        </div>
-      </div>
-
-      <div class="section-row">
-        <div class="field">
-          <label>Event Type</label>
-          <select class="ev-type-select">
-            ${eventTypeOptions(ev.type)}
-          </select>
-        </div>
-        <div class="field">
-          <label>Event Notes / Summary</label>
-          <textarea class="ev-summary-input" placeholder="Overall summary of what happened.">${ev.summary || ""}</textarea>
-        </div>
-      </div>
-
-      <div class="subsection-header">
-        <div class="inline">
-          <span class="subsection-title">Builds</span>
-          <button class="button small ev-add-build-btn">+ Add Build</button>
-        </div>
-        <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
-      </div>
-      <div class="mini-list ev-builds-list"></div>
-
-      <div class="subsection-header">
-        <div class="inline">
-          <span class="subsection-title">Movements</span>
-          <button class="button small ev-add-movement-btn">+ Add Movement</button>
-        </div>
-        <p class="subsection-note">Track unit movements between hexes for this event.</p>
-      </div>
-      <div class="mini-list ev-movements-list"></div>
-
-      <div class="subsection-header">
-        <span class="subsection-title">Offensive Action</span>
-        <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
-      </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Action Type</label>
-          <select class="ev-off-type-select">
-            ${offensiveTypeOptions(ev.offensiveAction.type)}
-          </select>
-        </div>
-        <div class="field">
-          <label>Target Hex / Location</label>
-          <input type="text" class="ev-off-target-input" value="${ev.offensiveAction.target || ""}" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
-        </div>
-      </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Action Notes / Result</label>
-          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${ev.offensiveAction.notes || ""}</textarea>
-        </div>
-      </div>
-    `;
-
-    // Wire basic fields
-    body.querySelector(".ev-name-input").addEventListener("input", (e) => {
-      ev.name = e.target.value;
-      renderEventList();
-    });
-
-    body.querySelector(".ev-date-input").addEventListener("input", (e) => {
-      ev.date = e.target.value;
-      renderEventList();
-    });
-
-    body.querySelector(".ev-type-select").addEventListener("change", (e) => {
-      ev.type = e.target.value;
-      renderEventList();
-    });
-
-    body.querySelector(".ev-summary-input").addEventListener("input", (e) => {
-      ev.summary = e.target.value;
-    });
-
-    // Offensive action
-    body.querySelector(".ev-off-type-select").addEventListener("change", (e) => {
-      ev.offensiveAction.type = e.target.value;
-      renderEventList();
-    });
-
-    body.querySelector(".ev-off-target-input").addEventListener("input", (e) => {
-      ev.offensiveAction.target = e.target.value;
-    });
-
-    body.querySelector(".ev-off-notes-input").addEventListener("input", (e) => {
-      ev.offensiveAction.notes = e.target.value;
-    });
-
-    // Builds
-    const buildsContainer = body.querySelector(".ev-builds-list");
-    const addBuildBtn = body.querySelector(".ev-add-build-btn");
-
-    addBuildBtn.addEventListener("click", () => {
-      const bid = `b_${nextBuildId++}`;
-      ev.builds.push({
-        id: bid,
-        hexId: "",
-        description: ""
-      });
-      renderEventList();
-    });
-
-    ev.builds.forEach((b) => {
-      const row = document.createElement("div");
-      row.className = "mini-row";
-      row.dataset.id = b.id;
-
-      const bodyRow = document.createElement("div");
-      bodyRow.className = "mini-row-body two-cols";
-
-      const fieldHex = document.createElement("div");
-      fieldHex.className = "field";
-      fieldHex.innerHTML = `
-        <label>Hex</label>
-        <select class="build-hex-select">
-          ${buildHexOptions(b.hexId)}
-        </select>
-      `;
-
-      const fieldDesc = document.createElement("div");
-      fieldDesc.className = "field";
-      fieldDesc.innerHTML = `
-        <label>Description</label>
-        <input type="text" class="build-desc-input" value="${b.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
-      `;
-
-      bodyRow.appendChild(fieldHex);
-      bodyRow.appendChild(fieldDesc);
-
-      const delBtn = document.createElement("button");
-      delBtn.className = "button small secondary";
-      delBtn.textContent = "Delete";
-      delBtn.addEventListener("click", () => {
-        const idxB = ev.builds.findIndex((x) => x.id === b.id);
-        if (idxB !== -1) {
-          ev.builds.splice(idxB, 1);
-          renderEventList();
-        }
-      });
-
-      row.appendChild(bodyRow);
-      row.appendChild(delBtn);
-      buildsContainer.appendChild(row);
-
-      bodyRow.querySelector(".build-hex-select").addEventListener("change", (e) => {
-        b.hexId = e.target.value;
-      });
-      bodyRow.querySelector(".build-desc-input").addEventListener("input", (e) => {
-        b.description = e.target.value;
-      });
-    });
-
-    // Movements
-    const movContainer = body.querySelector(".ev-movements-list");
-    const addMovBtn = body.querySelector(".ev-add-movement-btn");
-
-    addMovBtn.addEventListener("click", () => {
-      const mid = `m_${nextMovementId++}`;
-      ev.movements.push({
-        id: mid,
-        unitName: "",
-        from: "",
-        to: "",
-        notes: ""
-      });
-      renderEventList();
-    });
-
-    ev.movements.forEach((m) => {
-      const row = document.createElement("div");
-      row.className = "mini-row";
-      row.dataset.id = m.id;
-
-      const bodyRow = document.createElement("div");
-      bodyRow.className = "mini-row-body";
-
-      const fieldUnit = document.createElement("div");
-      fieldUnit.className = "field";
-      fieldUnit.innerHTML = `
-        <label>Unit</label>
-        <input type="text" class="mov-unit-input" value="${m.unitName || ""}" placeholder="e.g. 1st Company, Grove Patrol" />
-      `;
-
-      const fieldFrom = document.createElement("div");
-      fieldFrom.className = "field";
-      fieldFrom.innerHTML = `
-        <label>From</label>
-        <input type="text" class="mov-from-input" value="${m.from || ""}" placeholder="Hex name or coords" />
-      `;
-
-      const fieldTo = document.createElement("div");
-      fieldTo.className = "field";
-      fieldTo.innerHTML = `
-        <label>To</label>
-        <input type="text" class="mov-to-input" value="${m.to || ""}" placeholder="Hex name or coords" />
-      `;
-
-      const fieldNotes = document.createElement("div");
-      fieldNotes.className = "field";
-      fieldNotes.innerHTML = `
-        <label>Notes</label>
-        <input type="text" class="mov-notes-input" value="${m.notes || ""}" placeholder="Scouting, escort, etc." />
-      `;
-
-      bodyRow.appendChild(fieldUnit);
-      bodyRow.appendChild(fieldFrom);
-      bodyRow.appendChild(fieldTo);
-      bodyRow.appendChild(fieldNotes);
-
-      const delBtn = document.createElement("button");
-      delBtn.className = "button small secondary";
-      delBtn.textContent = "Delete";
-      delBtn.addEventListener("click", () => {
-        const idxM = ev.movements.findIndex((x) => x.id === m.id);
-        if (idxM !== -1) {
-          ev.movements.splice(idxM, 1);
-          renderEventList();
-        }
-      });
-
-      row.appendChild(bodyRow);
-      row.appendChild(delBtn);
-      movContainer.appendChild(row);
-
-      bodyRow.querySelector(".mov-unit-input").addEventListener("input", (e) => {
-        m.unitName = e.target.value;
-      });
-      bodyRow.querySelector(".mov-from-input").addEventListener("input", (e) => {
-        m.from = e.target.value;
-      });
-      bodyRow.querySelector(".mov-to-input").addEventListener("input", (e) => {
-        m.to = e.target.value;
-      });
-      bodyRow.querySelector(".mov-notes-input").addEventListener("input", (e) => {
-        m.notes = e.target.value;
-      });
-    });
-
-    card.appendChild(header);
-    card.appendChild(body);
-    container.appendChild(card);
-  });
-
-  // ensure sort select reflects current direction
-  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
-}
-
-function eventTypeOptions(current) {
-  const list = [
-    "",
-    "Day Event",
-    "Campout",
-    "Festival Event",
-    "Virtual Event"
-  ];
-  return list
-    .map((val) => {
-      const label = val || "-- Select Type --";
-      const selected = val === current ? "selected" : "";
-      return `<option value="${val}" ${selected}>${label}</option>`;
-    })
-    .join("");
-}
-
-function offensiveTypeOptions(current) {
-  const list = ["", "Land Search", "Invasion", "Quest"];
-  return list
-    .map((val) => {
-      const label = val || "None";
-      const selected = val === current ? "selected" : "";
-      return `<option value="${val}" ${selected}>${label}</option>`;
-    })
-    .join("");
-}
-
-function buildHexOptions(selectedId) {
-  const none = `<option value="">-- None --</option>`;
-  const options = state.hexes
-    .map((h) => {
-      const label = (h.name || "(Unnamed Hex)") + (h.coords ? ` @ ${h.coords}` : "");
-      const selected = h.id === selectedId ? "selected" : "";
-      return `<option value="${h.id}" ${selected}>${label}</option>`;
-    })
-    .join("");
-  return none + options;
-}
-
-// ---------- SEASONS (RESOURCE GAINS) ----------
-function wireSeasons() {
-  const seasonSelect = $("seasonSelect");
-  if (seasonSelect) {
-    seasonSelect.addEventListener("change", () => {
-      saveSeasonFromUI(); // save old season
-      currentSeason = seasonSelect.value || "Spring";
-      syncSeasonUI(); // load new
-    });
-  }
-
-  // Inputs for current season
-  const fields = [
-    { id: "seasonFood", key: "food" },
-    { id: "seasonWood", key: "wood" },
-    { id: "seasonStone", key: "stone" },
-    { id: "seasonOre", key: "ore" },
-    { id: "seasonSilver", key: "silver" },
-    { id: "seasonGold", key: "gold" }
-  ];
-
-  fields.forEach(({ id, key }) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener("input", () => {
-      const val = parseInt(el.value, 10);
-      state.seasons[currentSeason][key] =
-        isNaN(val) || val < 0 ? 0 : val;
-      el.value = state.seasons[currentSeason][key];
-    });
-  });
-
-  const notesEl = $("seasonNotes");
-  if (notesEl) {
-    notesEl.addEventListener("input", () => {
-      state.seasons[currentSeason].notes = notesEl.value;
-    });
-  }
-}
-
-function saveSeasonFromUI() {
-  const s = state.seasons[currentSeason];
-  if (!s) return;
-
-  const fields = [
-    { id: "seasonFood", key: "food" },
-    { id: "seasonWood", key: "wood" },
-    { id: "seasonStone", key: "stone" },
-    { id: "seasonOre", key: "ore" },
-    { id: "seasonSilver", key: "silver" },
-    { id: "seasonGold", key: "gold" }
-  ];
-
-  fields.forEach(({ id, key }) => {
-    const el = $(id);
-    if (!el) return;
-    const val = parseInt(el.value, 10);
-    s[key] = isNaN(val) || val < 0 ? 0 : val;
-  });
-
-  const notesEl = $("seasonNotes");
-  if (notesEl) {
-    s.notes = notesEl.value || "";
-  }
-}
-
-function syncSeasonUI() {
-  if ($("seasonSelect")) $("seasonSelect").value = currentSeason;
-  const s = state.seasons[currentSeason];
-
-  if (!s) return;
-
-  if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
-  if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
-  if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
-  if ($("seasonOre")) $("seasonOre").value = s.ore ?? 0;
-  if ($("seasonSilver")) $("seasonSilver").value = s.silver ?? 0;
-  if ($("seasonGold")) $("seasonGold").value = s.gold ?? 0;
-  if ($("seasonNotes")) $("seasonNotes").value = s.notes || "";
-}
+    d
