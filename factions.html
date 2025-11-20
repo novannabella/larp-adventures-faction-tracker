@@ -39,6 +39,8 @@
     </div>
 
     <div class="app">
+      <!-- FACTION INFO + COFFERS AT TOP -->
+
       <!-- Faction Info -->
       <div class="card">
         <div class="card-inner">
@@ -47,7 +49,11 @@
           <div class="section-row">
             <div class="field">
               <label for="factionName">Faction Name</label>
-              <input type="text" id="factionName" placeholder="The Grove, Blackthorn Company, ..." />
+              <input
+                type="text"
+                id="factionName"
+                placeholder="The Grove, Blackthorn Company, ..."
+              />
             </div>
 
             <div class="field">
@@ -58,8 +64,8 @@
 
           <div class="section-row">
             <div class="field">
-              <label for="currentTurn">Current Turn (Event #)</label>
-              <input type="number" id="currentTurn" min="1" value="1" />
+              <label for="currentEventNumber">Current Event #</label>
+              <input type="number" id="currentEventNumber" min="1" value="1" />
             </div>
 
             <div class="field">
@@ -69,20 +75,6 @@
                 placeholder="High-level notes, goals, treaties, etc."
               ></textarea>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hexes -->
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-header-row">
-            <h2>Controlled Hexes</h2>
-            <button id="addHexBtn" class="button small">+ Add Hex</button>
-          </div>
-
-          <div id="hexList" class="hex-list">
-            <!-- Hex cards injected here -->
           </div>
         </div>
       </div>
@@ -126,105 +118,108 @@
         </div>
       </div>
 
-      <!-- Per-Turn Actions -->
+      <!-- CONTROLLED HEXES -->
+
       <div class="card">
         <div class="card-inner">
-          <h2>Turn Actions (Per Event)</h2>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="turnSummary">Turn Summary</label>
-              <textarea
-                id="turnSummary"
-                placeholder="Quick summary of what this turn is about."
-              ></textarea>
-            </div>
+          <div class="card-header-row">
+            <h2>Controlled Hexes</h2>
+            <button id="addHexBtn" class="button small">+ Add Hex</button>
           </div>
 
-          <!-- Builds -->
-          <div class="subsection-header">
-            <div class="inline">
-              <span class="subsection-title">Builds</span>
-              <button id="addBuildBtn" class="button small">+ Add Build</button>
-            </div>
-            <p class="subsection-note">
-              Structures you are constructing or upgrading this turn.
-            </p>
-          </div>
-
-          <div id="buildList" class="mini-list">
-            <!-- Build rows injected here -->
-          </div>
-
-          <!-- Movement -->
-          <div class="subsection-header">
-            <div class="inline">
-              <span class="subsection-title">Movements</span>
-              <button id="addMovementBtn" class="button small">
-                + Add Movement
-              </button>
-            </div>
-            <p class="subsection-note">
-              Track unit movements between hexes for this event.
-            </p>
-          </div>
-
-          <div id="movementList" class="mini-list">
-            <!-- Movement rows injected here -->
-          </div>
-
-          <!-- Offensive Action -->
-          <div class="subsection-header">
-            <span class="subsection-title">Offensive Action</span>
-            <p class="subsection-note">
-              Land Search, Invasion, or Quest &mdash; only one per turn.
-            </p>
-          </div>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="offensiveType">Action Type</label>
-              <select id="offensiveType">
-                <option value="">None</option>
-                <option value="Land Search">Land Search</option>
-                <option value="Invasion">Invasion</option>
-                <option value="Quest">Quest</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="offensiveTarget">Target Hex / Location</label>
-              <input
-                type="text"
-                id="offensiveTarget"
-                placeholder="e.g. A3 Forest, Ruins at B5, etc."
-              />
-            </div>
-          </div>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="offensiveNotes">Action Notes / Result</label>
-              <textarea
-                id="offensiveNotes"
-                placeholder="Encounter details, combat outcome, treasure, etc."
-              ></textarea>
-            </div>
+          <div id="hexList" class="hex-list">
+            <!-- Hex cards injected here -->
           </div>
         </div>
       </div>
 
-      <!-- Seasonal Dice Outcomes -->
+      <!-- EVENTS & TURN ACTIONS -->
+
       <div class="card">
         <div class="card-inner">
-          <h2>Seasonal Dice Results</h2>
+          <div class="card-header-row">
+            <h2>Events & Turn Actions</h2>
+            <div class="inline">
+              <label for="eventSortOrder" class="sort-label">Sort by date:</label>
+              <select id="eventSortOrder">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+              </select>
+              <button id="addEventBtn" class="button small">+ Add Event</button>
+            </div>
+          </div>
 
-          <p class="section-intro">
-            Record the outcome of seasonal rolls (Land Search, Faction Events,
-            Population Events, Weather, etc.) for this game year.
-          </p>
+          <div id="eventList" class="event-list">
+            <!-- Event cards injected here -->
+          </div>
+        </div>
+      </div>
 
-          <div id="seasonGrid" class="season-grid">
-            <!-- One block per season -->
+      <!-- SEASONAL RESOURCE GAINS -->
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Seasonal Resource Gains</h2>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonSelect">Season</label>
+              <select id="seasonSelect">
+                <option value="Spring">Spring</option>
+                <option value="Summer">Summer</option>
+                <option value="Fall">Fall</option>
+                <option value="Winter">Winter</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <p class="section-intro">
+                Enter resources gained for the selected season of the current game year.
+              </p>
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonFood">Food Gained</label>
+              <input type="number" id="seasonFood" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonWood">Wood Gained</label>
+              <input type="number" id="seasonWood" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonStone">Stone Gained</label>
+              <input type="number" id="seasonStone" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonOre">Ore Gained</label>
+              <input type="number" id="seasonOre" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonSilver">Silver Gained</label>
+              <input type="number" id="seasonSilver" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonGold">Gold Gained</label>
+              <input type="number" id="seasonGold" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonNotes">Season Notes</label>
+              <textarea
+                id="seasonNotes"
+                placeholder="Encounters, penalties, bonuses, weather notes, etc."
+              ></textarea>
+            </div>
           </div>
         </div>
       </div>
