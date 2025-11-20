@@ -70,7 +70,7 @@
       <div class="card">
         <div class="card-inner">
           <h2>Coffers & Resources</h2>
-          <div class="section-row coffers-grid">
+          <div class="section-row">
             <div class="field">
               <label for="food">Food</label>
               <input type="number" id="food" min="0" value="0" />
@@ -79,6 +79,9 @@
               <label for="wood">Wood</label>
               <input type="number" id="wood" min="0" value="0" />
             </div>
+          </div>
+
+          <div class="section-row">
             <div class="field">
               <label for="stone">Stone</label>
               <input type="number" id="stone" min="0" value="0" />
@@ -87,6 +90,9 @@
               <label for="ore">Ore</label>
               <input type="number" id="ore" min="0" value="0" />
             </div>
+          </div>
+
+          <div class="section-row">
             <div class="field">
               <label for="silver">Silver</label>
               <input type="number" id="silver" min="0" value="0" />
@@ -109,13 +115,14 @@
 
           <!-- Add Hex Form -->
           <div class="add-hex-card">
+            <!-- Line 1: Name + Hex Number -->
             <div class="section-row hex-input-row-1">
               <div class="field">
                 <label for="newHexName">Name</label>
                 <input
                   type="text"
                   id="newHexName"
-                  placeholder="Gravewood Forest, Riverlands, ..."
+                  placeholder="Aspen's Rest, Concordias..."
                 />
               </div>
               <div class="field">
@@ -124,27 +131,34 @@
                   type="text"
                   id="newHexNumber"
                   maxlength="5"
-                  placeholder="A3, B10, 01234"
+                  placeholder="1234"
                 />
-              </div>
-              <div class="field">
-                <label for="newHexTerrain">Terrain</label>
-                <select id="newHexTerrain">
-                  <option value="">-- Select Terrain --</option>
-                  <option value="Plains">Plains</option>
-                  <option value="Forest">Forest</option>
-                  <option value="Hills">Hills</option>
-                  <option value="Mountains">Mountains</option>
-                  <option value="Swamp">Swamp</option>
-                  <option value="Coastal">Coastal</option>
-                  <option value="Lake">Lake</option>
-                  <option value="Desert">Desert</option>
-                  <option value="Ruins">Ruins</option>
-                </select>
               </div>
             </div>
 
+            <!-- Line 2: Terrain + Structure with Add buttons -->
             <div class="section-row hex-input-row-2">
+              <div class="field">
+                <label for="newHexTerrainSelect">Terrain</label>
+                <div class="inline">
+                  <select id="newHexTerrainSelect">
+                    <option value="">-- Select Terrain --</option>
+                    <option value="Plains">Plains</option>
+                    <option value="Forest">Forest</option>
+                    <option value="Hills">Hills</option>
+                    <option value="Mountains">Mountains</option>
+                    <option value="Swamp">Swamp</option>
+                    <option value="Coastal">Coastal</option>
+                    <option value="Lake">Lake</option>
+                    <option value="Desert">Desert</option>
+                    <option value="Ruins">Ruins</option>
+                  </select>
+                  <button id="addHexTerrainBtn" class="button small secondary">
+                    Add
+                  </button>
+                </div>
+              </div>
+
               <div class="field">
                 <label for="newHexStructureSelect">Structure / Upgrade</label>
                 <div class="inline">
@@ -178,27 +192,34 @@
                   </button>
                 </div>
               </div>
+            </div>
+
+            <!-- Line 3: Terrain list + Structure list + Resource notes + Add Hex -->
+            <div class="section-row hex-input-row-3">
               <div class="field">
-                <label for="newHexStructures">Structures Selected</label>
+                <label for="newHexTerrainList">Terrain (Selected)</label>
                 <input
                   type="text"
-                  id="newHexStructures"
-                  placeholder="Farm, Lumber Mill"
+                  id="newHexTerrainList"
+                  placeholder="Forest, Hills..."
                   readonly
                 />
               </div>
-            </div>
-
-            <div class="section-row hex-input-row-3">
               <div class="field">
-                <label for="newHexNotes">Resource Notes (Primary / Secondary / Tertiary)</label>
-                <textarea
-                  id="newHexNotes"
-                  placeholder="Primary: Food, Secondary: Wood, Tertiary: Stone..."
-                ></textarea>
+                <label for="newHexStructures">Structures (Selected)</label>
+                <input
+                  type="text"
+                  id="newHexStructures"
+                  placeholder="Farm, Watch Tower..."
+                  readonly
+                />
               </div>
               <div class="field">
-                <label>&nbsp;</label>
+                <label for="newHexNotes">Resource Notes</label>
+                <textarea
+                  id="newHexNotes"
+                  placeholder="Primary / Secondary / Tertiary notes"
+                ></textarea>
                 <button id="addHexBtn" class="button small">
                   Add Hex
                 </button>
@@ -206,8 +227,25 @@
             </div>
           </div>
 
-          <div id="hexList" class="hex-list">
-            <!-- Hex cards injected here -->
+          <!-- Faction Land List -->
+          <div class="faction-land-list">
+            <div class="faction-land-header-row">
+              <div class="fl-col fl-land-title">Faction Land</div>
+              <div class="fl-col fl-upkeep-title">Upkeep</div>
+            </div>
+            <div class="faction-land-subheader">
+              <div class="faction-land-grid fl-subgrid">
+                <div class="fl-cell fl-head-name">Name</div>
+                <div class="fl-cell fl-head-hex">Hex</div>
+                <div class="fl-cell fl-head-food">Food</div>
+                <div class="fl-cell fl-head-wood">Wood</div>
+                <div class="fl-cell fl-head-stone">Stone</div>
+                <div class="fl-cell fl-head-gold">Gold</div>
+              </div>
+            </div>
+            <div id="hexList" class="faction-land-body">
+              <!-- Hex rows injected here -->
+            </div>
           </div>
         </div>
       </div>
@@ -220,7 +258,7 @@
 
           <!-- Add Event Bar -->
           <div class="add-event-card">
-            <div class="section-row section-row-3col">
+            <div class="section-row">
               <div class="field">
                 <label for="newEventName">Event Name</label>
                 <input
@@ -233,33 +271,31 @@
                 <label for="newEventDate">Event Date</label>
                 <input type="date" id="newEventDate" />
               </div>
+            </div>
+
+            <div class="section-row">
               <div class="field">
                 <label for="newEventType">Event Type</label>
+                <select id="newEventType">
+                  <option value="">-- Select Type --</option>
+                  <option value="Day Event">Day Event</option>
+                  <option value="Campout">Campout</option>
+                  <option value="Festival Event">Festival Event</option>
+                  <option value="Virtual Event">Virtual Event</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
                 <div class="inline">
-                  <select id="newEventType">
-                    <option value="">-- Select Type --</option>
-                    <option value="Day Event">Day Event</option>
-                    <option value="Campout">Campout</option>
-                    <option value="Festival Event">Festival Event</option>
-                    <option value="Virtual Event">Virtual Event</option>
-                  </select>
                   <button id="addEventBtn" class="button small">
                     Add Event
                   </button>
+                  <span class="sort-label">Sort by date:</span>
+                  <select id="eventSortOrder">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Event Columns Header -->
-          <div class="event-list-header">
-            <div class="event-header-grid">
-              <div class="event-col-name">Event</div>
-              <div class="event-col-date" id="eventDateSortHeader">
-                Date ▲
-              </div>
-              <div class="event-col-type">Type</div>
-              <div class="event-actions">
               </div>
             </div>
           </div>
@@ -288,21 +324,15 @@
               </select>
             </div>
             <div class="field">
-              <label for="seasonYear">Year</label>
-              <input
-                type="number"
-                id="seasonYear"
-                min="0"
-                placeholder="e.g. 1"
-              />
+              <label>&nbsp;</label>
+              <p class="section-intro">
+                Enter resources gained for the selected season of the current
+                game year.
+              </p>
             </div>
           </div>
 
-          <p class="section-intro">
-            Enter resources gained for the selected season of the current game year.
-          </p>
-
-          <div class="section-row season-grid">
+          <div class="section-row">
             <div class="field">
               <label for="seasonFood">Food Gained</label>
               <input type="number" id="seasonFood" min="0" value="0" />
@@ -311,17 +341,20 @@
               <label for="seasonWood">Wood Gained</label>
               <input type="number" id="seasonWood" min="0" value="0" />
             </div>
+          </div>
+
+          <div class="section-row">
             <div class="field">
               <label for="seasonStone">Stone Gained</label>
               <input type="number" id="seasonStone" min="0" value="0" />
             </div>
-          </div>
-
-          <div class="section-row season-grid">
             <div class="field">
               <label for="seasonOre">Ore Gained</label>
               <input type="number" id="seasonOre" min="0" value="0" />
             </div>
+          </div>
+
+          <div class="section-row">
             <div class="field">
               <label for="seasonSilver">Silver Gained</label>
               <input type="number" id="seasonSilver" min="0" value="0" />
@@ -348,4 +381,3 @@
     <script src="factions-script.js"></script>
   </body>
 </html>
-

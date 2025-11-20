@@ -374,44 +374,102 @@ textarea {
 }
 
 
-/* Coffers grid 3x2 */
-.coffers-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* Hex add form */
+/* Add Hex card */
 .add-hex-card {
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(6, 10, 26, 0.7);
-  padding: 10px 10px 12px;
-  margin-bottom: 10px;
+  padding: 12px 12px 14px;
+  margin-bottom: 12px;
 }
 
-/* Three-column row (desktop) */
-.section-row.section-row-3col {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+/* Hex input rows */
+.hex-input-row-1,
+.hex-input-row-2,
+.hex-input-row-3 {
+  gap: 12px;
 }
 
-/* Seasonal grid 3 columns */
-.season-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+/* Faction land list */
+.faction-land-list {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(4, 7, 20, 0.9);
+  padding: 10px 12px 12px;
 }
 
-/* Event list header */
-.event-list-header {
-  margin-bottom: 4px;
+.faction-land-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   font-size: 11px;
   color: var(--muted);
-  opacity: 0.85;
+  margin-bottom: 4px;
 }
 
-.event-list-header .event-col-name,
-.event-list-header .event-col-date,
-.event-list-header .event-col-type {
+.fl-col.fl-land-title {
   font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-#eventDateSortHeader {
-  cursor: pointer;
+.fl-col.fl-upkeep-title {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.faction-land-subheader {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.faction-land-grid {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  column-gap: 8px;
+}
+
+.faction-land-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.faction-land-row {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  column-gap: 8px;
+  padding: 3px 0;
+  font-size: 12px;
+  align-items: center;
+}
+
+.faction-land-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.fl-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fl-name {
+  font-weight: 500;
+}
+
+.fl-hex {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+}
+
+.fl-food,
+.fl-wood,
+.fl-stone,
+.fl-gold {
+  text-align: right;
 }

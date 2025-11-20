@@ -375,44 +375,73 @@ textarea {
 }
 
 
-/* Coffers grid 3x2 (mobile) */
-.coffers-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* Hex add form */
+/* Add Hex card (mobile) */
 .add-hex-card {
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(6, 10, 26, 0.7);
-  padding: 8px 8px 10px;
-  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 10, 26, 0.9);
+  padding: 10px 10px 12px;
+  margin-bottom: 10px;
 }
 
-/* Three-column row collapses to single column on mobile */
-.section-row.section-row-3col {
-  grid-template-columns: minmax(0, 1fr);
+/* Faction land list (mobile) */
+.faction-land-list {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(4, 7, 20, 0.95);
+  padding: 8px 10px 10px;
 }
 
-/* Seasonal grid 3 columns on mobile */
-.season-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-/* Event list header */
-.event-list-header {
-  margin-bottom: 4px;
+.faction-land-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   font-size: 10px;
   color: var(--muted);
-  opacity: 0.85;
+  margin-bottom: 4px;
 }
 
-.event-list-header .event-col-name,
-.event-list-header .event-col-date,
-.event-list-header .event-col-type {
-  font-weight: 600;
+.faction-land-subheader {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.9;
+  margin-bottom: 4px;
 }
 
-#eventDateSortHeader {
-  cursor: pointer;
+.faction-land-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  column-gap: 4px;
+}
+
+.faction-land-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+.faction-land-row {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 0.8fr 0.8fr 0.8fr 0.8fr;
+  column-gap: 4px;
+  padding: 3px 0;
+  font-size: 11px;
+  align-items: center;
+}
+
+.faction-land-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fl-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fl-food,
+.fl-wood,
+.fl-stone,
+.fl-gold {
+  text-align: right;
 }

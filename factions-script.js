@@ -2,7 +2,6 @@
 const state = {
   factionName: "",
   factionNotes: "",
-  gameYear: "",
   coffers: {
     food: 0,
     wood: 0,
@@ -42,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
   wireCoffers();
   wireSeasons();
   wireEvents();
-  wireHexAddForm();
-  wireEventSortHeader();
+  wireHexForm();
+  loadUpkeepTable();
 
   renderHexList();
   renderEventList();
@@ -110,7 +109,6 @@ function loadStateObject(obj) {
 
   state.factionName = obj.factionName || "";
   state.factionNotes = obj.factionNotes || "";
-  state.gameYear = obj.gameYear || "";
 
   state.coffers = {
     food: Number(obj.coffers?.food ?? 0),
@@ -279,42 +277,132 @@ function syncCoffersToUI() {
 }
 
 
-// Wire hex add form & structure multiselect
-function wireHexAddForm() {
-  const terrainSelect = $("newHexTerrain");
-  if (terrainSelect) {
-    // ensure options exist (in case HTML is changed)
-    if (!terrainSelect.options.length) {
-      terrainSelect.innerHTML = terrainOptions("");
-    }
+// Upkeep table loaded from upkeep.csv (in same directory)
+let upkeepTable = {};
+
+// Load upkeep data once from CSV
+function loadUpkeepTable() {
+  if (typeof fetch === "undefined") {
+    return;
+  }
+  fetch("upkeep.csv")
+    .then((resp) => resp.text())
+    .then((text) => {
+      upkeepTable = parseUpkeepCsv(text);
+      // Re-render lands so upkeep columns update
+      renderHexList();
+    })
+    .catch((err) => {
+      console.error("Failed to load upkeep.csv", err);
+      upkeepTable = {};
+    });
+}
+
+function parseUpkeepCsv(text) {
+  const table = {};
+  if (!text) return table;
+
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return table;
+
+  const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
+  const idxUpgrade = header.indexOf("upgrade");
+  const idxFood = header.indexOf("food");
+  const idxWood = header.indexOf("wood");
+  const idxStone = header.indexOf("stone");
+  const idxGold = header.indexOf("gold");
+
+  function num(cols, idx) {
+    if (idx === -1 || idx >= cols.length) return 0;
+    const raw = String(cols[idx] ?? "").trim();
+    if (!raw) return 0;
+    const n = Number(raw);
+    return isNaN(n) ? 0 : n;
   }
 
-  const structSelect = $("newHexStructureSelect");
-  if (structSelect) {
-    if (!structSelect.options.length) {
-      structSelect.innerHTML = structureOptions("");
-    }
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    const cols = line.split(",");
+    const name = String(cols[idxUpgrade] ?? "").trim();
+    if (!name) continue;
+
+    table[name] = {
+      food: num(cols, idxFood),
+      wood: num(cols, idxWood),
+      stone: num(cols, idxStone),
+      gold: num(cols, idxGold)
+    };
   }
 
-  const addStructBtn = $("addHexStructureBtn");
-  if (addStructBtn && !addStructBtn._wired) {
-    addStructBtn.addEventListener("click", (e) => {
+  return table;
+}
+
+function calcHexUpkeep(hex) {
+  const result = { food: 0, wood: 0, stone: 0, gold: 0 };
+  if (!hex || !hex.structure) return result;
+
+  const names = String(hex.structure)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  names.forEach((name) => {
+    const u = upkeepTable[name];
+    if (!u) return; // Upgrades without upkeep just count as zero
+    result.food += u.food || 0;
+    result.wood += u.wood || 0;
+    result.stone += u.stone || 0;
+    result.gold += u.gold || 0;
+  });
+
+  return result;
+}
+
+// Wire the top hex form (terrain/structures multi-add + Add Hex button)
+function wireHexForm() {
+  const terrainSelect = $("newHexTerrainSelect");
+  const terrainOut = $("newHexTerrainList");
+  const terrainBtn = $("addHexTerrainBtn");
+
+  if (terrainBtn && !terrainBtn._wired) {
+    terrainBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      const sel = $("newHexStructureSelect");
-      const out = $("newHexStructures");
-      if (!sel || !out) return;
-      const val = sel.value;
+      if (!terrainSelect || !terrainOut) return;
+      const val = terrainSelect.value;
       if (!val) return;
-      const current = out.value
-        ? out.value.split(",").map((s) => s.trim()).filter(Boolean)
+      const current = terrainOut.value
+        ? terrainOut.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
       if (!current.includes(val)) {
         current.push(val);
       }
-      out.value = current.join(", ");
-      sel.value = "";
+      terrainOut.value = current.join(", ");
+      terrainSelect.value = "";
     });
-    addStructBtn._wired = true;
+    terrainBtn._wired = true;
+  }
+
+  const structSelect = $("newHexStructureSelect");
+  const structOut = $("newHexStructures");
+  const structBtn = $("addHexStructureBtn");
+
+  if (structBtn && !structBtn._wired) {
+    structBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!structSelect || !structOut) return;
+      const val = structSelect.value;
+      if (!val) return;
+      const current = structOut.value
+        ? structOut.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) {
+        current.push(val);
+      }
+      structOut.value = current.join(", ");
+      structSelect.value = "";
+    });
+    structBtn._wired = true;
   }
 
   const addHexBtn = $("addHexBtn");
@@ -327,24 +415,6 @@ function wireHexAddForm() {
   }
 }
 
-// Wire event date sort header
-function wireEventSortHeader() {
-  const header = $("eventDateSortHeader");
-  if (header && !header._wired) {
-    header.addEventListener("click", () => {
-      eventSortDirection = eventSortDirection === "asc" ? "desc" : "asc";
-      renderEventList();
-    });
-    header._wired = true;
-  }
-}
-
-function updateEventSortHeaderLabel() {
-  const header = $("eventDateSortHeader");
-  if (!header) return;
-  header.textContent = eventSortDirection === "asc" ? "Date ▲" : "Date ▼";
-}
-
 // ---------- HEXES ----------
 
 function renderHexList() {
@@ -354,162 +424,60 @@ function renderHexList() {
   container.innerHTML = "";
 
   state.hexes.forEach((hex) => {
-    const div = document.createElement("div");
-    div.className = "hex-card";
-    div.dataset.id = hex.id;
+    const upkeep = calcHexUpkeep(hex);
 
-    const header = document.createElement("div");
-    header.className = "hex-header";
+    const row = document.createElement("div");
+    row.className = "faction-land-row";
 
-    const titleBox = document.createElement("div");
-    const title = document.createElement("div");
-    title.className = "hex-title";
-    const displayNumber = hex.hexNumber || "(No Hex #)";
-    const displayName = hex.name || "(Unnamed Hex)";
-    title.textContent = `${displayNumber} — ${displayName}`;
+    const nameCell = document.createElement("div");
+    nameCell.className = "fl-cell fl-name";
+    nameCell.textContent = hex.name || "(Unnamed)";
 
-    const sub = document.createElement("div");
-    sub.className = "hex-subtitle";
-    const terrainLabel = hex.terrain || "No Terrain";
-    const structLabel = hex.structure || "No Structures";
-    sub.textContent = `${terrainLabel} · ${structLabel}`;
+    const hexCell = document.createElement("div");
+    hexCell.className = "fl-cell fl-hex";
+    hexCell.textContent = hex.hexNumber || "—";
 
-    titleBox.appendChild(title);
-    titleBox.appendChild(sub);
+    const foodCell = document.createElement("div");
+    foodCell.className = "fl-cell fl-food";
+    foodCell.textContent = upkeep.food ? String(upkeep.food) : "";
 
-    const controls = document.createElement("div");
-    controls.className = "hex-controls";
+    const woodCell = document.createElement("div");
+    woodCell.className = "fl-cell fl-wood";
+    woodCell.textContent = upkeep.wood ? String(upkeep.wood) : "";
 
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => deleteHex(hex.id));
+    const stoneCell = document.createElement("div");
+    stoneCell.className = "fl-cell fl-stone";
+    stoneCell.textContent = upkeep.stone ? String(upkeep.stone) : "";
 
-    controls.appendChild(delBtn);
+    const goldCell = document.createElement("div");
+    goldCell.className = "fl-cell fl-gold";
+    goldCell.textContent = upkeep.gold ? String(upkeep.gold) : "";
 
-    header.appendChild(titleBox);
-    header.appendChild(controls);
+    row.appendChild(nameCell);
+    row.appendChild(hexCell);
+    row.appendChild(foodCell);
+    row.appendChild(woodCell);
+    row.appendChild(stoneCell);
+    row.appendChild(goldCell);
 
-    const body = document.createElement("div");
-    body.className = "hex-body";
-
-    body.innerHTML = `
-      <div class="section-row">
-        <div class="field">
-          <label>Hex Number</label>
-          <input type="text" class="hex-number-input" maxlength="5" value="${hex.hexNumber || ""}" placeholder="e.g. A3, B5" />
-        </div>
-        <div class="field">
-          <label>Name</label>
-          <input type="text" class="hex-name-input" value="${hex.name || ""}" placeholder="e.g. Gravewood Forest" />
-        </div>
-      </div>
-
-      <div class="section-row">
-        <div class="field">
-          <label>Terrain</label>
-          <select class="hex-terrain-select">
-            ${terrainOptions(hex.terrain)}
-          </select>
-        </div>
-        <div class="field">
-          <label>Structure / Upgrade</label>
-          <div class="inline">
-            <select class="hex-structure-select">
-              ${structureOptions("")}
-            </select>
-            <button type="button" class="button small secondary hex-add-structure-btn">Add</button>
-          </div>
-          <input type="text" class="hex-structures-input" value="${hex.structure || ""}" placeholder="Farm, Lumber Mill" />
-        </div>
-      </div>
-
-      <div class="section-row">
-        <div class="field">
-          <label>Resource Notes (Primary / Secondary / Tertiary)</label>
-          <textarea class="hex-notes-input" placeholder="Primary: ..., Secondary: ..., Tertiary: ...">${hex.notes || ""}</textarea>
-        </div>
-      </div>
-    `;
-
-    const numberInput = body.querySelector(".hex-number-input");
-    const nameInput = body.querySelector(".hex-name-input");
-    const terrainSelect = body.querySelector(".hex-terrain-select");
-    const structSelect = body.querySelector(".hex-structure-select");
-    const structInput = body.querySelector(".hex-structures-input");
-    const addStructBtn = body.querySelector(".hex-add-structure-btn");
-    const notesInput = body.querySelector(".hex-notes-input");
-
-    numberInput.addEventListener("input", (e) => {
-      hex.hexNumber = e.target.value;
-      const newNumber = hex.hexNumber || "(No Hex #)";
-      const newName = hex.name || "(Unnamed Hex)";
-      title.textContent = `${newNumber} — ${newName}`;
-    });
-
-    nameInput.addEventListener("input", (e) => {
-      hex.name = e.target.value;
-      const newNumber = hex.hexNumber || "(No Hex #)";
-      const newName = hex.name || "(Unnamed Hex)";
-      title.textContent = `${newNumber} — ${newName}`;
-    });
-
-    terrainSelect.addEventListener("change", (e) => {
-      hex.terrain = e.target.value;
-      const terrainLabel2 = hex.terrain || "No Terrain";
-      const structLabel2 = hex.structure || "No Structures";
-      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
-    });
-
-    structInput.addEventListener("input", (e) => {
-      hex.structure = e.target.value;
-      const terrainLabel2 = hex.terrain || "No Terrain";
-      const structLabel2 = hex.structure || "No Structures";
-      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
-    });
-
-    addStructBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const val = structSelect.value;
-      if (!val) return;
-      const current = structInput.value
-        ? structInput.value.split(",").map((s) => s.trim()).filter(Boolean)
-        : [];
-      if (!current.includes(val)) {
-        current.push(val);
-      }
-      structInput.value = current.join(", ");
-      hex.structure = structInput.value;
-      structSelect.value = "";
-      const terrainLabel2 = hex.terrain || "No Terrain";
-      const structLabel2 = hex.structure || "No Structures";
-      sub.textContent = `${terrainLabel2} · ${structLabel2}`;
-    });
-
-    notesInput.addEventListener("input", (e) => {
-      hex.notes = e.target.value;
-    });
-
-    div.appendChild(header);
-    div.appendChild(body);
-    container.appendChild(div);
+    container.appendChild(row);
   });
 }
 
 function addHex() {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
-  const terrainSelect = $("newHexTerrain");
-  const structsInput = $("newHexStructures");
+  const terrainOut = $("newHexTerrainList");
+  const structOut = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
-  if (!nameInput || !numInput || !terrainSelect || !structsInput || !notesInput) return;
+  if (!nameInput || !numInput || !terrainOut || !structOut) return;
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
-  const terrain = terrainSelect.value;
-  const structure = structsInput.value.trim();
-  const notes = notesInput.value.trim();
+  const terrain = terrainOut.value.trim();
+  const structure = structOut.value.trim();
+  const notes = notesInput ? notesInput.value.trim() : "";
 
   // Avoid adding a completely empty hex
   if (!name && !hexNumber && !terrain && !structure && !notes) {
@@ -532,13 +500,12 @@ function addHex() {
   // Clear form
   nameInput.value = "";
   numInput.value = "";
-  terrainSelect.value = "";
-  structsInput.value = "";
-  notesInput.value = "";
+  terrainOut.value = "";
+  structOut.value = "";
+  if (notesInput) notesInput.value = "";
 
   renderHexList();
 }
-
 
 function deleteHex(id) {
   const idx = state.hexes.findIndex((h) => h.id === id);
@@ -628,6 +595,14 @@ function structureOptions(current) {
 
 // ---------- EVENTS & TURN ACTIONS ----------
 function wireEvents() {
+  const sortSelect = $("eventSortOrder");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", () => {
+      eventSortDirection = sortSelect.value === "desc" ? "desc" : "asc";
+      renderEventList();
+    });
+  }
+
   const addEventBtn = $("addEventBtn");
   if (addEventBtn) {
     addEventBtn.addEventListener("click", addEventFromForm);
@@ -1020,7 +995,7 @@ function renderEventList() {
     container.appendChild(card);
   });
 
-  updateEventSortHeaderLabel();
+  if ($("eventSortOrder")) $("eventSortOrder").value = eventSortDirection;
 }
 
 function eventTypeOptions(current) {
@@ -1076,13 +1051,6 @@ function wireSeasons() {
     });
   }
 
-  const yearEl = $("seasonYear");
-  if (yearEl) {
-    yearEl.addEventListener("input", () => {
-      state.gameYear = yearEl.value;
-    });
-  }
-
   const fields = [
     { id: "seasonFood", key: "food" },
     { id: "seasonWood", key: "wood" },
@@ -1135,11 +1103,6 @@ function saveSeasonFromUI() {
   if (notesEl) {
     s.notes = notesEl.value || "";
   }
-
-  const yearEl = $("seasonYear");
-  if (yearEl) {
-    state.gameYear = yearEl.value || "";
-  }
 }
 
 function syncSeasonUI() {
@@ -1148,7 +1111,6 @@ function syncSeasonUI() {
 
   if (!s) return;
 
-  if ($("seasonYear")) $("seasonYear").value = state.gameYear || "";
   if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
   if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
   if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
