@@ -55,19 +55,6 @@
                 placeholder="The Grove, Blackthorn Company, ..."
               />
             </div>
-
-            <div class="field">
-              <label for="gameYear">Game Year</label>
-              <input type="number" id="gameYear" min="1" value="1" />
-            </div>
-          </div>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="currentEventNumber">Current Event #</label>
-              <input type="number" id="currentEventNumber" min="1" value="1" />
-            </div>
-
             <div class="field">
               <label for="factionNotes">Faction Notes</label>
               <textarea
@@ -137,18 +124,53 @@
 
       <div class="card">
         <div class="card-inner">
-          <div class="card-header-row">
-            <h2>Events & Turn Actions</h2>
-            <div class="inline">
-              <label for="eventSortOrder" class="sort-label">Sort by date:</label>
-              <select id="eventSortOrder">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-              <button id="addEventBtn" class="button small">+ Add Event</button>
+          <h2>Events & Turn Actions</h2>
+
+          <!-- Add Event Bar -->
+          <div class="add-event-card">
+            <div class="section-row">
+              <div class="field">
+                <label for="newEventName">Event Name</label>
+                <input
+                  type="text"
+                  id="newEventName"
+                  placeholder="Spring Festival, Battle of Eponore, ..."
+                />
+              </div>
+              <div class="field">
+                <label for="newEventDate">Event Date</label>
+                <input type="date" id="newEventDate" />
+              </div>
+            </div>
+
+            <div class="section-row">
+              <div class="field">
+                <label for="newEventType">Event Type</label>
+                <select id="newEventType">
+                  <option value="">-- Select Type --</option>
+                  <option value="Day Event">Day Event</option>
+                  <option value="Campout">Campout</option>
+                  <option value="Festival Event">Festival Event</option>
+                  <option value="Virtual Event">Virtual Event</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
+                <div class="inline">
+                  <button id="addEventBtn" class="button small">
+                    Add Event
+                  </button>
+                  <span class="sort-label">Sort by date:</span>
+                  <select id="eventSortOrder">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
+          <!-- Event List -->
           <div id="eventList" class="event-list">
             <!-- Event cards injected here -->
           </div>
@@ -174,7 +196,8 @@
             <div class="field">
               <label>&nbsp;</label>
               <p class="section-intro">
-                Enter resources gained for the selected season of the current game year.
+                Enter resources gained for the selected season of the current
+                game year.
               </p>
             </div>
           </div>
