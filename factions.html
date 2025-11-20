@@ -1,88 +1,253 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Faction Tracker</title>
-<link rel='stylesheet' href='factions-styles-desktop.css' media='(min-width:701px)'>
-<link rel='stylesheet' href='factions-styles-mobile.css' media='(max-width:700px)'>
-</head>
-<body>
-<h1>Faction Tracker</h1>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Osterra Faction Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<section id="faction-info" class="card">
-  <h2>Faction Info</h2>
-  <input id="factionName" placeholder="Faction Name">
-  <textarea id="factionNotes" placeholder="Notes"></textarea>
-</section>
+    <!-- Modern styles (desktop & mobile) -->
+    <link
+      rel="stylesheet"
+      href="factions-styles-desktop.css"
+      media="(min-width: 701px)"
+    />
+    <link
+      rel="stylesheet"
+      href="factions-styles-mobile.css"
+      media="(max-width: 700px)"
+    />
+  </head>
+  <body>
+    <h1>Osterra</h1>
+    <p class="subtitle">Faction & Land Tracker</p>
 
-<section id="coffers" class="card">
-  <h2>Coffers / Resources</h2>
-  <div class="grid-3x2">
-    <input id="food" placeholder="Food">
-    <input id="wood" placeholder="Wood">
-    <input id="stone" placeholder="Stone">
-    <input id="ore" placeholder="Ore">
-    <input id="gold" placeholder="Gold">
-    <input id="silver" placeholder="Silver">
-  </div>
-</section>
+    <div class="top-controls">
+      <div class="save-load-controls">
+        <button id="loadStateBtn" class="button secondary">
+          Load Faction State
+        </button>
+        <input
+          type="file"
+          id="loadStateFile"
+          accept=".json"
+          style="display:none"
+        />
+        <button id="saveStateBtn" class="button secondary">
+          Save Faction State
+        </button>
+      </div>
+    </div>
 
-<section id="hexes" class="card">
-  <h2>Controlled Hexes</h2>
-  <div id="hexInputs" class="grid-3x2">
-    <input id="hexName" placeholder="Name">
-    <input id="hexNum" placeholder="Hex #">
-    <input id="hexTerrain" placeholder="Terrain">
-    <input id="hexStructInput" placeholder="Structure (comma list)">
-    <textarea id="hexResNotes" placeholder="Primary / Secondary / Tertiary"></textarea>
-    <button id="addHexBtn">Add Hex</button>
-  </div>
-  <ul id="hexList"></ul>
-</section>
+    <div class="app">
+      <!-- FACTION INFO + COFFERS AT TOP -->
 
-<section id="events" class="card">
-  <h2>Events</h2>
-  <div id="addEventRow">
-    <input id="eventName" placeholder="Event Name">
-    <input id="eventDate" type="date">
-    <select id="eventType">
-      <option>Day Event</option>
-      <option>Campout</option>
-      <option>Festival Event</option>
-      <option>Virtual Event</option>
-    </select>
-    <button id="addEventBtn">Add Event</button>
-  </div>
-  <table id="eventTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th id="sortDate">Date ▲▼</th>
-        <th>Type</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody id="eventList"></tbody>
-  </table>
-</section>
+      <!-- Faction Info -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Faction Information</h2>
 
-<section id="seasonal" class="card">
-  <h2>Seasonal Gains</h2>
-  <div>
-    <select id="seasonSel"><option>Spring</option><option>Summer</option><option>Fall</option><option>Winter</option></select>
-    <input id="seasonYear" placeholder="Year">
-  </div>
-  <div class="grid-3x2">
-    <input id="sgFood" placeholder="Food Gained">
-    <input id="sgWood" placeholder="Wood Gained">
-    <input id="sgStone" placeholder="Stone Gained">
-    <input id="sgOre" placeholder="Ore Gained">
-    <input id="sgGold" placeholder="Gold Gained">
-    <input id="sgSilver" placeholder="Silver Gained">
-  </div>
-  <textarea id="seasonNotes" placeholder="Notes"></textarea>
-</section>
+          <div class="section-row">
+            <div class="field">
+              <label for="factionName">Faction Name</label>
+              <input
+                type="text"
+                id="factionName"
+                placeholder="The Grove, Blackthorn Company, ..."
+              />
+            </div>
+            <div class="field">
+              <label for="factionNotes">Faction Notes</label>
+              <textarea
+                id="factionNotes"
+                placeholder="High-level notes, goals, treaties, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<script src="factions-script.js"></script>
-</body>
+      <!-- Coffers / Resources -->
+      <div class="card">
+        <div class="card-inner">
+          <h2>Coffers & Resources</h2>
+          <div class="section-row">
+            <div class="field">
+              <label for="food">Food</label>
+              <input type="number" id="food" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="wood">Wood</label>
+              <input type="number" id="wood" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="stone">Stone</label>
+              <input type="number" id="stone" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="ore">Ore</label>
+              <input type="number" id="ore" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="silver">Silver</label>
+              <input type="number" id="silver" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="gold">Gold</label>
+              <input type="number" id="gold" min="0" value="0" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLLED HEXES -->
+
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-header-row">
+            <h2>Controlled Hexes</h2>
+            <button id="addHexBtn" class="button small">+ Add Hex</button>
+          </div>
+
+          <div id="hexList" class="hex-list">
+            <!-- Hex cards injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- EVENTS & TURN ACTIONS -->
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Events & Turn Actions</h2>
+
+          <!-- Add Event Bar -->
+          <div class="add-event-card">
+            <div class="section-row">
+              <div class="field">
+                <label for="newEventName">Event Name</label>
+                <input
+                  type="text"
+                  id="newEventName"
+                  placeholder="Spring Festival, Battle of Eponore, ..."
+                />
+              </div>
+              <div class="field">
+                <label for="newEventDate">Event Date</label>
+                <input type="date" id="newEventDate" />
+              </div>
+            </div>
+
+            <div class="section-row">
+              <div class="field">
+                <label for="newEventType">Event Type</label>
+                <select id="newEventType">
+                  <option value="">-- Select Type --</option>
+                  <option value="Day Event">Day Event</option>
+                  <option value="Campout">Campout</option>
+                  <option value="Festival Event">Festival Event</option>
+                  <option value="Virtual Event">Virtual Event</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>&nbsp;</label>
+                <div class="inline">
+                  <button id="addEventBtn" class="button small">
+                    Add Event
+                  </button>
+                  <span class="sort-label">Sort by date:</span>
+                  <select id="eventSortOrder">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Event List -->
+          <div id="eventList" class="event-list">
+            <!-- Event cards injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SEASONAL RESOURCE GAINS -->
+
+      <div class="card">
+        <div class="card-inner">
+          <h2>Seasonal Resource Gains</h2>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonSelect">Season</label>
+              <select id="seasonSelect">
+                <option value="Spring">Spring</option>
+                <option value="Summer">Summer</option>
+                <option value="Fall">Fall</option>
+                <option value="Winter">Winter</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <p class="section-intro">
+                Enter resources gained for the selected season of the current
+                game year.
+              </p>
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonFood">Food Gained</label>
+              <input type="number" id="seasonFood" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonWood">Wood Gained</label>
+              <input type="number" id="seasonWood" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonStone">Stone Gained</label>
+              <input type="number" id="seasonStone" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonOre">Ore Gained</label>
+              <input type="number" id="seasonOre" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonSilver">Silver Gained</label>
+              <input type="number" id="seasonSilver" min="0" value="0" />
+            </div>
+            <div class="field">
+              <label for="seasonGold">Gold Gained</label>
+              <input type="number" id="seasonGold" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="section-row">
+            <div class="field">
+              <label for="seasonNotes">Season Notes</label>
+              <textarea
+                id="seasonNotes"
+                placeholder="Encounters, penalties, bonuses, weather notes, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="factions-script.js"></script>
+  </body>
 </html>
