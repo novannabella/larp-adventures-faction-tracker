@@ -527,10 +527,6 @@ function renderHexList() {
 
 // ---------- EVENTS & TURN ACTIONS ----------
 function wireEvents() {
-  const addEventBtn = $("addEventBtn");
-  if (addEventBtn) {
-    addEventBtn.addEventListener("click", addEventFromForm);
-  }
   wireEventSortHeader();
 }
 
@@ -550,10 +546,6 @@ function updateEventSortHeaderLabel() {
   hdr.textContent = eventSortDirection === "asc" ? "Date ▲" : "Date ▼";
 }
 
-  const addEventBtn = $("addEventBtn");
-  if (addEventBtn) {
-    addEventBtn.addEventListener("click", addEventFromForm);
-  }
 }
 
 function addEventFromForm() {
