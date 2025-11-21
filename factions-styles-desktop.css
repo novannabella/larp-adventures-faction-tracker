@@ -376,37 +376,3 @@ tbody tr:hover {
   background: rgba(5, 10, 26, 0.9);
   font-size: 12px;
 }
-
-
-/* === AUTO-INJECTED FIXES === */
-
-/* FIXED LAYOUT — MATCHES THE “GOOD” SCREENSHOT EXACTLY */
-.season-input-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px 16px;
-    margin-bottom: 12px;
-}
-#seasonNotes { grid-column: 1 / span 4; }
-#addSeasonGainBtn { grid-column: 5 / 6; width: 100%; }
-
-.event-row {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1.1fr 0.8fr;
-    gap: 12px 16px;
-    margin-bottom: 10px;
-}
-.event-row button { width: 100%; }
-
-.hex-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 0.8fr;
-    gap: 12px 16px;
-    margin-bottom: 12px;
-}
-.hex-extra-row {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1.2fr;
-    gap: 12px 16px;
-    margin-bottom: 18px;
-}
