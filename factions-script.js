@@ -18,8 +18,11 @@ const state = {
     Summer: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
     Fall:   { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
     Winter: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" }
-  }
+  },
+  // Real-world calendar year for the season gains section
+  seasonYear: new Date().getFullYear()
 };
+
 
 let nextHexId = 1;
 let nextEventId = 1;
@@ -178,6 +181,9 @@ function loadStateObject(obj) {
       notes: s.notes || ""
     };
   });
+  const yearFromFile =
+    obj.seasonYear != null ? parseInt(obj.seasonYear, 10) : new Date().getFullYear();
+  state.seasonYear = isNaN(yearFromFile) ? new Date().getFullYear() : yearFromFile;
 
   // Recalculate counters
   nextHexId = calcNextNumericId(state.hexes, "hex_");
@@ -385,14 +391,14 @@ function addHex() {
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
-  if (!nameInput || !numInput || !terrainList || !structList || !notesInput)
-    return;
+  // We only require name + hex number for now
+  if (!nameInput || !numInput) return;
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
-  const terrain = terrainList.value.trim();
-  const structure = structList.value.trim();
-  const notes = notesInput.value.trim();
+  const terrain = terrainList ? terrainList.value.trim() : "";
+  const structure = structList ? structList.value.trim() : "";
+  const notes = notesInput ? notesInput.value.trim() : "";
 
   if (!name && !hexNumber && !terrain && !structure && !notes) return;
 
@@ -409,22 +415,29 @@ function addHex() {
 
   nameInput.value = "";
   numInput.value = "";
-  terrainList.value = "";
-  structList.value = "";
-  notesInput.value = "";
+  if (terrainList) terrainList.value = "";
+  if (structList) structList.value = "";
+  if (notesInput) notesInput.value = "";
 
   renderHexList();
 }
+
 
 function editHex(hexId) {
   const hex = state.hexes.find((h) => h.id === hexId);
   if (!hex) return;
 
-  $("newHexName").value = hex.name || "";
-  $("newHexNumber").value = hex.hexNumber || "";
-  $("newHexTerrainList").value = hex.terrain || "";
-  $("newHexStructures").value = hex.structure || "";
-  $("newHexNotes").value = hex.notes || "";
+  const nameInput = $("newHexName");
+  const numInput = $("newHexNumber");
+  const terrainList = $("newHexTerrainList");
+  const structList = $("newHexStructures");
+  const notesInput = $("newHexNotes");
+
+  if (nameInput) nameInput.value = hex.name || "";
+  if (numInput) numInput.value = hex.hexNumber || "";
+  if (terrainList) terrainList.value = hex.terrain || "";
+  if (structList) structList.value = hex.structure || "";
+  if (notesInput) notesInput.value = hex.notes || "";
 
   const terrainSelect = $("newHexTerrainSelect");
   const structSelect = $("newHexStructureSelect");
@@ -439,6 +452,7 @@ function editHex(hexId) {
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
+
 
 function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
@@ -998,6 +1012,18 @@ function wireSeasons() {
     });
   }
 
+  // NEW: real-world year field
+  const seasonYearInput = $("seasonYear");
+  if (seasonYearInput) {
+    seasonYearInput.value = state.seasonYear || new Date().getFullYear();
+    seasonYearInput.addEventListener("input", () => {
+      const val = parseInt(seasonYearInput.value, 10);
+      if (!isNaN(val)) {
+        state.seasonYear = val;
+      }
+    });
+  }
+
   const fields = [
     { id: "seasonFood", key: "food" },
     { id: "seasonWood", key: "wood" },
@@ -1007,16 +1033,9 @@ function wireSeasons() {
     { id: "seasonGold", key: "gold" }
   ];
 
-  fields.forEach(({ id, key }) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener("input", () => {
-      const val = parseInt(el.value, 10);
-      state.seasons[currentSeason][key] =
-        isNaN(val) || val < 0 ? 0 : val;
-      el.value = state.seasons[currentSeason][key];
-    });
-  });
+  // ...rest of function unchanged...
+}
+
 
   const notesEl = $("seasonNotes");
   if (notesEl) {
@@ -1064,5 +1083,14 @@ function syncSeasonUI() {
   if ($("seasonOre")) $("seasonOre").value = s.ore ?? 0;
   if ($("seasonSilver")) $("seasonSilver").value = s.silver ?? 0;
   if ($("seasonGold")) $("seasonGold").value = s.gold ?? 0;
-  if ($("seasonNotes")) $("seasonNotes").value = s.notes || "";
+
+  const yearInput = $("seasonYear");
+  if (yearInput) {
+    yearInput.value = state.seasonYear || new Date().getFullYear();
+  }
+
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    notesEl.value = s.notes || "";
+  }
 }
