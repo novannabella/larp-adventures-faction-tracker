@@ -1,80 +1,24 @@
-/* Mobile overrides for Faction Tracker */
 
-body {
-  padding: 16px;
-}
+/* === Faction Tracker Mobile Overrides (final) === */
 
 .app {
-  max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin: 0 12px;
 }
 
-/* Stack the two top cards */
-.top-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+.full-span {
+    grid-column: auto;
 }
 
-/* Buttons row */
-.top-controls {
-  justify-content: center;
+.coffers-grid {
+    grid-template-columns: 1fr;
 }
 
-.save-load-controls {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Input rows become 2 columns for readability */
-.season-input-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.event-input-row,
-.hex-input-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-/* Section rows inside event cards */
-.section-row {
-  grid-template-columns: 1fr;
-}
-
-/* Event header compress */
-.event-header-grid {
-  grid-template-columns: 1.6fr 1fr;
-  grid-template-areas:
-    "name actions"
-    "date actions"
-    "type actions";
-  row-gap: 4px;
-}
-
-.event-col-name {
-  grid-area: name;
-}
-
-.event-col-date {
-  grid-area: date;
-}
-
-.event-col-type {
-  grid-area: type;
-}
-
-.event-actions {
-  grid-area: actions;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-/* Tables: allow horizontal scroll if needed */
-table {
-  font-size: 11px;
-}
-
-th,
-td {
-  padding: 4px 3px;
+.event-row,
+.hex-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
