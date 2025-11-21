@@ -912,13 +912,14 @@ tbody tr:hover {
   /* subtle light border */;
 }
 
-/* === Faction Tracker Layout Overrides (Mobile) === */
+/* Faction Tracker Mobile Overrides */
 .app {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
   margin: 0 10px;
 }
+
 .card.full-span { grid-column: auto; }
 
 .coffers-grid {
@@ -931,4 +932,9 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
+}
+
+input, textarea, select {
+  color: var(--text-color);
+  background: var(--input-bg);
 }

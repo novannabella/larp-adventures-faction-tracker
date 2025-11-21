@@ -1,79 +1,142 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Osterra Faction Tracker</title>
+  <title>Faction Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="factions-styles-desktop.css" media="(min-width: 701px)">
   <link rel="stylesheet" href="factions-styles-mobile.css" media="(max-width: 700px)">
 </head>
 <body>
-<h1>Osterra Faction Tracker</h1>
+
+<div class="top-controls" style="display:flex; gap:12px; margin-bottom:20px;">
+
+  <label class="button secondary">
+    Load Faction
+    <input type="file" id="loadStateFile" hidden>
+  </label>
+
+  <button id="saveStateBtn" class="button secondary">Save Faction</button>
+
+</div>
+
 <div class="app">
 
   <div class="card">
     <div class="card-inner">
       <h2>Faction Information</h2>
-      <div class="field"><label>Name</label><input id="factionName"></div>
-      <div class="field"><label>Notes</label><textarea id="factionNotes"></textarea></div>
+
+      <div class="field">
+        <label>Name</label>
+        <input id="factionName">
+      </div>
+
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="factionNotes"></textarea>
+      </div>
 
       <h3 class="subheader">Coffers & Resources</h3>
+
       <div class="coffers-grid">
-        <div class="field"><label>Food</label><input id="food" type="number"></div>
-        <div class="field"><label>Wood</label><input id="wood" type="number"></div>
-        <div class="field"><label>Stone</label><input id="stone" type="number"></div>
-        <div class="field"><label>Ore</label><input id="ore" type="number"></div>
-        <div class="field"><label>Silver</label><input id="silver" type="number"></div>
-        <div class="field"><label>Gold</label><input id="gold" type="number"></div>
+        <div class="field"><label>Food</label><input id="food"></div>
+        <div class="field"><label>Wood</label><input id="wood"></div>
+        <div class="field"><label>Stone</label><input id="stone"></div>
+        <div class="field"><label>Ore</label><input id="ore"></div>
+        <div class="field"><label>Silver</label><input id="silver"></div>
+        <div class="field"><label>Gold</label><input id="gold"></div>
       </div>
+
     </div>
   </div>
 
   <div class="card">
     <div class="card-inner">
       <h2>Seasonal Resource Gains</h2>
-      <div class="field"><label>Season</label><select id="seasonSelect"><option>Spring</option><option>Summer</option><option>Fall</option><option>Winter</option></select></div>
-      <div class="coffers-grid">
-        <div class="field"><label>Food Gained</label><input id="seasonFood" type="number"></div>
-        <div class="field"><label>Wood Gained</label><input id="seasonWood" type="number"></div>
-        <div class="field"><label>Stone Gained</label><input id="seasonStone" type="number"></div>
-        <div class="field"><label>Ore Gained</label><input id="seasonOre" type="number"></div>
-        <div class="field"><label>Silver Gained</label><input id="seasonSilver" type="number"></div>
-        <div class="field"><label>Gold Gained</label><input id="seasonGold" type="number"></div>
+
+      <div class="field">
+        <label>Season</label>
+        <select id="seasonSelect">
+          <option>Spring</option><option>Summer</option>
+          <option>Fall</option><option>Winter</option>
+        </select>
       </div>
-      <div class="field"><label>Notes</label><textarea id="seasonNotes"></textarea></div>
+
+      <div class="coffers-grid">
+        <div class="field"><label>Food Gained</label><input id="seasonFood"></div>
+        <div class="field"><label>Wood Gained</label><input id="seasonWood"></div>
+        <div class="field"><label>Stone Gained</label><input id="seasonStone"></div>
+        <div class="field"><label>Ore Gained</label><input id="seasonOre"></div>
+        <div class="field"><label>Silver Gained</label><input id="seasonSilver"></div>
+        <div class="field"><label>Gold Gained</label><input id="seasonGold"></div>
+      </div>
+
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="seasonNotes"></textarea>
+      </div>
+
     </div>
   </div>
 
   <div class="card full-span">
     <div class="card-inner">
       <h2>Events & Turn Actions</h2>
+
       <div class="event-row">
         <div class="field"><label>Event Name</label><input id="newEventName"></div>
         <div class="field"><label>Date</label><input type="date" id="newEventDate"></div>
         <div class="field"><label>Type</label><select id="newEventType"><option>Day Event</option></select></div>
-        <button id="addEventBtn" class="button">Add</button>
+
+        <button id="addEventBtn" class="button small">Add</button>
       </div>
-      <table class="event-table"><thead><tr><th>Event</th><th id="eventDateSortHeader">Date ▲</th><th>Type</th><th>Actions</th></tr></thead><tbody id="eventTableBody"></tbody></table>
+
+      <table class="event-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th id="eventDateSortHeader">Date ▲</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="eventTableBody"></tbody>
+      </table>
+
     </div>
   </div>
 
   <div class="card full-span">
     <div class="card-inner">
       <h2>Controlled Hexes</h2>
-      <div class="hex-row"><div class="field"><label>Name</label><input id="newHexName"></div><div class="field"><label>Hex Number</label><input id="newHexNumber"></div></div>
+
+      <div class="hex-row">
+        <div class="field"><label>Name</label><input id="newHexName"></div>
+        <div class="field"><label>Hex Number</label><input id="newHexNumber"></div>
+      </div>
 
       <table class="hex-table">
         <thead>
-          <tr><th colspan="2">Faction Land</th><th colspan="4">Upkeep</th><th rowspan="2">Details</th></tr>
-          <tr><th>Name</th><th>Hex</th><th>Food</th><th>Wood</th><th>Stone</th><th>Gold</th></tr>
+          <tr>
+            <th colspan="2">Faction Land</th>
+            <th colspan="4">Upkeep</th>
+            <th rowspan="2">Details</th>
+          </tr>
+          <tr>
+            <th>Name</th><th>Hex</th>
+            <th>Food</th><th>Wood</th><th>Stone</th><th>Gold</th>
+          </tr>
         </thead>
         <tbody id="hexListBody"></tbody>
       </table>
+
     </div>
   </div>
 
 </div>
 
 <script src="factions-script.js"></script>
-</body></html>
+
+</body>
+</html>

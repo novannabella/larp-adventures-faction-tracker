@@ -733,7 +733,7 @@ tbody tr:hover {
   /* subtle light border */;
 }
 
-/* === Faction Tracker Layout Overrides (Desktop) === */
+/* Faction Tracker Desktop Overrides */
 .app {
   max-width: 1400px;
   margin: 0 auto;
@@ -741,6 +741,7 @@ tbody tr:hover {
   gap: 20px;
   grid-template-columns: 1fr 1fr;
 }
+
 .card.full-span { grid-column: 1 / -1; }
 
 .coffers-grid {
@@ -755,15 +756,38 @@ tbody tr:hover {
   margin-bottom: 10px;
 }
 
+/* Fix input text color */
+input, textarea, select {
+  color: var(--text-color);
+  background: var(--input-bg);
+}
+
+/* Restore gold button styles */
+.button {
+  background: var(--accent-gradient);
+  border-radius: 6px;
+  padding: 6px 16px;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Small add buttons */
+.button.small {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+/* Load/Save dark outline buttons */
+.button.secondary {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 20px;
+}
+
+/* Tables */
 .hex-table, .event-table { width: 100%; border-collapse: collapse; }
 .hex-table th, .hex-table td, .event-table th, .event-table td {
   border-bottom: 1px solid var(--border-color);
   padding: 6px;
-}
-
-.subheader {
-  font-size: 15px;
-  color: var(--accent);
-  margin-top: 18px;
-  margin-bottom: 8px;
 }
