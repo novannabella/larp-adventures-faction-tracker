@@ -65,13 +65,11 @@ function openHexModal(hex) {
 
   $("hexModalNumber").value = hex?.hexNumber || "";
   $("hexModalName").value = hex?.name || "";
-  $("hexModalOwner").value = hex?.owner || "";
   $("hexModalTerrain").value = hex?.terrain || "";
   $("hexModalStructures").value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
 
   refreshHexStructureOptions();
-
   openModal("hexModal");
 }
 
@@ -79,7 +77,6 @@ function saveHexFromModal() {
   const id = $("hexModalId").value || null;
   const hexNumber = $("hexModalNumber").value.trim();
   const name = $("hexModalName").value.trim();
-  const owner = $("hexModalOwner").value.trim();
   const terrain = $("hexModalTerrain").value.trim();
   const structure = $("hexModalStructures").value.trim();
   const notes = $("hexModalNotes").value.trim();
@@ -90,7 +87,6 @@ function saveHexFromModal() {
       id: newId,
       hexNumber,
       name,
-      owner,
       terrain,
       structure,
       notes
@@ -100,7 +96,6 @@ function saveHexFromModal() {
     if (hex) {
       hex.hexNumber = hexNumber;
       hex.name = name;
-      hex.owner = owner;
       hex.terrain = terrain;
       hex.structure = structure;
       hex.notes = notes;
@@ -131,21 +126,31 @@ function renderHexList() {
   hexesCopy.sort((a, b) => {
     const na = a.hexNumber || "";
     const nb = b.hexNumber || "";
-    return na.localeCompare(nb, undefined, { numeric: true, sensitivity: "base" });
+    return na.localeCompare(nb, undefined, {
+      numeric: true,
+      sensitivity: "base"
+    });
   });
 
   hexesCopy.forEach((hex) => {
     const row = document.createElement("tr");
     row.className = "hex-row";
 
-    const numCell = document.createElement("td");
-    numCell.textContent = hex.hexNumber || "—";
+    const hexCell = document.createElement("td");
+    hexCell.textContent = hex.hexNumber || "—";
 
     const nameCell = document.createElement("td");
     nameCell.textContent = hex.name || "Unnamed";
 
     const terrainCell = document.createElement("td");
     terrainCell.textContent = hex.terrain || "—";
+
+    const structCell = document.createElement("td");
+    const structPreview =
+      hex.structure && hex.structure.length > 40
+        ? hex.structure.slice(0, 37) + "..."
+        : hex.structure || "—";
+    structCell.textContent = structPreview;
 
     const actionsTd = document.createElement("td");
     actionsTd.style.whiteSpace = "nowrap";
@@ -166,9 +171,10 @@ function renderHexList() {
     actionsTd.appendChild(editBtn);
     actionsTd.appendChild(delBtn);
 
-    row.appendChild(numCell);
+    row.appendChild(hexCell);
     row.appendChild(nameCell);
     row.appendChild(terrainCell);
+    row.appendChild(structCell);
     row.appendChild(actionsTd);
 
     tbody.appendChild(row);
@@ -179,9 +185,7 @@ function renderHexList() {
   });
 }
 
-/**
- * Show a read-only details modal for a single hex.
- */
+/** Show a read-only details modal for a single hex. */
 function openHexDetailsModal(hex) {
   const titleEl = $("detailsModalTitle");
   const body = $("detailsModalBody");
@@ -194,7 +198,6 @@ function openHexDetailsModal(hex) {
 
   const terrain = hex.terrain || "—";
   const structures = hex.structure || "—";
-  const owner = hex.owner || "—";
   const notes =
     (hex.notes || "")
       .split("\n")
@@ -204,7 +207,6 @@ function openHexDetailsModal(hex) {
 
   body.innerHTML = `
     <div class="details-grid">
-      <p><strong>Owner:</strong> ${owner}</p>
       <p><strong>Terrain:</strong> ${terrain}</p>
       <p><strong>Structures:</strong> ${structures}</p>
       <p><strong>Notes:</strong><br>${notes}</p>
@@ -214,9 +216,7 @@ function openHexDetailsModal(hex) {
   openModal("detailsModal");
 }
 
-/**
- * Helper: hide structure options already selected in the hex modal.
- */
+/** Helper: hide structure options already selected in the hex modal. */
 function refreshHexStructureOptions() {
   const select = $("hexModalStructureSelect");
   const list = $("hexModalStructures");
