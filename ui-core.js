@@ -1,75 +1,68 @@
-// ui-core.js — FIXED VERSION
-// Ensures ALL “Add” buttons work and all sections initialize properly.
+// ui-core.js
 
-// ===== BASIC MODAL SYSTEM =====
 function openModal(id) {
-  const modal = document.getElementById(id);
-  const backdrop = document.getElementById("modalBackdrop");
+  const modal = $(id);
+  const backdrop = $("modalBackdrop");
   if (!modal || !backdrop) return;
 
   modal.classList.add("active");
   backdrop.classList.add("active");
-
-  // Accessibility: modal is now visible to assistive tech
   modal.setAttribute("aria-hidden", "false");
-
-  // Try to focus first focusable element
-  const focusTarget =
-    modal.querySelector("input, select, textarea, button") || modal;
-  if (focusTarget && typeof focusTarget.focus === "function") {
-    focusTarget.focus();
-  }
 }
 
 function closeModal(id) {
-  const modal = document.getElementById(id);
-  const backdrop = document.getElementById("modalBackdrop");
+  const modal = $(id);
+  const backdrop = $("modalBackdrop");
   if (!modal || !backdrop) return;
 
   modal.classList.remove("active");
-  backdrop.classList.remove("active");
-
-  // Accessibility: hide modal from assistive tech
   modal.setAttribute("aria-hidden", "true");
+
+  // If no other modals are active, hide backdrop
+  const anyActive = document.querySelector(".modal.active");
+  if (!anyActive) {
+    backdrop.classList.remove("active");
+  }
 }
 
-// Close modal for elements with [data-close-modal]
-document.addEventListener("click", (e) => {
-  if (e.target.matches("[data-close-modal]")) {
-    const modal = e.target.closest(".modal");
-    if (modal) modal.classList.remove("active");
-    document.getElementById("modalBackdrop").classList.remove("active");
+function wireModalCloseButtons() {
+  const backdrop = $("modalBackdrop");
+  if (backdrop && !backdrop._wired) {
+    backdrop.addEventListener("click", () => {
+      document.querySelectorAll(".modal.active").forEach((m) => {
+        m.classList.remove("active");
+        m.setAttribute("aria-hidden", "true");
+      });
+      backdrop.classList.remove("active");
+    });
+    backdrop._wired = true;
   }
-});
 
-// ===== INITIALIZE ALL UI SECTIONS (IMPORTANT) =====
-function initUI() {
-  // Load/Save wiring
+  document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+    if (btn._wired) return;
+    btn.addEventListener("click", () => {
+      const modal = btn.closest(".modal");
+      if (modal && modal.id) {
+        closeModal(modal.id);
+      }
+    });
+    btn._wired = true;
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
   wireTopControls();
-
-  // Faction info
   wireFactionInfo();
-
-  // Coffers
   wireCoffers();
 
-  // Seasonal gains
-initSeasonSection();
-
-  // Events
+  initSeasonSection();
   initEventSection();
-
-  // Controlled Hexes
   initHexSection();
 
-  // Render UI
-  syncFactionInfoToUI();
-  syncCoffersToUI();
+  wireModalCloseButtons();
+
+  // initial renders
   renderSeasonGainList();
   renderEventList();
   renderHexList();
-}
-
-
-// Run after DOM loads
-document.addEventListener("DOMContentLoaded", initUI);
+});
