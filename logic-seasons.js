@@ -33,57 +33,60 @@ function openSeasonModal(entry) {
 
   $("seasonModalId").value = id;
 
-  body.innerHTML = `
-    <div class="field-row">
-      <label for="seasonModalSeason">Season</label>
+ body.innerHTML = `
+  <div class="two-col">
+    <div class="field">
+      <label>Season</label>
       <select id="seasonModalSeason">
-        <option value="Spring">Spring</option>
-        <option value="Summer">Summer</option>
-        <option value="Fall">Fall</option>
-        <option value="Winter">Winter</option>
+        <option>Spring</option>
+        <option>Summer</option>
+        <option>Fall</option>
+        <option>Winter</option>
       </select>
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalYear">Year</label>
-      <input id="seasonModalYear" type="number" value="${year}">
+    <div class="field">
+      <label>Year</label>
+      <input type="number" id="seasonModalYear">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalFood">Food Gained</label>
-      <input id="seasonModalFood" type="number" value="${food}">
+    <div class="field">
+      <label>Food Gained</label>
+      <input type="number" id="seasonModalFood">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalWood">Wood Gained</label>
-      <input id="seasonModalWood" type="number" value="${wood}">
+    <div class="field">
+      <label>Wood Gained</label>
+      <input type="number" id="seasonModalWood">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalStone">Stone Gained</label>
-      <input id="seasonModalStone" type="number" value="${stone}">
+    <div class="field">
+      <label>Stone Gained</label>
+      <input type="number" id="seasonModalStone">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalOre">Ore Gained</label>
-      <input id="seasonModalOre" type="number" value="${ore}">
+    <div class="field">
+      <label>Ore Gained</label>
+      <input type="number" id="seasonModalOre">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalSilver">Silver Gained</label>
-      <input id="seasonModalSilver" type="number" value="${silver}">
+    <div class="field">
+      <label>Silver Gained</label>
+      <input type="number" id="seasonModalSilver">
     </div>
 
-    <div class="field-row">
-      <label for="seasonModalGold">Gold Gained</label>
-      <input id="seasonModalGold" type="number" value="${gold}">
+    <div class="field">
+      <label>Gold Gained</label>
+      <input type="number" id="seasonModalGold">
     </div>
+  </div>
 
-    <div class="field-row">
-      <label for="seasonModalNotes">Notes</label>
-      <textarea id="seasonModalNotes" rows="3">${notes}</textarea>
-    </div>
-  `;
+  <div class="field">
+    <label>Notes</label>
+    <textarea id="seasonModalNotes" rows="3"></textarea>
+  </div>
+`;
+
 
   $("seasonModalSeason").value = season;
   $("seasonModalYear").value = year;
