@@ -9,6 +9,16 @@ function openModal(id) {
 
   modal.classList.add("active");
   backdrop.classList.add("active");
+
+  // Accessibility: modal is now visible to assistive tech
+  modal.setAttribute("aria-hidden", "false");
+
+  // Try to focus first focusable element
+  const focusTarget =
+    modal.querySelector("input, select, textarea, button") || modal;
+  if (focusTarget && typeof focusTarget.focus === "function") {
+    focusTarget.focus();
+  }
 }
 
 function closeModal(id) {
@@ -18,6 +28,9 @@ function closeModal(id) {
 
   modal.classList.remove("active");
   backdrop.classList.remove("active");
+
+  // Accessibility: hide modal from assistive tech
+  modal.setAttribute("aria-hidden", "true");
 }
 
 // Close modal for elements with [data-close-modal]
