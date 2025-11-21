@@ -27,18 +27,17 @@ const TERRAIN_OPTIONS = ["Plains", "Forest", "Mountain", "Sea", "Blasted Lands"]
 
 const STRUCTURE_GROUPS = {
   Improvements: [
-    "Market",
-    "Carpenter's Shop",
-    "Blacksmith",
-    "Bank",
-    "Stone Mason's Shop"
+    "market",
+    "carpenter's shop",
+    "blacksmith",
+    "bank",
+    "stone mason's shop"
   ],
-  Fortifications: ["Watch Tower", "Fort", "Castle"],
+  Fortifications: ["watch tower", "fort", "castle"],
   "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
 };
 
 const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
-
 
 let eventSortDirection = "asc";
 

@@ -51,20 +51,17 @@ function wireModalCloseButtons() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Faction Info + Save/Load
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
 
-  // Initialize all logic modules
   initSeasonSection();
   initEventSection();
   initHexSection();
 
-  // Modal close buttons & backdrop behavior
   wireModalCloseButtons();
 
-  // Initial UI render
+  // initial renders
   renderSeasonGainList();
   renderEventList();
   renderHexList();
