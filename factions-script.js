@@ -660,33 +660,32 @@ function getAvailableStructuresForHexId(hexId) {
 
 // Global helper: build <select> options for structures
 function structureSelectOptions(selected, availableList) {
+  // availableList is already the filtered list from getAvailableStructuresForHexId()
   const available = new Set(availableList || ALL_STRUCTURES);
 
   let html = '<option value="">-- Select Upgrade --</option>';
 
   Object.entries(STRUCTURE_GROUPS).forEach(([groupName, items]) => {
-    // Filter group items to only show available ones (or the selected one)
-    const groupItems = items.filter(
-      (item) => item === selected || available.has(item)
-    );
-    if (!groupItems.length) return;
+
+    // Only show items that are still allowed OR are currently selected
+    const filtered = items.filter(item => {
+      if (item === selected) return true;  // keep current choice visible
+      return available.has(item);          // show only unbuilt upgrades
+    });
+
+    if (!filtered.length) return;
 
     html += `<optgroup label="${groupName}">`;
-    groupItems.forEach((item) => {
+    filtered.forEach(item => {
       const sel = item === selected ? "selected" : "";
       html += `<option value="${item}" ${sel}>${item}</option>`;
     });
     html += "</optgroup>";
   });
 
-  // If nothing in any group and selected is non-empty but not in available,
-  // fall back to a single option so we don't lose data.
-  if (!html.includes("<optgroup") && selected) {
-    html = `<option value="${selected}" selected>${selected}</option>`;
-  }
-
   return html;
 }
+
 
 function deleteEvent(id) {
   const idx = state.events.findIndex((ev) => ev.id === id);
