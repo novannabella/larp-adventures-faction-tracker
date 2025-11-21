@@ -1,4 +1,4 @@
-// Faction Tracker Script - redesigned
+// Faction Tracker Script - with unsaved-change protection
 
 // ---------- STATE MODEL ----------
 const state = {
@@ -33,19 +33,42 @@ const TERRAIN_OPTIONS = [
 
 const STRUCTURE_GROUPS = {
   Improvements: [
-    "Market",
-    "Carpenter's Shop",
-    "Blacksmith",
-    "Bank",
-    "Stone Mason's Shop"
+    "market",
+    "carpenter's shop",
+    "blacksmith",
+    "bank",
+    "stone mason's shop"
   ],
-  Fortifications: ["Watch Tower", "Fort", "Castle"],
+  Fortifications: ["watch tower", "fort", "castle"],
   "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
 };
 
 const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
 
 let eventSortDirection = "asc"; // "asc" or "desc"
+
+// ---------- DIRTY / UNSAVED-CHANGES TRACKING ----------
+let isDirty = false;
+
+function handleBeforeUnload(e) {
+  if (!isDirty) return;
+  e.preventDefault();
+  e.returnValue = "";
+}
+
+function markDirty() {
+  if (!isDirty) {
+    isDirty = true;
+    window.addEventListener("beforeunload", handleBeforeUnload);
+  }
+}
+
+function clearDirty() {
+  if (isDirty) {
+    isDirty = false;
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  }
+}
 
 // ---------- DOM HELPERS ----------
 function $(id) {
@@ -106,6 +129,9 @@ function handleSaveState() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  // User has just saved; clear dirty flag
+  clearDirty();
 }
 
 function handleLoadFile(e) {
@@ -117,6 +143,8 @@ function handleLoadFile(e) {
     try {
       const obj = JSON.parse(evt.target.result);
       loadStateObject(obj);
+      // Loaded a new state from disk; treat this as clean baseline
+      clearDirty();
     } catch (err) {
       alert("Could not parse JSON file. Please check the file contents.");
     } finally {
@@ -190,7 +218,7 @@ function loadStateObject(obj) {
       }))
     : [];
 
-  // Seasonal gains list (new format)
+  // Seasonal gains list
   state.seasonGains = Array.isArray(obj.seasonGains)
     ? obj.seasonGains.map((sg) => ({
         id: sg.id || `sg_${nextSeasonGainId++}`,
@@ -256,12 +284,14 @@ function wireFactionInfo() {
   if (nameInput) {
     nameInput.addEventListener("input", () => {
       state.factionName = nameInput.value;
+      markDirty();
     });
   }
 
   if (notesInput) {
     notesInput.addEventListener("input", () => {
       state.factionNotes = notesInput.value;
+      markDirty();
     });
   }
 
@@ -283,6 +313,7 @@ function wireCoffers() {
       const val = parseInt(el.value, 10);
       state.coffers[key] = isNaN(val) || val < 0 ? 0 : val;
       el.value = state.coffers[key];
+      markDirty();
     });
   });
   syncCoffersToUI();
@@ -361,36 +392,9 @@ function wireHexForm() {
       }
 
       structSelect.value = "";
+      // Editing form only, not state; no markDirty yet
     });
     structAddBtn._wired = true;
-  }
-
-  // Terrain multi-select (Option A: Add button)
-  const terrainAddBtn = $("addHexTerrainBtn");
-  const terrainSelect = $("newHexTerrainSelect");
-  const terrainList = $("newHexTerrains");
-
-  if (terrainAddBtn && !terrainAddBtn._wired) {
-    terrainAddBtn.addEventListener("click", () => {
-      if (!terrainSelect || !terrainList) return;
-      const val = (terrainSelect.value || "").trim();
-      if (!val) return;
-
-      const current = terrainList.value
-        ? terrainList.value
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
-
-      if (!current.includes(val)) {
-        current.push(val);
-        terrainList.value = current.join(", ");
-      }
-
-      terrainSelect.value = "";
-    });
-    terrainAddBtn._wired = true;
   }
 }
 
@@ -419,7 +423,6 @@ function addHex() {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
   const terrainSelect = $("newHexTerrainSelect");
-  const terrainList = $("newHexTerrains");
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
@@ -427,14 +430,7 @@ function addHex() {
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
-
-  let terrain = "";
-  if (terrainList && terrainList.value.trim()) {
-    terrain = terrainList.value.trim();
-  } else if (terrainSelect) {
-    terrain = terrainSelect.value.trim();
-  }
-
+  const terrain = terrainSelect ? terrainSelect.value.trim() : "";
   const structure = structList ? structList.value.trim() : "";
   const notes = notesInput ? notesInput.value.trim() : "";
 
@@ -451,10 +447,11 @@ function addHex() {
     detailsOpen: false
   });
 
+  markDirty();
+
   nameInput.value = "";
   numInput.value = "";
   if (terrainSelect) terrainSelect.value = "";
-  if (terrainList) terrainList.value = "";
   if (structList) structList.value = "";
   if (notesInput) notesInput.value = "";
 
@@ -468,27 +465,18 @@ function editHex(hexId) {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
   const terrainSelect = $("newHexTerrainSelect");
-  const terrainList = $("newHexTerrains");
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
   if (nameInput) nameInput.value = hex.name || "";
   if (numInput) numInput.value = hex.hexNumber || "";
-
-  if (terrainList) terrainList.value = hex.terrain || "";
-  if (terrainSelect) {
-    const firstTerrain =
-      (hex.terrain || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)[0] || "";
-    terrainSelect.value = firstTerrain;
-  }
-
+  if (terrainSelect) terrainSelect.value = hex.terrain || "";
   if (structList) structList.value = hex.structure || "";
   if (notesInput) notesInput.value = hex.notes || "";
 
+  // Remove from list so the edited version is re-added
   state.hexes = state.hexes.filter((h) => h.id !== hexId);
+  markDirty();
   renderHexList();
 
   const card = $("controlledHexesCard");
@@ -500,6 +488,7 @@ function editHex(hexId) {
 function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
   state.hexes = state.hexes.filter((h) => h.id !== id);
+  markDirty();
   renderHexList();
 }
 
@@ -568,6 +557,7 @@ function renderHexList() {
       hex.detailsOpen = !hex.detailsOpen;
       detailsRow.style.display = hex.detailsOpen ? "" : "none";
       detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
+      // toggling details is UI-only; no markDirty
     });
 
     detailsTd
@@ -638,12 +628,14 @@ function addEventFromForm() {
     detailsOpen: true // newly added event starts expanded
   });
 
+  markDirty();
+
   // Clear form (keep type for convenience)
   nameInput.value = "";
   dateInput.value = "";
 }
 
-// Global helper for builds: which structures are still available in this hex?
+// helper: which structures still available on this hex?
 function getAvailableStructuresForHexId(hexId) {
   if (!hexId) return ALL_STRUCTURES.slice();
 
@@ -658,40 +650,39 @@ function getAvailableStructuresForHexId(hexId) {
   return ALL_STRUCTURES.filter((name) => !existing.includes(name));
 }
 
-// Global helper: build <select> options for structures
+// helper: build the <option> list for structures
 function structureSelectOptions(selected, availableList) {
-  // availableList is already the filtered list from getAvailableStructuresForHexId()
   const available = new Set(availableList || ALL_STRUCTURES);
 
   let html = '<option value="">-- Select Upgrade --</option>';
 
   Object.entries(STRUCTURE_GROUPS).forEach(([groupName, items]) => {
-
-    // Only show items that are still allowed OR are currently selected
-    const filtered = items.filter(item => {
-      if (item === selected) return true;  // keep current choice visible
-      return available.has(item);          // show only unbuilt upgrades
-    });
-
-    if (!filtered.length) return;
+    const groupItems = items.filter(
+      (item) => item === selected || available.has(item)
+    );
+    if (!groupItems.length) return;
 
     html += `<optgroup label="${groupName}">`;
-    filtered.forEach(item => {
+    groupItems.forEach((item) => {
       const sel = item === selected ? "selected" : "";
       html += `<option value="${item}" ${sel}>${item}</option>`;
     });
     html += "</optgroup>";
   });
 
+  if (!html.includes("<optgroup") && selected) {
+    html = `<option value="${selected}" selected>${selected}</option>`;
+  }
+
   return html;
 }
-
 
 function deleteEvent(id) {
   const idx = state.events.findIndex((ev) => ev.id === id);
   if (idx === -1) return;
   if (!confirm("Delete this event and all its actions?")) return;
   state.events.splice(idx, 1);
+  markDirty();
   renderEventList();
 }
 
@@ -843,6 +834,7 @@ function renderEventList() {
       ev.detailsOpen = !ev.detailsOpen;
       body.style.display = ev.detailsOpen ? "" : "none";
       detailsBtn.textContent = ev.detailsOpen ? "Hide Details" : "Details";
+      // view toggle only; no markDirty
     });
 
     delBtn.addEventListener("click", () => deleteEvent(ev.id));
@@ -859,32 +851,39 @@ function renderEventList() {
     nameInput.addEventListener("input", (e) => {
       ev.name = e.target.value;
       nameCell.textContent = ev.name || "Unnamed Event";
+      markDirty();
     });
 
     dateInput.addEventListener("input", (e) => {
       ev.date = e.target.value;
       dateCell.textContent = ev.date || "No date";
+      markDirty();
     });
 
     typeSelect.addEventListener("change", (e) => {
       ev.type = e.target.value;
       typeCell.textContent = ev.type || "Type: —";
+      markDirty();
     });
 
     summaryInput.addEventListener("input", (e) => {
       ev.summary = e.target.value;
+      markDirty();
     });
 
     offTypeSelect.addEventListener("change", (e) => {
       ev.offensiveAction.type = e.target.value;
+      markDirty();
     });
 
     offTargetInput.addEventListener("input", (e) => {
       ev.offensiveAction.target = e.target.value;
+      markDirty();
     });
 
     offNotesInput.addEventListener("input", (e) => {
       ev.offensiveAction.notes = e.target.value;
+      markDirty();
     });
 
     // Builds
@@ -898,6 +897,7 @@ function renderEventList() {
         hexId: "",
         description: "" // will hold the selected upgrade name
       });
+      markDirty();
       renderEventList();
     });
 
@@ -940,6 +940,7 @@ function renderEventList() {
         const idxB = ev.builds.findIndex((x) => x.id === b.id);
         if (idxB !== -1) {
           ev.builds.splice(idxB, 1);
+          markDirty();
           renderEventList();
         }
       });
@@ -954,12 +955,14 @@ function renderEventList() {
 
       hexSelectEl.addEventListener("change", (e) => {
         b.hexId = e.target.value;
+        markDirty();
         // When hex changes, re-render to recalc available upgrades
         renderEventList();
       });
 
       structSelectEl.addEventListener("change", (e) => {
         b.description = e.target.value;
+        markDirty();
       });
     });
 
@@ -976,6 +979,7 @@ function renderEventList() {
         to: "",
         notes: ""
       });
+      markDirty();
       renderEventList();
     });
 
@@ -1035,6 +1039,7 @@ function renderEventList() {
         const idxM = ev.movements.findIndex((x) => x.id === m.id);
         if (idxM !== -1) {
           ev.movements.splice(idxM, 1);
+          markDirty();
           renderEventList();
         }
       });
@@ -1047,19 +1052,23 @@ function renderEventList() {
         .querySelector(".mov-unit-input")
         .addEventListener("input", (e) => {
           m.unitName = e.target.value;
+          markDirty();
         });
       bodyRow
         .querySelector(".mov-from-input")
         .addEventListener("input", (e) => {
           m.from = e.target.value;
+          markDirty();
         });
       bodyRow.querySelector(".mov-to-input").addEventListener("input", (e) => {
         m.to = e.target.value;
+        markDirty();
       });
       bodyRow
         .querySelector(".mov-notes-input")
         .addEventListener("input", (e) => {
           m.notes = e.target.value;
+          markDirty();
         });
     });
 
@@ -1168,6 +1177,8 @@ function addSeasonGainFromForm() {
     notes
   });
 
+  markDirty();
+
   // Clear numeric fields but keep season & year (for next roll)
   if (foodInput) foodInput.value = "";
   if (woodInput) woodInput.value = "";
@@ -1198,13 +1209,14 @@ function editSeasonGain(id) {
   if (yearInput) yearInput.value = entry.year || new Date().getFullYear();
   if (foodInput) foodInput.value = entry.food || "";
   if (woodInput) woodInput.value = entry.wood || "";
-  if (stoneInput) foodInput.value = entry.stone || "";
+  if (stoneInput) stoneInput.value = entry.stone || "";
   if (oreInput) oreInput.value = entry.ore || "";
   if (silverInput) silverInput.value = entry.silver || "";
   if (goldInput) goldInput.value = entry.gold || "";
   if (notesInput) notesInput.value = entry.notes || "";
 
   state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
+  markDirty();
   renderSeasonGainList();
 
   const card = $("seasonalGainsCard");
@@ -1216,6 +1228,7 @@ function editSeasonGain(id) {
 function deleteSeasonGain(id) {
   if (!confirm("Delete this seasonal gain entry?")) return;
   state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
+  markDirty();
   renderSeasonGainList();
 }
 
