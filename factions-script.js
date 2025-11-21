@@ -1,5 +1,3 @@
-// Faction Tracker Script - redesigned
-
 // ---------- STATE MODEL ----------
 const state = {
   factionName: "",
@@ -14,39 +12,22 @@ const state = {
   },
   hexes: [],
   events: [],
-  seasonGains: [] // array of {id, season, year, food, wood, stone, ore, silver, gold, notes}
+  // Seasonal gains for the current game year
+  seasons: {
+    Spring: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Summer: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Fall:   { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" },
+    Winter: { food: 0, wood: 0, stone: 0, ore: 0, silver: 0, gold: 0, notes: "" }
+  }
 };
 
 let nextHexId = 1;
 let nextEventId = 1;
 let nextBuildId = 1;
 let nextMovementId = 1;
-let nextSeasonGainId = 1;
-
-const TERRAIN_OPTIONS = [
-  "Plains",
-  "Forest",
-  "Mountain",
-  "Sea",
-  "Blasted Lands"
-];
-
-const STRUCTURE_GROUPS = {
-  Improvements: [
-    "market",
-    "carpenter's shop",
-    "blacksmith",
-    "bank",
-    "stone mason's shop"
-  ],
-  Fortifications: ["watch tower", "fort", "castle"],
-  "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
-};
-
-const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
-
 
 let eventSortDirection = "asc"; // "asc" or "desc"
+let currentSeason = "Spring";
 
 // ---------- DOM HELPERS ----------
 function $(id) {
@@ -58,20 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
-  wireSeasonGains();
+  wireSeasons();
   wireEvents();
   wireHexForm();
   loadUpkeepTable();
 
   renderHexList();
   renderEventList();
-  renderSeasonGainList();
-
-  // default year input for seasons
-  const seasonYearInput = $("seasonYear");
-  if (seasonYearInput && !seasonYearInput.value) {
-    seasonYearInput.value = new Date().getFullYear();
-  }
+  syncSeasonUI();
 });
 
 // ---------- TOP CONTROLS ----------
@@ -144,20 +119,20 @@ function loadStateObject(obj) {
     gold: Number(obj.coffers?.gold ?? 0)
   };
 
-  // Hexes
   state.hexes = Array.isArray(obj.hexes)
     ? obj.hexes.map((h) => ({
         id: h.id || `hex_${nextHexId++}`,
         hexNumber: h.hexNumber || h.hex_number || h.coords || "",
         name: h.name || "",
         terrain: h.terrain || "",
+        primary: h.primary || "",
+        secondary: h.secondary || "",
+        tertiary: h.tertiary || "",
         structure: h.structure || "",
-        notes: h.notes || "",
-        detailsOpen: !!h.detailsOpen
+        notes: h.notes || ""
       }))
     : [];
 
-  // Events
   state.events = Array.isArray(obj.events)
     ? obj.events.map((ev) => ({
         id: ev.id || `ev_${nextEventId++}`,
@@ -190,34 +165,37 @@ function loadStateObject(obj) {
       }))
     : [];
 
-  // Seasonal gains list (new format)
-  state.seasonGains = Array.isArray(obj.seasonGains)
-    ? obj.seasonGains.map((sg) => ({
-        id: sg.id || `sg_${nextSeasonGainId++}`,
-        season: sg.season || "Spring",
-        year: Number(sg.year ?? new Date().getFullYear()),
-        food: Number(sg.food ?? 0),
-        wood: Number(sg.wood ?? 0),
-        stone: Number(sg.stone ?? 0),
-        ore: Number(sg.ore ?? 0),
-        silver: Number(sg.silver ?? 0),
-        gold: Number(sg.gold ?? 0),
-        notes: sg.notes || ""
-      }))
-    : [];
+  const seasons = obj.seasons || {};
+  ["Spring", "Summer", "Fall", "Winter"].forEach((season) => {
+    const s = seasons[season] || {};
+    state.seasons[season] = {
+      food: Number(s.food ?? 0),
+      wood: Number(s.wood ?? 0),
+      stone: Number(s.stone ?? 0),
+      ore: Number(s.ore ?? 0),
+      silver: Number(s.silver ?? 0),
+      gold: Number(s.gold ?? 0),
+      notes: s.notes || ""
+    };
+  });
 
-  // recalc counters
+  // Recalculate counters
   nextHexId = calcNextNumericId(state.hexes, "hex_");
   nextEventId = calcNextNumericId(state.events, "ev_");
-  nextBuildId = calcNextNumericId(flattenBuilds(state.events), "b_");
-  nextMovementId = calcNextNumericId(flattenMovements(state.events), "m_");
-  nextSeasonGainId = calcNextNumericId(state.seasonGains, "sg_");
+  nextBuildId = Math.max(
+    calcNextNumericId(flattenBuilds(state.events), "b_"),
+    1
+  );
+  nextMovementId = Math.max(
+    calcNextNumericId(flattenMovements(state.events), "m_"),
+    1
+  );
 
   syncFactionInfoToUI();
   syncCoffersToUI();
   renderHexList();
   renderEventList();
-  renderSeasonGainList();
+  syncSeasonUI();
 }
 
 function calcNextNumericId(arr, prefix) {
@@ -306,6 +284,7 @@ function loadUpkeepTable() {
     .then((r) => r.text())
     .then((text) => {
       const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+
       if (lines.length < 2) return;
 
       const header = lines[0].split(",").map((h) => h.trim());
@@ -332,40 +311,51 @@ function loadUpkeepTable() {
 }
 
 function wireHexForm() {
-  const addHexBtn = $("addHexBtn");
-  if (addHexBtn && !addHexBtn._wired) {
-    addHexBtn.addEventListener("click", () => addHex());
-    addHexBtn._wired = true;
-  }
-
+  const terrainAddBtn = $("addHexTerrainBtn");
   const structAddBtn = $("addHexStructureBtn");
+  const terrainSelect = $("newHexTerrainSelect");
   const structSelect = $("newHexStructureSelect");
+  const terrainList = $("newHexTerrainList");
   const structList = $("newHexStructures");
+  const addHexBtn = $("addHexBtn");
+
+  if (terrainAddBtn && !terrainAddBtn._wired) {
+    terrainAddBtn.addEventListener("click", () => {
+      if (!terrainSelect || !terrainList) return;
+      const val = terrainSelect.value;
+      if (!val) return;
+      const current = terrainList.value
+        ? terrainList.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) current.push(val);
+      terrainList.value = current.join(", ");
+      terrainSelect.value = "";
+    });
+    terrainAddBtn._wired = true;
+  }
 
   if (structAddBtn && !structAddBtn._wired) {
     structAddBtn.addEventListener("click", () => {
       if (!structSelect || !structList) return;
-      const val = (structSelect.value || "").trim();
+      const val = structSelect.value;
       if (!val) return;
-
       const current = structList.value
-        ? structList.value
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
+        ? structList.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
-
-      if (!current.includes(val)) {
-        current.push(val);
-        structList.value = current.join(", ");
-      }
-
+      if (!current.includes(val)) current.push(val);
+      structList.value = current.join(", ");
       structSelect.value = "";
     });
     structAddBtn._wired = true;
   }
-}
 
+  if (addHexBtn && !addHexBtn._wired) {
+    addHexBtn.addEventListener("click", () => {
+      addHex();
+    });
+    addHexBtn._wired = true;
+  }
+}
 
 function calcHexUpkeep(hex) {
   const result = { food: 0, wood: 0, stone: 0, gold: 0 };
@@ -391,17 +381,18 @@ function calcHexUpkeep(hex) {
 function addHex() {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
-  const terrainSelect = $("newHexTerrainSelect");
+  const terrainList = $("newHexTerrainList");
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
-  if (!nameInput || !numInput) return;
+  if (!nameInput || !numInput || !terrainList || !structList || !notesInput)
+    return;
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
-  const terrain = terrainSelect ? terrainSelect.value.trim() : "";
-  const structure = structList ? structList.value.trim() : "";
-  const notes = notesInput ? notesInput.value.trim() : "";
+  const terrain = terrainList.value.trim();
+  const structure = structList.value.trim();
+  const notes = notesInput.value.trim();
 
   if (!name && !hexNumber && !terrain && !structure && !notes) return;
 
@@ -418,29 +409,27 @@ function addHex() {
 
   nameInput.value = "";
   numInput.value = "";
-  if (terrainSelect) terrainSelect.value = "";
-  if (structList) structList.value = "";
-  if (notesInput) notesInput.value = "";
+  terrainList.value = "";
+  structList.value = "";
+  notesInput.value = "";
 
   renderHexList();
 }
-
 
 function editHex(hexId) {
   const hex = state.hexes.find((h) => h.id === hexId);
   if (!hex) return;
 
-  const nameInput = $("newHexName");
-  const numInput = $("newHexNumber");
-  const terrainSelect = $("newHexTerrainSelect");
-  const structList = $("newHexStructures");
-  const notesInput = $("newHexNotes");
+  $("newHexName").value = hex.name || "";
+  $("newHexNumber").value = hex.hexNumber || "";
+  $("newHexTerrainList").value = hex.terrain || "";
+  $("newHexStructures").value = hex.structure || "";
+  $("newHexNotes").value = hex.notes || "";
 
-  if (nameInput) nameInput.value = hex.name || "";
-  if (numInput) numInput.value = hex.hexNumber || "";
-  if (terrainSelect) terrainSelect.value = hex.terrain || "";
-  if (structList) structList.value = hex.structure || "";
-  if (notesInput) notesInput.value = hex.notes || "";
+  const terrainSelect = $("newHexTerrainSelect");
+  const structSelect = $("newHexStructureSelect");
+  if (terrainSelect) terrainSelect.value = "";
+  if (structSelect) structSelect.value = "";
 
   state.hexes = state.hexes.filter((h) => h.id !== hexId);
   renderHexList();
@@ -450,7 +439,6 @@ function editHex(hexId) {
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
-
 
 function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
@@ -540,9 +528,8 @@ function renderHexList() {
 // ---------- EVENTS & TURN ACTIONS ----------
 function wireEvents() {
   const addEventBtn = $("addEventBtn");
-  if (addEventBtn && !addEventBtn._wired) {
+  if (addEventBtn) {
     addEventBtn.addEventListener("click", addEventFromForm);
-    addEventBtn._wired = true;
   }
   wireEventSortHeader();
 }
@@ -563,6 +550,12 @@ function updateEventSortHeaderLabel() {
   hdr.textContent = eventSortDirection === "asc" ? "Date ▲" : "Date ▼";
 }
 
+  const addEventBtn = $("addEventBtn");
+  if (addEventBtn) {
+    addEventBtn.addEventListener("click", addEventFromForm);
+  }
+}
+
 function addEventFromForm() {
   const nameInput = $("newEventName");
   const dateInput = $("newEventDate");
@@ -573,8 +566,6 @@ function addEventFromForm() {
   const name = nameInput.value.trim();
   const date = dateInput.value;
   const type = typeSelect.value;
-
-  if (!name && !date && !type) return;
 
   const id = `ev_${nextEventId++}`;
   state.events.push({
@@ -596,52 +587,7 @@ function addEventFromForm() {
   // Clear form (keep type for convenience)
   nameInput.value = "";
   dateInput.value = "";
-function getAvailableStructuresForHexId(hexId) {
-  if (!hexId) return ALL_STRUCTURES.slice();
 
-  const hex = state.hexes.find((h) => h.id === hexId);
-  if (!hex || !hex.structure) return ALL_STRUCTURES.slice();
-
-  const existing = hex.structure
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  return ALL_STRUCTURES.filter((name) => !existing.includes(name));
-}
-
-function structureSelectOptions(selected, availableList) {
-  const available = new Set(availableList || ALL_STRUCTURES);
-
-  let html = '<option value="">-- Select Upgrade --</option>';
-
-  Object.entries(STRUCTURE_GROUPS).forEach(([groupName, items]) => {
-    // Filter group items to only show available ones (or the selected one)
-    const groupItems = items.filter(
-      (item) => item === selected || available.has(item)
-    );
-    if (!groupItems.length) return;
-
-    html += `<optgroup label="${groupName}">`;
-    groupItems.forEach((item) => {
-      const sel = item === selected ? "selected" : "";
-      html += `<option value="${item}" ${sel}>${item}</option>`;
-    });
-    html += "</optgroup>";
-  });
-
-  // If nothing in any group and selected is non-empty but not in available,
-  // fall back to a single option so we don't lose data.
-  if (!html.includes("<optgroup") && selected) {
-    html = `<option value="${selected}" selected>${selected}</option>`;
-  }
-
-  return html;
-}
-
-
-
-  
   renderEventList();
 }
 
@@ -841,7 +787,7 @@ function renderEventList() {
       ev.offensiveAction.notes = e.target.value;
     });
 
-        // Builds
+    // Builds
     const buildsContainer = body.querySelector(".ev-builds-list");
     const addBuildBtn = body.querySelector(".ev-add-build-btn");
 
@@ -850,7 +796,7 @@ function renderEventList() {
       ev.builds.push({
         id: bid,
         hexId: "",
-        description: "" // will hold the selected upgrade name
+        description: ""
       });
       renderEventList();
     });
@@ -863,7 +809,6 @@ function renderEventList() {
       const bodyRow = document.createElement("div");
       bodyRow.className = "mini-row-body two-cols";
 
-      // Hex selection
       const fieldHex = document.createElement("div");
       fieldHex.className = "field";
       fieldHex.innerHTML = `
@@ -873,19 +818,15 @@ function renderEventList() {
         </select>
       `;
 
-      // Upgrade selection (filtered by hex)
-      const availableForHex = getAvailableStructuresForHexId(b.hexId);
-      const fieldUpgrade = document.createElement("div");
-      fieldUpgrade.className = "field";
-      fieldUpgrade.innerHTML = `
-        <label>Upgrade</label>
-        <select class="build-structure-select">
-          ${structureSelectOptions(b.description || "", availableForHex)}
-        </select>
+      const fieldDesc = document.createElement("div");
+      fieldDesc.className = "field";
+      fieldDesc.innerHTML = `
+        <label>Description</label>
+        <input type="text" class="build-desc-input" value="${b.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
       `;
 
       bodyRow.appendChild(fieldHex);
-      bodyRow.appendChild(fieldUpgrade);
+      bodyRow.appendChild(fieldDesc);
 
       const delBuildBtn = document.createElement("button");
       delBuildBtn.className = "button small secondary";
@@ -902,21 +843,13 @@ function renderEventList() {
       row.appendChild(delBuildBtn);
       buildsContainer.appendChild(row);
 
-      // Wiring
-      const hexSelectEl = bodyRow.querySelector(".build-hex-select");
-      const structSelectEl = bodyRow.querySelector(".build-structure-select");
-
-      hexSelectEl.addEventListener("change", (e) => {
+      bodyRow.querySelector(".build-hex-select").addEventListener("change", (e) => {
         b.hexId = e.target.value;
-        // When hex changes, re-render to recalc available upgrades
-        renderEventList();
       });
-
-      structSelectEl.addEventListener("change", (e) => {
+      bodyRow.querySelector(".build-desc-input").addEventListener("input", (e) => {
         b.description = e.target.value;
       });
     });
-
 
     // Movements
     const movContainer = body.querySelector(".ev-movements-list");
@@ -1013,7 +946,13 @@ function renderEventList() {
 }
 
 function eventTypeOptions(current) {
-  const list = ["", "Day Event", "Campout", "Festival Event", "Virtual Event"];
+  const list = [
+    "",
+    "Day Event",
+    "Campout",
+    "Festival Event",
+    "Virtual Event"
+  ];
   return list
     .map((val) => {
       const label = val || "-- Select Type --";
@@ -1039,7 +978,8 @@ function buildHexOptions(selectedId) {
   const options = state.hexes
     .map((h) => {
       const label =
-        (h.hexNumber || "(No Hex #)") + (h.name ? ` — ${h.name}` : "");
+        (h.hexNumber || "(No Hex #)") +
+        (h.name ? ` — ${h.name}` : "");
       const selected = h.id === selectedId ? "selected" : "";
       return `<option value="${h.id}" ${selected}>${label}</option>`;
     })
@@ -1047,160 +987,82 @@ function buildHexOptions(selectedId) {
   return none + options;
 }
 
-// ---------- SEASONAL GAINS (LOG) ----------
-function wireSeasonGains() {
-  const addBtn = $("addSeasonGainBtn");
-  if (addBtn && !addBtn._wired) {
-    addBtn.addEventListener("click", addSeasonGainFromForm);
-    addBtn._wired = true;
-  }
-}
-
-function addSeasonGainFromForm() {
+// ---------- SEASONS (RESOURCE GAINS) ----------
+function wireSeasons() {
   const seasonSelect = $("seasonSelect");
-  const yearInput = $("seasonYear");
-  const foodInput = $("seasonFood");
-  const woodInput = $("seasonWood");
-  const stoneInput = $("seasonStone");
-  const oreInput = $("seasonOre");
-  const silverInput = $("seasonSilver");
-  const goldInput = $("seasonGold");
-  const notesInput = $("seasonNotes");
-
-  if (!seasonSelect || !yearInput) return;
-
-  const season = seasonSelect.value || "Spring";
-  const yearVal = parseInt(yearInput.value, 10);
-  const year = isNaN(yearVal) ? new Date().getFullYear() : yearVal;
-
-  const food = parseInt(foodInput?.value || "0", 10) || 0;
-  const wood = parseInt(woodInput?.value || "0", 10) || 0;
-  const stone = parseInt(stoneInput?.value || "0", 10) || 0;
-  const ore = parseInt(oreInput?.value || "0", 10) || 0;
-  const silver = parseInt(silverInput?.value || "0", 10) || 0;
-  const gold = parseInt(goldInput?.value || "0", 10) || 0;
-  const notes = notesInput ? notesInput.value.trim() : "";
-
-  if (
-    !season &&
-    !year &&
-    !food &&
-    !wood &&
-    !stone &&
-    !ore &&
-    !silver &&
-    !gold &&
-    !notes
-  ) {
-    return;
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", () => {
+      saveSeasonFromUI(); // save old season
+      currentSeason = seasonSelect.value || "Spring";
+      syncSeasonUI(); // load new
+    });
   }
 
-  const id = `sg_${nextSeasonGainId++}`;
-  state.seasonGains.push({
-    id,
-    season,
-    year,
-    food,
-    wood,
-    stone,
-    ore,
-    silver,
-    gold,
-    notes
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
+
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      const val = parseInt(el.value, 10);
+      state.seasons[currentSeason][key] =
+        isNaN(val) || val < 0 ? 0 : val;
+      el.value = state.seasons[currentSeason][key];
+    });
   });
 
-  // Clear numeric fields but keep season & year (for next roll)
-  if (foodInput) foodInput.value = "";
-  if (woodInput) woodInput.value = "";
-  if (stoneInput) stoneInput.value = "";
-  if (oreInput) oreInput.value = "";
-  if (silverInput) silverInput.value = "";
-  if (goldInput) goldInput.value = "";
-  if (notesInput) notesInput.value = "";
-
-  renderSeasonGainList();
-}
-
-function editSeasonGain(id) {
-  const entry = state.seasonGains.find((sg) => sg.id === id);
-  if (!entry) return;
-
-  const seasonSelect = $("seasonSelect");
-  const yearInput = $("seasonYear");
-  const foodInput = $("seasonFood");
-  const woodInput = $("seasonWood");
-  const stoneInput = $("seasonStone");
-  const oreInput = $("seasonOre");
-  const silverInput = $("seasonSilver");
-  const goldInput = $("seasonGold");
-  const notesInput = $("seasonNotes");
-
-  if (seasonSelect) seasonSelect.value = entry.season || "Spring";
-  if (yearInput) yearInput.value = entry.year || new Date().getFullYear();
-  if (foodInput) foodInput.value = entry.food || "";
-  if (woodInput) woodInput.value = entry.wood || "";
-  if (stoneInput) stoneInput.value = entry.stone || "";
-  if (oreInput) oreInput.value = entry.ore || "";
-  if (silverInput) silverInput.value = entry.silver || "";
-  if (goldInput) goldInput.value = entry.gold || "";
-  if (notesInput) notesInput.value = entry.notes || "";
-
-  state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
-  renderSeasonGainList();
-
-  const card = $("seasonalGainsCard");
-  if (card) {
-    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    notesEl.addEventListener("input", () => {
+      state.seasons[currentSeason].notes = notesEl.value;
+    });
   }
 }
 
-function deleteSeasonGain(id) {
-  if (!confirm("Delete this seasonal gain entry?")) return;
-  state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
-  renderSeasonGainList();
+function saveSeasonFromUI() {
+  const s = state.seasons[currentSeason];
+  if (!s) return;
+
+  const fields = [
+    { id: "seasonFood", key: "food" },
+    { id: "seasonWood", key: "wood" },
+    { id: "seasonStone", key: "stone" },
+    { id: "seasonOre", key: "ore" },
+    { id: "seasonSilver", key: "silver" },
+    { id: "seasonGold", key: "gold" }
+  ];
+
+  fields.forEach(({ id, key }) => {
+    const el = $(id);
+    if (!el) return;
+    const val = parseInt(el.value, 10);
+    s[key] = isNaN(val) || val < 0 ? 0 : val;
+  });
+
+  const notesEl = $("seasonNotes");
+  if (notesEl) {
+    s.notes = notesEl.value || "";
+  }
 }
 
-function renderSeasonGainList() {
-  const tbody = $("seasonTableBody");
-  if (!tbody) return;
+function syncSeasonUI() {
+  if ($("seasonSelect")) $("seasonSelect").value = currentSeason;
+  const s = state.seasons[currentSeason];
 
-  tbody.innerHTML = "";
+  if (!s) return;
 
-  state.seasonGains.forEach((sg) => {
-    const tr = document.createElement("tr");
-
-    function td(text) {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      return cell;
-    }
-
-    tr.appendChild(td(sg.season || ""));
-    tr.appendChild(td(sg.year || ""));
-    tr.appendChild(td(sg.food || ""));
-    tr.appendChild(td(sg.wood || ""));
-    tr.appendChild(td(sg.stone || ""));
-    tr.appendChild(td(sg.ore || ""));
-    tr.appendChild(td(sg.silver || ""));
-    tr.appendChild(td(sg.gold || ""));
-    tr.appendChild(td(sg.notes || ""));
-
-    const actionsTd = document.createElement("td");
-    actionsTd.style.whiteSpace = "nowrap";
-    const editBtn = document.createElement("button");
-    editBtn.className = "button small secondary";
-    editBtn.textContent = "Edit";
-    editBtn.addEventListener("click", () => editSeasonGain(sg.id));
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => deleteSeasonGain(sg.id));
-
-    actionsTd.appendChild(editBtn);
-    actionsTd.appendChild(delBtn);
-    tr.appendChild(actionsTd);
-
-    tbody.appendChild(tr);
-  });
+  if ($("seasonFood")) $("seasonFood").value = s.food ?? 0;
+  if ($("seasonWood")) $("seasonWood").value = s.wood ?? 0;
+  if ($("seasonStone")) $("seasonStone").value = s.stone ?? 0;
+  if ($("seasonOre")) $("seasonOre").value = s.ore ?? 0;
+  if ($("seasonSilver")) $("seasonSilver").value = s.silver ?? 0;
+  if ($("seasonGold")) $("seasonGold").value = s.gold ?? 0;
+  if ($("seasonNotes")) $("seasonNotes").value = s.notes || "";
 }
