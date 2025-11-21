@@ -1,10 +1,32 @@
-/* --- existing styles from your file (unchanged) --- */
-/* I'm not rewriting your whole theme here; keep what you already have
-   and just append the block below to the END of factions-styles-desktop.css */
+@import url("styles-desktop.css");
 
-/* === ADD THIS AT THE BOTTOM OF factions-styles-desktop.css === */
+/* Faction tracker desktop-specific layout & components
+   This file assumes the global theme (colors, fonts, buttons, cards, etc.)
+   is defined in styles-desktop.css from the character sheet app.
+*/
 
-/* === Seasonal gains layout === */
+/* Layout tweaks for the faction app */
+.app {
+  max-width: 1200px;
+  margin: 0 auto 40px auto;
+}
+
+/* Ensure cards behave like the character sheet cards */
+.card {
+  margin-bottom: 20px;
+}
+
+.card-inner {
+  padding: 14px 16px 16px;
+}
+
+/* Cohesive spacing for top controls */
+.top-controls {
+  max-width: 1200px;
+  margin: 12px auto 4px auto;
+}
+
+/* Seasonal gains layout */
 .season-input-row {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -36,10 +58,54 @@
   font-weight: 500;
 }
 
-/* === Controlled Hexes layout extensions === */
+/* Events table */
+.event-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.event-table th,
+.event-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+}
+
+.event-table th {
+  text-align: left;
+  color: var(--muted-text, rgba(255,255,255,0.6));
+  font-weight: 500;
+}
+
+.event-row {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr 1.1fr auto;
+  gap: 8px 12px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.event-actions-cell .button.small {
+  margin-left: 4px;
+}
+
+.event-actions-summary {
+  margin-right: 8px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.65);
+}
+
+/* Controlled hexes layout */
+.hex-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
 .hex-extra-row {
   display: grid;
-  grid-template-columns: 0.8fr 1.4fr 1.2fr;
+  grid-template-columns: 0.9fr 1.5fr 1.3fr;
   gap: 8px 12px;
   margin: 6px 0 12px;
 }
@@ -51,7 +117,29 @@
   margin-bottom: 4px;
 }
 
-/* === Event modal (full-screen overlay) === */
+.hex-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.hex-table th,
+.hex-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+}
+
+.hex-table th {
+  text-align: left;
+  color: var(--muted-text, rgba(255,255,255,0.6));
+  font-weight: 500;
+}
+
+.hex-detail-row td {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Full-screen event modal */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -91,7 +179,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 0.95rem;
-  color: #f5b461;
+  color: var(--accent, #f5b461);
 }
 
 .modal-subtitle {
@@ -125,7 +213,7 @@
   font-size: 0.85rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #f5b461;
+  color: var(--accent, #f5b461);
 }
 
 .modal-subtable {
@@ -157,13 +245,8 @@
   margin-top: 4px;
 }
 
-/* Event actions summary & buttons in table */
-.event-actions-cell .button.small {
-  margin-left: 4px;
-}
-
-.event-actions-summary {
-  margin-right: 8px;
+/* Small helper for muted text in modal */
+.muted {
   font-size: 0.8rem;
   color: rgba(255,255,255,0.6);
 }
