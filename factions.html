@@ -79,4 +79,160 @@
         <h2>Seasonal Resource Gains</h2>
 
         <!-- Input row -->
-        <div
+        <div class="season-input-row">
+          <div class="field">
+            <label for="seasonSelect">Season</label>
+            <select id="seasonSelect">
+              <option value="Spring">Spring</option>
+              <option value="Summer">Summer</option>
+              <option value="Fall">Fall</option>
+              <option value="Winter">Winter</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="seasonYear">Year</label>
+            <input id="seasonYear" type="number" min="0" max="9999" />
+          </div>
+          <div class="field">
+            <label for="seasonFood">Food Gained</label>
+            <input id="seasonFood" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonWood">Wood Gained</label>
+            <input id="seasonWood" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonStone">Stone Gained</label>
+            <input id="seasonStone" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonOre">Ore Gained</label>
+            <input id="seasonOre" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonSilver">Silver Gained</label>
+            <input id="seasonSilver" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonGold">Gold Gained</label>
+            <input id="seasonGold" type="number" />
+          </div>
+          <div class="field">
+            <label for="seasonNotes">Notes</label>
+            <input id="seasonNotes" type="text" />
+          </div>
+          <div class="field add-btn-cell">
+            <label>&nbsp;</label>
+            <button id="addSeasonGainBtn" class="button small">Add</button>
+          </div>
+        </div>
+
+        <!-- Table of recorded seasonal gains -->
+        <table class="season-table">
+          <thead>
+            <tr>
+              <th>Season</th>
+              <th>Year</th>
+              <th>Food</th>
+              <th>Wood</th>
+              <th>Stone</th>
+              <th>Ore</th>
+              <th>Silver</th>
+              <th>Gold</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="seasonTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EVENTS & TURNS -->
+    <div class="card" id="eventsCard">
+      <div class="card-inner">
+        <h2>Events &amp; Turn Actions</h2>
+
+        <div class="event-input-row">
+          <div class="field">
+            <label for="newEventName">Event Name</label>
+            <input id="newEventName" type="text" />
+          </div>
+          <div class="field">
+            <label for="newEventDate">Date</label>
+            <input id="newEventDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="newEventType">Type</label>
+            <select id="newEventType">
+              <option value="">-- Select Type --</option>
+              <option value="Day Event">Day Event</option>
+              <option value="Campout">Campout</option>
+              <option value="Festival Event">Festival Event</option>
+              <option value="Virtual Event">Virtual Event</option>
+            </select>
+          </div>
+          <div class="field add-btn-cell">
+            <label>&nbsp;</label>
+            <button id="addEventBtn" class="button small">Add</button>
+          </div>
+        </div>
+
+        <!-- Column header row for events -->
+        <table class="event-table-header">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th id="eventDateSortHeader">Date ▲</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        </table>
+
+        <!-- Event cards rendered here -->
+        <div id="eventList"></div>
+      </div>
+    </div>
+
+    <!-- CONTROLLED HEXES -->
+    <div class="card" id="controlledHexesCard">
+      <div class="card-inner">
+        <h2>Controlled Hexes</h2>
+
+        <div class="hex-input-row">
+          <div class="field">
+            <label for="newHexName">Name</label>
+            <input id="newHexName" type="text" />
+          </div>
+          <div class="field">
+            <label for="newHexNumber">Hex Number</label>
+            <input id="newHexNumber" type="text" maxlength="5" />
+          </div>
+          <div class="field add-btn-cell">
+            <label>&nbsp;</label>
+            <button id="addHexBtn" class="button small">Add Hex</button>
+          </div>
+        </div>
+
+        <table class="hex-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Hex</th>
+              <th>Food</th>
+              <th>Wood</th>
+              <th>Stone</th>
+              <th>Gold</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="hexListBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="factions-script.js"></script>
+</body>
+</html>
