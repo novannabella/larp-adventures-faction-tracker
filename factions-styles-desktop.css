@@ -425,3 +425,12 @@ tbody tr:hover td {
 .details-grid p {
   margin: 0;
 }
+.hex-row td:last-child {
+    white-space: nowrap;
+    padding-right: 10px;
+}
+
+.hex-row td:last-child button {
+    margin-left: 6px;
+    margin-right: 2px;
+}
