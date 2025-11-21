@@ -41,7 +41,7 @@ function initUI() {
   wireCoffers();
 
   // Seasonal gains
-  initSeasonsSection();   // <-- FIXED (correct name)
+initSeasonSection();
 
   // Events
   initEventSection();
