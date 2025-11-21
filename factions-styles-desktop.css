@@ -445,3 +445,19 @@ tbody tr:hover td {
   width: 100%;
 }
 
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.two-col .field label {
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.two-col .field input,
+.two-col .field select {
+  width: 100%;
+}
