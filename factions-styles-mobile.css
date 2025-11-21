@@ -1,5 +1,6 @@
 
-/* === Faction Tracker Mobile Overrides === */
+/* === Faction Tracker Mobile Overrides (final) === */
+
 .app {
     display: grid;
     grid-template-columns: 1fr;
@@ -15,7 +16,8 @@
     grid-template-columns: 1fr;
 }
 
-.event-row, .hex-row {
+.event-row,
+.hex-row {
     display: grid;
     grid-template-columns: 1fr;
     gap: 12px;

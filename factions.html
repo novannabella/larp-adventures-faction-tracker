@@ -2,11 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Faction Tracker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="factions-styles-desktop.css" media="(min-width:701px)">
-<link rel="stylesheet" href="factions-styles-mobile.css" media="(max-width:700px)">
+  <meta charset="UTF-8">
+  <title>Faction Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="factions-styles-desktop.css" media="(min-width:701px)">
+  <link rel="stylesheet" href="factions-styles-mobile.css" media="(max-width:700px)">
 </head>
 <body>
 
@@ -20,61 +20,88 @@
 
 <div class="app">
 
-  <!-- Faction + Coffers -->
+  <!-- Faction Info + Coffers -->
   <div class="card">
     <div class="card-inner">
       <h2>Faction Information</h2>
 
-      <div class="field"><label>Name</label><input id="factionName"></div>
-      <div class="field"><label>Notes</label><textarea id="factionNotes" rows="4"></textarea></div>
+      <div class="field">
+        <label for="factionName">Name</label>
+        <input id="factionName">
+      </div>
 
-      <h3 class="subheader">Coffers & Resources</h3>
+      <div class="field">
+        <label for="factionNotes">Notes</label>
+        <textarea id="factionNotes" rows="4"></textarea>
+      </div>
+
+      <div class="subheader">Coffers &amp; Resources</div>
+
       <div class="coffers-grid">
-        <div class="field"><label>Food</label><input id="food"></div>
-        <div class="field"><label>Wood</label><input id="wood"></div>
-        <div class="field"><label>Stone</label><input id="stone"></div>
-        <div class="field"><label>Ore</label><input id="ore"></div>
-        <div class="field"><label>Silver</label><input id="silver"></div>
-        <div class="field"><label>Gold</label><input id="gold"></div>
+        <div class="field"><label for="food">Food</label><input id="food"></div>
+        <div class="field"><label for="wood">Wood</label><input id="wood"></div>
+        <div class="field"><label for="stone">Stone</label><input id="stone"></div>
+        <div class="field"><label for="ore">Ore</label><input id="ore"></div>
+        <div class="field"><label for="silver">Silver</label><input id="silver"></div>
+        <div class="field"><label for="gold">Gold</label><input id="gold"></div>
       </div>
     </div>
   </div>
 
-  <!-- Seasonal Gains -->
+  <!-- Seasonal Resource Gains -->
   <div class="card">
     <div class="card-inner">
       <h2>Seasonal Resource Gains</h2>
 
-      <div class="field"><label>Season</label>
+      <div class="field">
+        <label for="seasonSelect">Season</label>
         <select id="seasonSelect">
-          <option>Spring</option><option>Summer</option>
-          <option>Fall</option><option>Winter</option>
+          <option>Spring</option>
+          <option>Summer</option>
+          <option>Fall</option>
+          <option>Winter</option>
         </select>
       </div>
 
       <div class="coffers-grid">
-        <div class="field"><label>Food Gained</label><input id="seasonFood"></div>
-        <div class="field"><label>Wood Gained</label><input id="seasonWood"></div>
-        <div class="field"><label>Stone Gained</label><input id="seasonStone"></div>
-        <div class="field"><label>Ore Gained</label><input id="seasonOre"></div>
-        <div class="field"><label>Silver Gained</label><input id="seasonSilver"></div>
-        <div class="field"><label>Gold Gained</label><input id="seasonGold"></div>
+        <div class="field"><label for="seasonFood">Food Gained</label><input id="seasonFood"></div>
+        <div class="field"><label for="seasonWood">Wood Gained</label><input id="seasonWood"></div>
+        <div class="field"><label for="seasonStone">Stone Gained</label><input id="seasonStone"></div>
+        <div class="field"><label for="seasonOre">Ore Gained</label><input id="seasonOre"></div>
+        <div class="field"><label for="seasonSilver">Silver Gained</label><input id="seasonSilver"></div>
+        <div class="field"><label for="seasonGold">Gold Gained</label><input id="seasonGold"></div>
       </div>
 
-      <div class="field"><label>Notes</label><textarea id="seasonNotes"></textarea></div>
+      <div class="field">
+        <label for="seasonNotes">Notes</label>
+        <textarea id="seasonNotes" rows="3"></textarea>
+      </div>
     </div>
   </div>
 
-  <!-- Events -->
+  <!-- Events & Turn Actions -->
   <div class="card full-span">
     <div class="card-inner">
-      <h2>Events & Turn Actions</h2>
+      <h2>Events &amp; Turn Actions</h2>
 
       <div class="event-row">
-        <div class="field"><label>Event Name</label><input id="newEventName"></div>
-        <div class="field"><label>Date</label><input type="date" id="newEventDate"></div>
-        <div class="field"><label>Type</label>
-          <select id="newEventType"><option>Day Event</option></select>
+        <div class="field">
+          <label for="newEventName">Event Name</label>
+          <input id="newEventName">
+        </div>
+        <div class="field">
+          <label for="newEventDate">Date</label>
+          <input type="date" id="newEventDate">
+        </div>
+        <div class="field">
+          <label for="newEventType">Type</label>
+          <select id="newEventType">
+            <option value="">-- Select Type --</option>
+            <option>Day Event</option>
+            <option>Campout</option>
+            <option>Festival</option>
+            <option>Virtual</option>
+          </select>
         </div>
         <button id="addEventBtn" class="button small">Add</button>
       </div>
@@ -93,14 +120,20 @@
     </div>
   </div>
 
-  <!-- Hexes -->
+  <!-- Controlled Hexes -->
   <div class="card full-span">
     <div class="card-inner">
       <h2>Controlled Hexes</h2>
 
       <div class="hex-row">
-        <div class="field"><label>Name</label><input id="newHexName"></div>
-        <div class="field"><label>Hex Number</label><input id="newHexNumber"></div>
+        <div class="field">
+          <label for="newHexName">Name</label>
+          <input id="newHexName">
+        </div>
+        <div class="field">
+          <label for="newHexNumber">Hex Number</label>
+          <input id="newHexNumber" maxlength="5">
+        </div>
       </div>
 
       <table class="hex-table">
@@ -111,8 +144,12 @@
             <th rowspan="2">Details</th>
           </tr>
           <tr>
-            <th>Name</th><th>Hex</th>
-            <th>Food</th><th>Wood</th><th>Stone</th><th>Gold</th>
+            <th>Name</th>
+            <th>Hex</th>
+            <th>Food</th>
+            <th>Wood</th>
+            <th>Stone</th>
+            <th>Gold</th>
           </tr>
         </thead>
         <tbody id="hexListBody"></tbody>

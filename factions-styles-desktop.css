@@ -733,43 +733,58 @@ tbody tr:hover {
   /* subtle light border */;
 }
 
-/* === Faction Tracker Desktop Overrides === */
+/* === Faction Tracker Desktop Overrides (final) === */
 
-/* 2‑column top layout, full‑width below */
+/* Match character sheet width */
 .app {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
 }
 
-/* Full width for Events + Hexes */
+/* Full-width cards (Events & Hexes) */
 .full-span {
     grid-column: 1 / -1;
 }
 
-/* Use your existing .field / .section-row styling; only layout helpers below */
+/* Coffers grid */
 .coffers-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
 
-.event-row, .hex-row {
+/* Flexible rows for events/hex inputs */
+.event-row,
+.hex-row {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
 }
 
-/* Ensure buttons use theme */
+/* Subheader inside card (e.g., Coffers & Resources) */
+.subheader {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-top: 18px;
+    margin-bottom: 6px;
+}
+
+/* Ensure inputs use themed colors */
+input,
+textarea,
+select {
+    color: var(--text-color);
+    background: var(--input-bg);
+}
+
+/* Small gold action buttons (ADD, etc.) */
 .button.small {
     padding: 4px 12px;
     font-size: 13px;
-}
-
-/* Fix input inheritance */
-input, textarea, select {
-    color: var(--text-color);
-    background: var(--input-bg);
+    border-radius: 6px;
 }
