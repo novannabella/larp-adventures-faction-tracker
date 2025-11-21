@@ -33,13 +33,13 @@ const TERRAIN_OPTIONS = [
 
 const STRUCTURE_GROUPS = {
   Improvements: [
-    "market",
-    "carpenter's shop",
-    "blacksmith",
-    "bank",
-    "stone mason's shop"
+    "Market",
+    "Carpenter's Shop",
+    "Blacksmith",
+    "Bank",
+    "Stone Mason's Shop"
   ],
-  Fortifications: ["watch tower", "fort", "castle"],
+  Fortifications: ["Watch Tower", "Fort", "Castle"],
   "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
 };
 
