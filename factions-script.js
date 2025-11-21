@@ -23,6 +23,29 @@ let nextBuildId = 1;
 let nextMovementId = 1;
 let nextSeasonGainId = 1;
 
+const TERRAIN_OPTIONS = [
+  "Plains",
+  "Forest",
+  "Mountain",
+  "Sea",
+  "Blasted Lands"
+];
+
+const STRUCTURE_GROUPS = {
+  Improvements: [
+    "market",
+    "carpenter's shop",
+    "blacksmith",
+    "bank",
+    "stone mason's shop"
+  ],
+  Fortifications: ["watch tower", "fort", "castle"],
+  "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
+};
+
+const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
+
+
 let eventSortDirection = "asc"; // "asc" or "desc"
 
 // ---------- DOM HELPERS ----------
@@ -314,7 +337,35 @@ function wireHexForm() {
     addHexBtn.addEventListener("click", () => addHex());
     addHexBtn._wired = true;
   }
+
+  const structAddBtn = $("addHexStructureBtn");
+  const structSelect = $("newHexStructureSelect");
+  const structList = $("newHexStructures");
+
+  if (structAddBtn && !structAddBtn._wired) {
+    structAddBtn.addEventListener("click", () => {
+      if (!structSelect || !structList) return;
+      const val = (structSelect.value || "").trim();
+      if (!val) return;
+
+      const current = structList.value
+        ? structList.value
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
+      if (!current.includes(val)) {
+        current.push(val);
+        structList.value = current.join(", ");
+      }
+
+      structSelect.value = "";
+    });
+    structAddBtn._wired = true;
+  }
 }
+
 
 function calcHexUpkeep(hex) {
   const result = { food: 0, wood: 0, stone: 0, gold: 0 };
@@ -340,30 +391,40 @@ function calcHexUpkeep(hex) {
 function addHex() {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
+  const terrainSelect = $("newHexTerrainSelect");
+  const structList = $("newHexStructures");
+  const notesInput = $("newHexNotes");
 
   if (!nameInput || !numInput) return;
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
+  const terrain = terrainSelect ? terrainSelect.value.trim() : "";
+  const structure = structList ? structList.value.trim() : "";
+  const notes = notesInput ? notesInput.value.trim() : "";
 
-  if (!name && !hexNumber) return;
+  if (!name && !hexNumber && !terrain && !structure && !notes) return;
 
   const id = `hex_${nextHexId++}`;
   state.hexes.push({
     id,
     name,
     hexNumber,
-    terrain: "",
-    structure: "",
-    notes: "",
+    terrain,
+    structure,
+    notes,
     detailsOpen: false
   });
 
   nameInput.value = "";
   numInput.value = "";
+  if (terrainSelect) terrainSelect.value = "";
+  if (structList) structList.value = "";
+  if (notesInput) notesInput.value = "";
 
   renderHexList();
 }
+
 
 function editHex(hexId) {
   const hex = state.hexes.find((h) => h.id === hexId);
@@ -371,9 +432,15 @@ function editHex(hexId) {
 
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
+  const terrainSelect = $("newHexTerrainSelect");
+  const structList = $("newHexStructures");
+  const notesInput = $("newHexNotes");
 
   if (nameInput) nameInput.value = hex.name || "";
   if (numInput) numInput.value = hex.hexNumber || "";
+  if (terrainSelect) terrainSelect.value = hex.terrain || "";
+  if (structList) structList.value = hex.structure || "";
+  if (notesInput) notesInput.value = hex.notes || "";
 
   state.hexes = state.hexes.filter((h) => h.id !== hexId);
   renderHexList();
@@ -383,6 +450,7 @@ function editHex(hexId) {
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
+
 
 function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
@@ -528,7 +596,52 @@ function addEventFromForm() {
   // Clear form (keep type for convenience)
   nameInput.value = "";
   dateInput.value = "";
+function getAvailableStructuresForHexId(hexId) {
+  if (!hexId) return ALL_STRUCTURES.slice();
 
+  const hex = state.hexes.find((h) => h.id === hexId);
+  if (!hex || !hex.structure) return ALL_STRUCTURES.slice();
+
+  const existing = hex.structure
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  return ALL_STRUCTURES.filter((name) => !existing.includes(name));
+}
+
+function structureSelectOptions(selected, availableList) {
+  const available = new Set(availableList || ALL_STRUCTURES);
+
+  let html = '<option value="">-- Select Upgrade --</option>';
+
+  Object.entries(STRUCTURE_GROUPS).forEach(([groupName, items]) => {
+    // Filter group items to only show available ones (or the selected one)
+    const groupItems = items.filter(
+      (item) => item === selected || available.has(item)
+    );
+    if (!groupItems.length) return;
+
+    html += `<optgroup label="${groupName}">`;
+    groupItems.forEach((item) => {
+      const sel = item === selected ? "selected" : "";
+      html += `<option value="${item}" ${sel}>${item}</option>`;
+    });
+    html += "</optgroup>";
+  });
+
+  // If nothing in any group and selected is non-empty but not in available,
+  // fall back to a single option so we don't lose data.
+  if (!html.includes("<optgroup") && selected) {
+    html = `<option value="${selected}" selected>${selected}</option>`;
+  }
+
+  return html;
+}
+
+
+
+  
   renderEventList();
 }
 
@@ -728,7 +841,7 @@ function renderEventList() {
       ev.offensiveAction.notes = e.target.value;
     });
 
-    // Builds
+        // Builds
     const buildsContainer = body.querySelector(".ev-builds-list");
     const addBuildBtn = body.querySelector(".ev-add-build-btn");
 
@@ -737,7 +850,7 @@ function renderEventList() {
       ev.builds.push({
         id: bid,
         hexId: "",
-        description: ""
+        description: "" // will hold the selected upgrade name
       });
       renderEventList();
     });
@@ -750,6 +863,7 @@ function renderEventList() {
       const bodyRow = document.createElement("div");
       bodyRow.className = "mini-row-body two-cols";
 
+      // Hex selection
       const fieldHex = document.createElement("div");
       fieldHex.className = "field";
       fieldHex.innerHTML = `
@@ -759,15 +873,19 @@ function renderEventList() {
         </select>
       `;
 
-      const fieldDesc = document.createElement("div");
-      fieldDesc.className = "field";
-      fieldDesc.innerHTML = `
-        <label>Description</label>
-        <input type="text" class="build-desc-input" value="${b.description || ""}" placeholder="e.g. Build Farm, Upgrade to Town" />
+      // Upgrade selection (filtered by hex)
+      const availableForHex = getAvailableStructuresForHexId(b.hexId);
+      const fieldUpgrade = document.createElement("div");
+      fieldUpgrade.className = "field";
+      fieldUpgrade.innerHTML = `
+        <label>Upgrade</label>
+        <select class="build-structure-select">
+          ${structureSelectOptions(b.description || "", availableForHex)}
+        </select>
       `;
 
       bodyRow.appendChild(fieldHex);
-      bodyRow.appendChild(fieldDesc);
+      bodyRow.appendChild(fieldUpgrade);
 
       const delBuildBtn = document.createElement("button");
       delBuildBtn.className = "button small secondary";
@@ -784,13 +902,21 @@ function renderEventList() {
       row.appendChild(delBuildBtn);
       buildsContainer.appendChild(row);
 
-      bodyRow.querySelector(".build-hex-select").addEventListener("change", (e) => {
+      // Wiring
+      const hexSelectEl = bodyRow.querySelector(".build-hex-select");
+      const structSelectEl = bodyRow.querySelector(".build-structure-select");
+
+      hexSelectEl.addEventListener("change", (e) => {
         b.hexId = e.target.value;
+        // When hex changes, re-render to recalc available upgrades
+        renderEventList();
       });
-      bodyRow.querySelector(".build-desc-input").addEventListener("input", (e) => {
+
+      structSelectEl.addEventListener("change", (e) => {
         b.description = e.target.value;
       });
     });
+
 
     // Movements
     const movContainer = body.querySelector(".ev-movements-list");
