@@ -1,167 +1,93 @@
-// logic-seasons.js
-
-function initSeasonSection() {
-  const addBtn = $("seasonAddBtn");
-  if (addBtn && !addBtn._wired) {
-    addBtn.addEventListener("click", () => openSeasonModal());
-    addBtn._wired = true;
-  }
-
-  const saveBtn = $("seasonModalSaveBtn");
-  if (saveBtn && !saveBtn._wired) {
-    saveBtn.addEventListener("click", saveSeasonFromModal);
-    saveBtn._wired = true;
-  }
-}
-
 function openSeasonModal(entry) {
-  $("seasonModalId").value = entry ? entry.id : "";
-  $("seasonModalTitle").textContent = entry ? "Edit Seasonal Gain" : "Add Seasonal Gain";
+  const modal = $("seasonModal");
+  const body = modal.querySelector(".modal-body");
 
+  const id = entry ? entry.id : "";
   const now = new Date().getFullYear();
 
-  $("seasonModalSeason").value = entry?.season || "Spring";
-  $("seasonModalYear").value = entry?.year || now;
-  $("seasonModalFood").value = entry?.food ?? "";
-  $("seasonModalWood").value = entry?.wood ?? "";
-  $("seasonModalStone").value = entry?.stone ?? "";
-  $("seasonModalOre").value = entry?.ore ?? "";
-  $("seasonModalSilver").value = entry?.silver ?? "";
-  $("seasonModalGold").value = entry?.gold ?? "";
-  $("seasonModalNotes").value = entry?.notes || "";
+  const season = entry?.season || "Spring";
+  const year = entry?.year || now;
+  const food = entry?.food ?? "";
+  const wood = entry?.wood ?? "";
+  const stone = entry?.stone ?? "";
+  const ore = entry?.ore ?? "";
+  const silver = entry?.silver ?? "";
+  const gold = entry?.gold ?? "";
+  const notes = entry?.notes || "";
 
-  openModal("seasonModal");
-}
+  $("seasonModalId").value = id;
+  $("seasonModalTitle").textContent = entry ? "Edit Seasonal Gain" : "Add Seasonal Gain";
 
-function saveSeasonFromModal() {
-  const id = $("seasonModalId").value || null;
+  body.innerHTML = `
+    <div class="field-row two-col">
+      <div class="field">
+        <label for="seasonModalSeason">Season</label>
+        <select id="seasonModalSeason">
+          <option value="Spring" ${season === "Spring" ? "selected" : ""}>Spring</option>
+          <option value="Summer" ${season === "Summer" ? "selected" : ""}>Summer</option>
+          <option value="Fall" ${season === "Fall" ? "selected" : ""}>Fall</option>
+          <option value="Winter" ${season === "Winter" ? "selected" : ""}>Winter</option>
+        </select>
+      </div>
 
-  const season = $("seasonModalSeason").value || "Spring";
-  const yearVal = parseInt($("seasonModalYear").value, 10);
-  const year = isNaN(yearVal) ? new Date().getFullYear() : yearVal;
+      <div class="field">
+        <label for="seasonModalYear">Year</label>
+        <input id="seasonModalYear" type="number" value="${year}">
+      </div>
+    </div>
 
-  const food = parseInt($("seasonModalFood").value || "0", 10) || 0;
-  const wood = parseInt($("seasonModalWood").value || "0", 10) || 0;
-  const stone = parseInt($("seasonModalStone").value || "0", 10) || 0;
-  const ore = parseInt($("seasonModalOre").value || "0", 10) || 0;
-  const silver = parseInt($("seasonModalSilver").value || "0", 10) || 0;
-  const gold = parseInt($("seasonModalGold").value || "0", 10) || 0;
-  const notes = $("seasonModalNotes").value.trim();
+    <hr />
 
-  if (!id) {
-    const newId = `sg_${nextSeasonGainId++}`;
-    state.seasonGains.push({
-      id: newId,
-      season,
-      year,
-      food,
-      wood,
-      stone,
-      ore,
-      silver,
-      gold,
-      notes,
-      detailsOpen: false
-    });
-  } else {
-    const existing = state.seasonGains.find((sg) => sg.id === id);
-    if (existing) {
-      existing.season = season;
-      existing.year = year;
-      existing.food = food;
-      existing.wood = wood;
-      existing.stone = stone;
-      existing.ore = ore;
-      existing.silver = silver;
-      existing.gold = gold;
-      existing.notes = notes;
-    }
+    <div class="field-row two-col">
+      <div class="field">
+        <label for="seasonModalFood">Food Gained</label>
+        <input id="seasonModalFood" type="number" value="${food}">
+      </div>
+
+      <div class="field">
+        <label for="seasonModalWood">Wood Gained</label>
+        <input id="seasonModalWood" type="number" value="${wood}">
+      </div>
+    </div>
+
+    <div class="field-row two-col">
+      <div class="field">
+        <label for="seasonModalStone">Stone Gained</label>
+        <input id="seasonModalStone" type="number" value="${stone}">
+      </div>
+
+      <div class="field">
+        <label for="seasonModalOre">Ore Gained</label>
+        <input id="seasonModalOre" type="number" value="${ore}">
+      </div>
+    </div>
+
+    <div class="field-row two-col">
+      <div class="field">
+        <label for="seasonModalSilver">Silver Gained</label>
+        <input id="seasonModalSilver" type="number" value="${silver}">
+      </div>
+
+      <div class="field">
+        <label for="seasonModalGold">Gold Gained</label>
+        <input id="seasonModalGold" type="number" value="${gold}">
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="field-row">
+      <label for="seasonModalNotes">Notes</label>
+      <textarea id="seasonModalNotes" rows="3">${notes}</textarea>
+    </div>
+  `;
+
+  // Wire up the save button (already done by init, but safe)
+  const saveBtn = $("seasonModalSaveBtn");
+  if (saveBtn) {
+    saveBtn.onclick = null;
+    saveBtn.addEventListener("click", saveSeasonFromModal);
   }
 
-  markDirty();
-  closeModal("seasonModal");
-  renderSeasonGainList();
-}
-
-function deleteSeasonGain(id) {
-  if (!confirm("Delete this seasonal gain entry?")) return;
-  state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
-  markDirty();
-  renderSeasonGainList();
-}
-
-function renderSeasonGainList() {
-  const tbody = $("seasonTableBody");
-  if (!tbody) return;
-
-  tbody.innerHTML = "";
-
-  state.seasonGains.forEach((sg) => {
-    const tr = document.createElement("tr");
-    tr.className = "season-row";
-
-    function td(text) {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      return cell;
-    }
-
-    tr.appendChild(td(sg.season || ""));
-    tr.appendChild(td(sg.year || ""));
-    tr.appendChild(td(sg.food || ""));
-    tr.appendChild(td(sg.wood || ""));
-    tr.appendChild(td(sg.stone || ""));
-    tr.appendChild(td(sg.ore || ""));
-    tr.appendChild(td(sg.silver || ""));
-    tr.appendChild(td(sg.gold || ""));
-
-    const preview =
-      sg.notes && sg.notes.length > 40
-        ? sg.notes.slice(0, 37) + "..."
-        : sg.notes || "";
-    tr.appendChild(td(preview));
-
-    const actionsTd = document.createElement("td");
-    actionsTd.style.whiteSpace = "nowrap";
-
-    const detailsBtn = document.createElement("button");
-    detailsBtn.className = "button small secondary";
-    detailsBtn.textContent = sg.detailsOpen ? "Hide" : "Details";
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "button small secondary";
-    editBtn.textContent = "Edit";
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-
-    actionsTd.appendChild(detailsBtn);
-    actionsTd.appendChild(editBtn);
-    actionsTd.appendChild(delBtn);
-    tr.appendChild(actionsTd);
-
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "season-details-row";
-    detailsRow.style.display = sg.detailsOpen ? "" : "none";
-
-    const detailsTd = document.createElement("td");
-    detailsTd.colSpan = 10;
-    detailsTd.innerHTML = `
-      <strong>Notes:</strong> ${sg.notes || "—"}
-    `;
-    detailsRow.appendChild(detailsTd);
-
-    detailsBtn.addEventListener("click", () => {
-      sg.detailsOpen = !sg.detailsOpen;
-      detailsRow.style.display = sg.detailsOpen ? "" : "none";
-      detailsBtn.textContent = sg.detailsOpen ? "Hide" : "Details";
-    });
-
-    editBtn.addEventListener("click", () => openSeasonModal(sg));
-    delBtn.addEventListener("click", () => deleteSeasonGain(sg.id));
-
-    tbody.appendChild(tr);
-    tbody.appendChild(detailsRow);
-  });
+  openModal("seasonModal");
 }
