@@ -45,7 +45,6 @@ const STRUCTURE_GROUPS = {
 
 const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
 
-
 let eventSortDirection = "asc"; // "asc" or "desc"
 
 // ---------- DOM HELPERS ----------
@@ -96,9 +95,10 @@ function handleSaveState() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
 
-  const faction = state.factionName && state.factionName.trim().length
-    ? state.factionName.trim().replace(/\s+/g, "_")
-    : "faction";
+  const faction =
+    state.factionName && state.factionName.trim().length
+      ? state.factionName.trim().replace(/\s+/g, "_")
+      : "faction";
 
   a.href = url;
   a.download = `${faction}_state.json`;
@@ -364,8 +364,35 @@ function wireHexForm() {
     });
     structAddBtn._wired = true;
   }
-}
 
+  // Terrain multi-select (Option A: Add button)
+  const terrainAddBtn = $("addHexTerrainBtn");
+  const terrainSelect = $("newHexTerrainSelect");
+  const terrainList = $("newHexTerrains");
+
+  if (terrainAddBtn && !terrainAddBtn._wired) {
+    terrainAddBtn.addEventListener("click", () => {
+      if (!terrainSelect || !terrainList) return;
+      const val = (terrainSelect.value || "").trim();
+      if (!val) return;
+
+      const current = terrainList.value
+        ? terrainList.value
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
+      if (!current.includes(val)) {
+        current.push(val);
+        terrainList.value = current.join(", ");
+      }
+
+      terrainSelect.value = "";
+    });
+    terrainAddBtn._wired = true;
+  }
+}
 
 function calcHexUpkeep(hex) {
   const result = { food: 0, wood: 0, stone: 0, gold: 0 };
@@ -392,6 +419,7 @@ function addHex() {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
   const terrainSelect = $("newHexTerrainSelect");
+  const terrainList = $("newHexTerrains");
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
@@ -399,7 +427,14 @@ function addHex() {
 
   const name = nameInput.value.trim();
   const hexNumber = numInput.value.trim();
-  const terrain = terrainSelect ? terrainSelect.value.trim() : "";
+
+  let terrain = "";
+  if (terrainList && terrainList.value.trim()) {
+    terrain = terrainList.value.trim();
+  } else if (terrainSelect) {
+    terrain = terrainSelect.value.trim();
+  }
+
   const structure = structList ? structList.value.trim() : "";
   const notes = notesInput ? notesInput.value.trim() : "";
 
@@ -419,12 +454,12 @@ function addHex() {
   nameInput.value = "";
   numInput.value = "";
   if (terrainSelect) terrainSelect.value = "";
+  if (terrainList) terrainList.value = "";
   if (structList) structList.value = "";
   if (notesInput) notesInput.value = "";
 
   renderHexList();
 }
-
 
 function editHex(hexId) {
   const hex = state.hexes.find((h) => h.id === hexId);
@@ -433,12 +468,23 @@ function editHex(hexId) {
   const nameInput = $("newHexName");
   const numInput = $("newHexNumber");
   const terrainSelect = $("newHexTerrainSelect");
+  const terrainList = $("newHexTerrains");
   const structList = $("newHexStructures");
   const notesInput = $("newHexNotes");
 
   if (nameInput) nameInput.value = hex.name || "";
   if (numInput) numInput.value = hex.hexNumber || "";
-  if (terrainSelect) terrainSelect.value = hex.terrain || "";
+
+  if (terrainList) terrainList.value = hex.terrain || "";
+  if (terrainSelect) {
+    const firstTerrain =
+      (hex.terrain || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)[0] || "";
+    terrainSelect.value = firstTerrain;
+  }
+
   if (structList) structList.value = hex.structure || "";
   if (notesInput) notesInput.value = hex.notes || "";
 
@@ -450,7 +496,6 @@ function editHex(hexId) {
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
-
 
 function deleteHex(id) {
   if (!confirm("Delete this hex from the faction?")) return;
@@ -596,6 +641,9 @@ function addEventFromForm() {
   // Clear form (keep type for convenience)
   nameInput.value = "";
   dateInput.value = "";
+}
+
+// Global helper for builds: which structures are still available in this hex?
 function getAvailableStructuresForHexId(hexId) {
   if (!hexId) return ALL_STRUCTURES.slice();
 
@@ -610,6 +658,7 @@ function getAvailableStructuresForHexId(hexId) {
   return ALL_STRUCTURES.filter((name) => !existing.includes(name));
 }
 
+// Global helper: build <select> options for structures
 function structureSelectOptions(selected, availableList) {
   const available = new Set(availableList || ALL_STRUCTURES);
 
@@ -637,12 +686,6 @@ function structureSelectOptions(selected, availableList) {
   }
 
   return html;
-}
-
-
-
-  
-  renderEventList();
 }
 
 function deleteEvent(id) {
@@ -781,13 +824,17 @@ function renderEventList() {
         </div>
         <div class="field">
           <label>Target Hex / Location</label>
-          <input type="text" class="ev-off-target-input" value="${ev.offensiveAction.target || ""}" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
+          <input type="text" class="ev-off-target-input" value="${
+            ev.offensiveAction.target || ""
+          }" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
         </div>
       </div>
       <div class="section-row">
         <div class="field">
           <label>Action Notes / Result</label>
-          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${ev.offensiveAction.notes || ""}</textarea>
+          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${
+            ev.offensiveAction.notes || ""
+          }</textarea>
         </div>
       </div>
     `;
@@ -841,7 +888,7 @@ function renderEventList() {
       ev.offensiveAction.notes = e.target.value;
     });
 
-        // Builds
+    // Builds
     const buildsContainer = body.querySelector(".ev-builds-list");
     const addBuildBtn = body.querySelector(".ev-add-build-btn");
 
@@ -917,7 +964,6 @@ function renderEventList() {
       });
     });
 
-
     // Movements
     const movContainer = body.querySelector(".ev-movements-list");
     const addMovBtn = body.querySelector(".ev-add-movement-btn");
@@ -946,28 +992,36 @@ function renderEventList() {
       fieldUnit.className = "field";
       fieldUnit.innerHTML = `
         <label>Unit</label>
-        <input type="text" class="mov-unit-input" value="${m.unitName || ""}" placeholder="e.g. 1st Company, Grove Patrol" />
+        <input type="text" class="mov-unit-input" value="${
+          m.unitName || ""
+        }" placeholder="e.g. 1st Company, Grove Patrol" />
       `;
 
       const fieldFrom = document.createElement("div");
       fieldFrom.className = "field";
       fieldFrom.innerHTML = `
         <label>From</label>
-        <input type="text" class="mov-from-input" value="${m.from || ""}" placeholder="Hex name or hex number" />
+        <input type="text" class="mov-from-input" value="${
+          m.from || ""
+        }" placeholder="Hex name or hex number" />
       `;
 
       const fieldTo = document.createElement("div");
       fieldTo.className = "field";
       fieldTo.innerHTML = `
         <label>To</label>
-        <input type="text" class="mov-to-input" value="${m.to || ""}" placeholder="Hex name or hex number" />
+        <input type="text" class="mov-to-input" value="${
+          m.to || ""
+        }" placeholder="Hex name or hex number" />
       `;
 
       const fieldNotes = document.createElement("div");
       fieldNotes.className = "field";
       fieldNotes.innerHTML = `
         <label>Notes</label>
-        <input type="text" class="mov-notes-input" value="${m.notes || ""}" placeholder="Scouting, escort, etc." />
+        <input type="text" class="mov-notes-input" value="${
+          m.notes || ""
+        }" placeholder="Scouting, escort, etc." />
       `;
 
       bodyRow.appendChild(fieldUnit);
@@ -990,18 +1044,24 @@ function renderEventList() {
       row.appendChild(delMovBtn);
       movContainer.appendChild(row);
 
-      bodyRow.querySelector(".mov-unit-input").addEventListener("input", (e) => {
-        m.unitName = e.target.value;
-      });
-      bodyRow.querySelector(".mov-from-input").addEventListener("input", (e) => {
-        m.from = e.target.value;
-      });
+      bodyRow
+        .querySelector(".mov-unit-input")
+        .addEventListener("input", (e) => {
+          m.unitName = e.target.value;
+        });
+      bodyRow
+        .querySelector(".mov-from-input")
+        .addEventListener("input", (e) => {
+          m.from = e.target.value;
+        });
       bodyRow.querySelector(".mov-to-input").addEventListener("input", (e) => {
         m.to = e.target.value;
       });
-      bodyRow.querySelector(".mov-notes-input").addEventListener("input", (e) => {
-        m.notes = e.target.value;
-      });
+      bodyRow
+        .querySelector(".mov-notes-input")
+        .addEventListener("input", (e) => {
+          m.notes = e.target.value;
+        });
     });
 
     card.appendChild(header);
@@ -1139,7 +1199,7 @@ function editSeasonGain(id) {
   if (yearInput) yearInput.value = entry.year || new Date().getFullYear();
   if (foodInput) foodInput.value = entry.food || "";
   if (woodInput) woodInput.value = entry.wood || "";
-  if (stoneInput) stoneInput.value = entry.stone || "";
+  if (stoneInput) foodInput.value = entry.stone || "";
   if (oreInput) oreInput.value = entry.ore || "";
   if (silverInput) silverInput.value = entry.silver || "";
   if (goldInput) goldInput.value = entry.gold || "";
