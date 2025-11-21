@@ -434,3 +434,14 @@ tbody tr:hover td {
     margin-left: 6px;
     margin-right: 2px;
 }
+.field-row.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.field-row.two-col .field input,
+.field-row.two-col .field select {
+  width: 100%;
+}
+
