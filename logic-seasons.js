@@ -1,5 +1,16 @@
-// ===== SEASON SECTION INIT =====
+// logic-seasons.js
+
+// Ensure the season array exists on state
+function ensureSeasonState() {
+  if (!Array.isArray(state.seasonGains)) {
+    state.seasonGains = [];
+  }
+}
+
+// ---------- INIT ----------
 function initSeasonSection() {
+  ensureSeasonState();
+
   const addBtn = $("seasonAddBtn");
   if (addBtn && !addBtn._wired) {
     addBtn.addEventListener("click", () => openSeasonModal());
@@ -13,127 +24,113 @@ function initSeasonSection() {
   }
 }
 
-// ===== OPEN SEASON MODAL =====
+// Small helper for numeric inputs
+function readNumber(id) {
+  const el = $(id);
+  if (!el) return 0;
+  const v = (el.value || "").trim();
+  return v === "" ? 0 : Number(v);
+}
+
+// ---------- MODAL OPEN ----------
 function openSeasonModal(entry) {
-  const modal = $("seasonModal");
-  const body = modal.querySelector(".modal-body");
+  ensureSeasonState();
 
-  const id = entry ? entry.id : "";
-  const now = new Date().getFullYear();
+  const isEdit = !!entry;
+  const nowYear = new Date().getFullYear();
 
-  const season = entry?.season || "Spring";
-  const year = entry?.year || now;
-  const food = entry?.food ?? "";
-  const wood = entry?.wood ?? "";
-  const stone = entry?.stone ?? "";
-  const ore = entry?.ore ?? "";
-  const silver = entry?.silver ?? "";
-  const gold = entry?.gold ?? "";
-  const notes = entry?.notes || "";
+  // Set title
+  if ($("seasonModalTitle")) {
+    $("seasonModalTitle").textContent = isEdit
+      ? "Edit Seasonal Resource Gain"
+      : "Add Seasonal Resource Gain";
+  }
 
-  $("seasonModalId").value = id;
+  // Hidden id
+  if ($("seasonModalId")) {
+    $("seasonModalId").value = isEdit ? entry.id : "";
+  }
 
- body.innerHTML = `
-  <div class="two-col">
-    <div class="field">
-      <label>Season</label>
-      <select id="seasonModalSeason">
-        <option>Spring</option>
-        <option>Summer</option>
-        <option>Fall</option>
-        <option>Winter</option>
-      </select>
-    </div>
+  // Season & year
+  if ($("seasonModalSeason")) {
+    $("seasonModalSeason").value = isEdit ? entry.season : "Spring";
+  }
+  if ($("seasonModalYear")) {
+    $("seasonModalYear").value =
+      isEdit && entry.year != null && entry.year !== ""
+        ? entry.year
+        : nowYear;
+  }
 
-    <div class="field">
-      <label>Year</label>
-      <input type="number" id="seasonModalYear">
-    </div>
+  // Resources
+  if ($("seasonModalFood")) {
+    $("seasonModalFood").value = isEdit && entry.food != null ? entry.food : "";
+  }
+  if ($("seasonModalWood")) {
+    $("seasonModalWood").value = isEdit && entry.wood != null ? entry.wood : "";
+  }
+  if ($("seasonModalStone")) {
+    $("seasonModalStone").value =
+      isEdit && entry.stone != null ? entry.stone : "";
+  }
+  if ($("seasonModalOre")) {
+    $("seasonModalOre").value = isEdit && entry.ore != null ? entry.ore : "";
+  }
+  if ($("seasonModalSilver")) {
+    $("seasonModalSilver").value =
+      isEdit && entry.silver != null ? entry.silver : "";
+  }
+  if ($("seasonModalGold")) {
+    $("seasonModalGold").value =
+      isEdit && entry.gold != null ? entry.gold : "";
+  }
 
-    <div class="field">
-      <label>Food Gained</label>
-      <input type="number" id="seasonModalFood">
-    </div>
-
-    <div class="field">
-      <label>Wood Gained</label>
-      <input type="number" id="seasonModalWood">
-    </div>
-
-    <div class="field">
-      <label>Stone Gained</label>
-      <input type="number" id="seasonModalStone">
-    </div>
-
-    <div class="field">
-      <label>Ore Gained</label>
-      <input type="number" id="seasonModalOre">
-    </div>
-
-    <div class="field">
-      <label>Silver Gained</label>
-      <input type="number" id="seasonModalSilver">
-    </div>
-
-    <div class="field">
-      <label>Gold Gained</label>
-      <input type="number" id="seasonModalGold">
-    </div>
-  </div>
-
-  <div class="field">
-    <label>Notes</label>
-    <textarea id="seasonModalNotes" rows="3"></textarea>
-  </div>
-`;
-
-
-  $("seasonModalSeason").value = season;
-  $("seasonModalYear").value = year;
+  if ($("seasonModalNotes")) {
+    $("seasonModalNotes").value = isEdit && entry.notes ? entry.notes : "";
+  }
 
   openModal("seasonModal");
 }
 
-// ===== SAVE SEASON =====
+// ---------- SAVE ----------
 function saveSeasonFromModal() {
-  const id = $("seasonModalId").value || null;
+  ensureSeasonState();
 
-  const season = $("seasonModalSeason").value;
-  const year = $("seasonModalYear").value;
-  const food = $("seasonModalFood").value;
-  const wood = $("seasonModalWood").value;
-  const stone = $("seasonModalStone").value;
-  const ore = $("seasonModalOre").value;
-  const silver = $("seasonModalSilver").value;
-  const gold = $("seasonModalGold").value;
-  const notes = $("seasonModalNotes").value;
+  const idEl = $("seasonModalId");
+  const id = idEl ? (idEl.value || "").trim() : "";
 
-  if (!id) {
-    const newId = `season_${nextSeasonId++}`;
-    state.seasonGains.push({
-      id: newId,
-      season,
-      year,
-      food,
-      wood,
-      stone,
-      ore,
-      silver,
-      gold,
-      notes
-    });
+  const season = $("seasonModalSeason")
+    ? $("seasonModalSeason").value || "Spring"
+    : "Spring";
+  const yearStr = $("seasonModalYear")
+    ? ($("seasonModalYear").value || "").trim()
+    : "";
+  const year = yearStr === "" ? null : Number(yearStr);
+
+  const payload = {
+    id: id || `sg_${calcNextNumericId(state.seasonGains, "sg_")}`,
+    season,
+    year,
+    food: readNumber("seasonModalFood"),
+    wood: readNumber("seasonModalWood"),
+    stone: readNumber("seasonModalStone"),
+    ore: readNumber("seasonModalOre"),
+    silver: readNumber("seasonModalSilver"),
+    gold: readNumber("seasonModalGold"),
+    notes: $("seasonModalNotes") ? $("seasonModalNotes").value.trim() : ""
+  };
+
+  if (id) {
+    // Update existing
+    const existing = state.seasonGains.find((s) => s.id === id);
+    if (!existing) {
+      console.warn("Season entry not found for id", id);
+    } else {
+      Object.assign(existing, payload);
+    }
   } else {
-    const entry = state.seasonGains.find(e => e.id === id);
-    if (!entry) return;
-    entry.season = season;
-    entry.year = year;
-    entry.food = food;
-    entry.wood = wood;
-    entry.stone = stone;
-    entry.ore = ore;
-    entry.silver = silver;
-    entry.gold = gold;
-    entry.notes = notes;
+    // New
+    state.seasonGains.push(payload);
   }
 
   markDirty();
@@ -141,79 +138,98 @@ function saveSeasonFromModal() {
   renderSeasonGainList();
 }
 
-// ===== DELETE =====
+// ---------- DELETE ----------
 function deleteSeasonGain(id) {
+  ensureSeasonState();
   if (!confirm("Delete this seasonal gain entry?")) return;
-  const idx = state.seasonGains.findIndex(e => e.id === id);
+
+  const idx = state.seasonGains.findIndex((s) => s.id === id);
   if (idx >= 0) {
     state.seasonGains.splice(idx, 1);
     markDirty();
     renderSeasonGainList();
   }
 }
-// ===== RENDER SEASONAL GAINS =====
+
+// ---------- RENDER TABLE ----------
 function renderSeasonGainList() {
+  ensureSeasonState();
   const tbody = $("seasonTableBody");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
-  state.seasonGains.forEach(entry => {
-    const row = document.createElement("tr");
-    row.className = "season-row";
+  state.seasonGains.forEach((sg) => {
+    const tr = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>${entry.season}</td>
-      <td>${entry.year}</td>
-      <td>${entry.food || 0}</td>
-      <td>${entry.wood || 0}</td>
-      <td>${entry.stone || 0}</td>
-      <td>${entry.ore || 0}</td>
-      <td>${entry.silver || 0}</td>
-      <td>${entry.gold || 0}</td>
+    tr.innerHTML = `
+      <td>${sg.season || ""}</td>
+      <td>${sg.year != null ? sg.year : ""}</td>
+      <td>${sg.food ?? 0}</td>
+      <td>${sg.wood ?? 0}</td>
+      <td>${sg.stone ?? 0}</td>
+      <td>${sg.ore ?? 0}</td>
+      <td>${sg.silver ?? 0}</td>
+      <td>${sg.gold ?? 0}</td>
+      <td>${sg.notes ? escapeHtmlForCell(sg.notes) : ""}</td>
       <td class="actions-cell">
-        <button class="button small secondary" data-id="${entry.id}" data-action="details">Details</button>
-        <button class="button small secondary" data-id="${entry.id}" data-action="edit">Edit</button>
-        <button class="button small secondary" data-id="${entry.id}" data-action="delete">Delete</button>
+        <button class="button tiny secondary season-details-btn">Details</button>
+        <button class="button tiny secondary season-edit-btn">Edit</button>
+        <button class="button tiny secondary season-delete-btn">Delete</button>
       </td>
     `;
 
-    tbody.appendChild(row);
-  });
+    const detailsRow = document.createElement("tr");
+    detailsRow.className = "season-details-row";
+    detailsRow.style.display = "none";
+    const detailsCell = document.createElement("td");
+    detailsCell.colSpan = 10;
+    detailsCell.innerHTML = `
+      <div class="details-block">
+        <div><strong>Season:</strong> ${sg.season || ""} ${sg.year ?? ""}</div>
+        <div><strong>Food:</strong> ${sg.food ?? 0}</div>
+        <div><strong>Wood:</strong> ${sg.wood ?? 0}</div>
+        <div><strong>Stone:</strong> ${sg.stone ?? 0}</div>
+        <div><strong>Ore:</strong> ${sg.ore ?? 0}</div>
+        <div><strong>Silver:</strong> ${sg.silver ?? 0}</div>
+        <div><strong>Gold:</strong> ${sg.gold ?? 0}</div>
+        <div><strong>Notes:</strong><br>${sg.notes
+          ? escapeHtmlForCell(sg.notes).replace(/\n/g, "<br>")
+          : "(none)"}</div>
+      </div>
+    `;
+    detailsRow.appendChild(detailsCell);
 
-  // Wire row buttons
-  tbody.querySelectorAll("button").forEach(btn => {
-    const id = btn.dataset.id;
-    const action = btn.dataset.action;
+    // Wire buttons
+    const detailsBtn = tr.querySelector(".season-details-btn");
+    const editBtn = tr.querySelector(".season-edit-btn");
+    const deleteBtn = tr.querySelector(".season-delete-btn");
 
-    btn.addEventListener("click", () => {
-      const entry = state.seasonGains.find(e => e.id === id);
-      if (!entry) return;
+    if (detailsBtn) {
+      detailsBtn.addEventListener("click", () => {
+        const isOpen = detailsRow.style.display !== "none";
+        detailsRow.style.display = isOpen ? "none" : "";
+        detailsBtn.textContent = isOpen ? "Details" : "Hide";
+      });
+    }
 
-      if (action === "edit") openSeasonModal(entry);
-      if (action === "delete") deleteSeasonGain(id);
-      if (action === "details") openSeasonDetails(entry);
-    });
+    if (editBtn) {
+      editBtn.addEventListener("click", () => openSeasonModal(sg));
+    }
+
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", () => deleteSeasonGain(sg.id));
+    }
+
+    tbody.appendChild(tr);
+    tbody.appendChild(detailsRow);
   });
 }
 
-// ===== DETAILS MODAL =====
-function openSeasonDetails(entry) {
-  const modal = $("detailsModal");
-  const title = $("detailsModalTitle");
-  const body = $("detailsModalBody");
-
-  title.textContent = `${entry.season} ${entry.year}`;
-  body.innerHTML = `
-    <p><strong>Food:</strong> ${entry.food}</p>
-    <p><strong>Wood:</strong> ${entry.wood}</p>
-    <p><strong>Stone:</strong> ${entry.stone}</p>
-    <p><strong>Ore:</strong> ${entry.ore}</p>
-    <p><strong>Silver:</strong> ${entry.silver}</p>
-    <p><strong>Gold:</strong> ${entry.gold}</p>
-    <p><strong>Notes:</strong><br>${entry.notes || "(none)"}</p>
-  `;
-
-  openModal("detailsModal");
+// Escape helper for notes to keep things safe/nice
+function escapeHtmlForCell(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
-
