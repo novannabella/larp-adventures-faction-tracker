@@ -269,23 +269,26 @@
           <input id="hexModalNumber" type="text" maxlength="5" />
         </div>
 
-        <div class="field-row">
-          <label for="hexModalTerrainSelect">Terrain</label>
-          <div class="structures-inline">
-            <select id="hexModalTerrainSelect">
-              <option value="">-- Select Terrain --</option>
-              <option value="Plains">Plains</option>
-              <option value="Forest">Forest</option>
-              <option value="Mountain">Mountain</option>
-              <option value="Sea">Sea</option>
-              <option value="Blasted Lands">Blasted Lands</option>
-            </select>
-            <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
-              Add
-            </button>
-          </div>
-          <input id="hexModalTerrains" type="text" readonly />
-        </div>
+<div class="field-row">
+  <label for="hexModalTerrainSelect">Terrain</label>
+  <div class="structures-inline">
+    <select id="hexModalTerrainSelect">
+      <option value="">-- Select Terrain --</option>
+      <option value="Plains">Plains</option>
+      <option value="Forest">Forest</option>
+      <option value="Mountain">Mountain</option>
+      <option value="Sea">Sea</option>
+      <option value="Blasted Lands">Blasted Lands</option>
+    </select>
+    <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
+      Add
+    </button>
+  </div>
+
+  <!-- FIXED: must be hexModalTerrain -->
+  <input id="hexModalTerrain" type="text" readonly />
+</div>
+
 
         <div class="field-row">
           <label for="hexModalStructures">Structures</label>
@@ -294,7 +297,7 @@
               <option value="">-- Add Structure --</option>
               <optgroup label="Improvements">
                 <option value="Market">Market</option>
-                <option value="Carpenter's Shop">Carpenter's Chop</option>
+                <option value="Carpenter's Shop">Carpenter's Shop</option>
                 <option value="Blacksmith">Blacksmith</option>
                 <option value="Bank">Bank</option>
                 <option value="Stone Mason's Shop">Stone Mason's Shop</option>
