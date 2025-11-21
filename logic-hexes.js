@@ -1,8 +1,18 @@
 // logic-hexes.js
 
-let upkeepTable = {};
+let upkeepTable = {}; // reserved for future upkeep.csv usage
 
+// Ensure hex array exists
+function ensureHexState() {
+  if (!Array.isArray(state.hexes)) {
+    state.hexes = [];
+  }
+}
+
+// ---------- INIT ----------
 function initHexSection() {
+  ensureHexState();
+
   const addBtn = $("hexAddBtn");
   if (addBtn && !addBtn._wired) {
     addBtn.addEventListener("click", () => openHexModal());
@@ -19,17 +29,24 @@ function initHexSection() {
   if (terrAdd && !terrAdd._wired) {
     terrAdd.addEventListener("click", () => {
       const sel = $("hexModalTerrainSelect");
-      const list = $("hexModalTerrains");
+      const list = $("hexModalTerrain"); // NOTE: matches HTML id
       if (!sel || !list) return;
+
       const val = (sel.value || "").trim();
       if (!val) return;
+
       const current = list.value
-        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        ? list.value
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
+
       if (!current.includes(val)) {
         current.push(val);
         list.value = current.join(", ");
       }
+
       sel.value = "";
     });
     terrAdd._wired = true;
@@ -41,83 +58,46 @@ function initHexSection() {
       const sel = $("hexModalStructureSelect");
       const list = $("hexModalStructures");
       if (!sel || !list) return;
+
       const val = (sel.value || "").trim();
       if (!val) return;
+
       const current = list.value
-        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        ? list.value
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
         : [];
+
       if (!current.includes(val)) {
         current.push(val);
         list.value = current.join(", ");
       }
+
       sel.value = "";
     });
     structAdd._wired = true;
   }
-
-  loadUpkeepTable();
 }
 
-function loadUpkeepTable() {
-  fetch("upkeep.csv")
-    .then((r) => r.text())
-    .then((text) => {
-      const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
-      if (lines.length < 2) return;
+// (You can still keep loadUpkeepTable / calcHexUpkeep if you want later;
+// they are unused by the current table layout.)
 
-      const header = lines[0].split(",").map((h) => h.trim());
-      const idxUpgrade = header.indexOf("Upgrade");
-      const idxFood = header.indexOf("Food");
-      const idxWood = header.indexOf("Wood");
-      const idxStone = header.indexOf("Stone");
-      const idxGold = header.indexOf("Gold");
-
-      for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(",").map((c) => c.trim());
-        const name = cols[idxUpgrade] || "";
-        if (!name) continue;
-        const food = parseInt(cols[idxFood] || "0", 10) || 0;
-        const wood = parseInt(cols[idxWood] || "0", 10) || 0;
-        const stone = parseInt(cols[idxStone] || "0", 10) || 0;
-        const gold = parseInt(cols[idxGold] || "0", 10) || 0;
-        upkeepTable[name] = { food, wood, stone, gold };
-      }
-    })
-    .catch(() => {
-      upkeepTable = {};
-    });
-}
-
-function calcHexUpkeep(hex) {
-  const result = { food: 0, wood: 0, stone: 0, gold: 0 };
-  if (!hex.structure) return result;
-
-  const names = hex.structure
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  names.forEach((name) => {
-    const row = upkeepTable[name];
-    if (!row) return;
-    result.food += row.food || 0;
-    result.wood += row.wood || 0;
-    result.stone += row.stone || 0;
-    result.gold += row.gold || 0;
-  });
-
-  return result;
-}
-
+// ---------- MODAL OPEN / SAVE ----------
 function openHexModal(hex) {
+  ensureHexState();
+
   $("hexModalId").value = hex ? hex.id : "";
   $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
 
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
-  $("hexModalTerrains").value = hex?.terrain || "";
+
+  $("hexModalTerrain").value = hex?.terrain || "";
   $("hexModalStructures").value = hex?.structure || "";
+
   $("hexModalNotes").value = hex?.notes || "";
+
   $("hexModalTerrainSelect").value = "";
   $("hexModalStructureSelect").value = "";
 
@@ -125,11 +105,12 @@ function openHexModal(hex) {
 }
 
 function saveHexFromModal() {
-  const id = $("hexModalId").value || null;
+  ensureHexState();
 
+  const id = $("hexModalId").value || null;
   const name = $("hexModalName").value.trim();
   const hexNumber = $("hexModalNumber").value.trim();
-  const terrain = $("hexModalTerrains").value.trim();
+  const terrain = $("hexModalTerrain").value.trim();
   const structure = $("hexModalStructures").value.trim();
   const notes = $("hexModalNotes").value.trim();
 
@@ -141,8 +122,7 @@ function saveHexFromModal() {
       hexNumber,
       terrain,
       structure,
-      notes,
-      detailsOpen: false
+      notes
     });
   } else {
     const hex = state.hexes.find((h) => h.id === id);
@@ -161,23 +141,23 @@ function saveHexFromModal() {
 }
 
 function deleteHex(id) {
+  ensureHexState();
   if (!confirm("Delete this hex from the faction?")) return;
   state.hexes = state.hexes.filter((h) => h.id !== id);
   markDirty();
   renderHexList();
 }
 
+// ---------- RENDER TABLE ----------
 function renderHexList() {
+  ensureHexState();
   const tbody = $("hexTableBody");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
   state.hexes.forEach((hex) => {
-    const upkeep = calcHexUpkeep(hex);
-
     const row = document.createElement("tr");
-    row.className = "hex-main-row";
 
     function td(text) {
       const cell = document.createElement("td");
@@ -185,19 +165,18 @@ function renderHexList() {
       return cell;
     }
 
-    row.appendChild(td(hex.name || "(Unnamed)"));
+    // Columns: Hex | Name | Terrain | Structures | Actions
     row.appendChild(td(hex.hexNumber || ""));
-    row.appendChild(td(upkeep.food || ""));
-    row.appendChild(td(upkeep.wood || ""));
-    row.appendChild(td(upkeep.stone || ""));
-    row.appendChild(td(upkeep.gold || ""));
+    row.appendChild(td(hex.name || "(Unnamed)"));
+    row.appendChild(td(hex.terrain || "—"));
+    row.appendChild(td(hex.structure || "—"));
 
     const actionsTd = document.createElement("td");
-    actionsTd.style.whiteSpace = "nowrap";
+    actionsTd.className = "actions-cell";
 
     const detailsBtn = document.createElement("button");
     detailsBtn.className = "button small secondary";
-    detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
+    detailsBtn.textContent = "Details";
 
     const editBtn = document.createElement("button");
     editBtn.className = "button small secondary";
@@ -212,29 +191,45 @@ function renderHexList() {
     actionsTd.appendChild(delBtn);
     row.appendChild(actionsTd);
 
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "hex-details-row";
-    detailsRow.style.display = hex.detailsOpen ? "" : "none";
-
-    const detailsTd = document.createElement("td");
-    detailsTd.colSpan = 7;
-    detailsTd.innerHTML = `
-      <strong>Terrain:</strong> ${hex.terrain || "—"}<br/>
-      <strong>Structures:</strong> ${hex.structure || "—"}<br/>
-      <strong>Notes:</strong> ${hex.notes || "—"}
-    `;
-    detailsRow.appendChild(detailsTd);
-
-    detailsBtn.addEventListener("click", () => {
-      hex.detailsOpen = !hex.detailsOpen;
-      detailsRow.style.display = hex.detailsOpen ? "" : "none";
-      detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
-    });
-
+    detailsBtn.addEventListener("click", () => openHexDetailsModal(hex));
     editBtn.addEventListener("click", () => openHexModal(hex));
     delBtn.addEventListener("click", () => deleteHex(hex.id));
 
     tbody.appendChild(row);
-    tbody.appendChild(detailsRow);
   });
+}
+
+// ---------- DETAILS MODAL ----------
+function openHexDetailsModal(hex) {
+  if (!hex) return;
+  const titleEl = $("detailsModalTitle");
+  const body = $("detailsModalBody");
+  if (!titleEl || !body) return;
+
+  const label = (hex.hexNumber || "") + (hex.name ? ` — ${hex.name}` : "");
+  titleEl.textContent = label.trim() || "Hex Details";
+
+  const notesHtml = hex.notes
+    ? escapeHtmlForDetails(hex.notes).replace(/\n/g, "<br>")
+    : "(none)";
+
+  body.innerHTML = `
+    <p><strong>Name:</strong> ${escapeHtmlForDetails(hex.name || "—")}</p>
+    <p><strong>Hex Number:</strong> ${escapeHtmlForDetails(hex.hexNumber || "—")}</p>
+    <p><strong>Terrain:</strong> ${escapeHtmlForDetails(hex.terrain || "—")}</p>
+    <p><strong>Structures:</strong> ${escapeHtmlForDetails(
+      hex.structure || "—"
+    )}</p>
+    <p><strong>Notes:</strong><br>${notesHtml}</p>
+  `;
+
+  openModal("detailsModal");
+}
+
+// Simple HTML escape
+function escapeHtmlForDetails(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
