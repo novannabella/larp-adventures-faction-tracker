@@ -733,61 +733,43 @@ tbody tr:hover {
   /* subtle light border */;
 }
 
-/* Faction Tracker Desktop Overrides */
+/* === Faction Tracker Desktop Overrides === */
+
+/* 2‑column top layout, full‑width below */
 .app {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  gap: 20px;
-  grid-template-columns: 1fr 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
 }
 
-.card.full-span { grid-column: 1 / -1; }
+/* Full width for Events + Hexes */
+.full-span {
+    grid-column: 1 / -1;
+}
 
+/* Use your existing .field / .section-row styling; only layout helpers below */
 .coffers-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 .event-row, .hex-row {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
-/* Fix input text color */
-input, textarea, select {
-  color: var(--text-color);
-  background: var(--input-bg);
-}
-
-/* Restore gold button styles */
-.button {
-  background: var(--accent-gradient);
-  border-radius: 6px;
-  padding: 6px 16px;
-  color: #fff;
-  font-weight: 600;
-}
-
-/* Small add buttons */
+/* Ensure buttons use theme */
 .button.small {
-  padding: 4px 10px;
-  font-size: 13px;
+    padding: 4px 12px;
+    font-size: 13px;
 }
 
-/* Load/Save dark outline buttons */
-.button.secondary {
-  background: transparent;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  border-radius: 20px;
-}
-
-/* Tables */
-.hex-table, .event-table { width: 100%; border-collapse: collapse; }
-.hex-table th, .hex-table td, .event-table th, .event-table td {
-  border-bottom: 1px solid var(--border-color);
-  padding: 6px;
+/* Fix input inheritance */
+input, textarea, select {
+    color: var(--text-color);
+    background: var(--input-bg);
 }
