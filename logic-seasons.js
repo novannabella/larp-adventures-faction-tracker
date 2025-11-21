@@ -42,3 +42,109 @@ function openSeasonModal(entry) {
         <option value="Fall">Fall</option>
         <option value="Winter">Winter</option>
       </select>
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalYear">Year</label>
+      <input id="seasonModalYear" type="number" value="${year}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalFood">Food Gained</label>
+      <input id="seasonModalFood" type="number" value="${food}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalWood">Wood Gained</label>
+      <input id="seasonModalWood" type="number" value="${wood}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalStone">Stone Gained</label>
+      <input id="seasonModalStone" type="number" value="${stone}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalOre">Ore Gained</label>
+      <input id="seasonModalOre" type="number" value="${ore}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalSilver">Silver Gained</label>
+      <input id="seasonModalSilver" type="number" value="${silver}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalGold">Gold Gained</label>
+      <input id="seasonModalGold" type="number" value="${gold}">
+    </div>
+
+    <div class="field-row">
+      <label for="seasonModalNotes">Notes</label>
+      <textarea id="seasonModalNotes" rows="3">${notes}</textarea>
+    </div>
+  `;
+
+  $("seasonModalSeason").value = season;
+  $("seasonModalYear").value = year;
+
+  openModal("seasonModal");
+}
+
+// ===== SAVE SEASON =====
+function saveSeasonFromModal() {
+  const id = $("seasonModalId").value || null;
+
+  const season = $("seasonModalSeason").value;
+  const year = $("seasonModalYear").value;
+  const food = $("seasonModalFood").value;
+  const wood = $("seasonModalWood").value;
+  const stone = $("seasonModalStone").value;
+  const ore = $("seasonModalOre").value;
+  const silver = $("seasonModalSilver").value;
+  const gold = $("seasonModalGold").value;
+  const notes = $("seasonModalNotes").value;
+
+  if (!id) {
+    const newId = `season_${nextSeasonId++}`;
+    state.seasonGains.push({
+      id: newId,
+      season,
+      year,
+      food,
+      wood,
+      stone,
+      ore,
+      silver,
+      gold,
+      notes
+    });
+  } else {
+    const entry = state.seasonGains.find(e => e.id === id);
+    if (!entry) return;
+    entry.season = season;
+    entry.year = year;
+    entry.food = food;
+    entry.wood = wood;
+    entry.stone = stone;
+    entry.ore = ore;
+    entry.silver = silver;
+    entry.gold = gold;
+    entry.notes = notes;
+  }
+
+  markDirty();
+  closeModal("seasonModal");
+  renderSeasonGainList();
+}
+
+// ===== DELETE =====
+function deleteSeasonGain(id) {
+  if (!confirm("Delete this seasonal gain entry?")) return;
+  const idx = state.seasonGains.findIndex(e => e.id === id);
+  if (idx >= 0) {
+    state.seasonGains.splice(idx, 1);
+    markDirty();
+    renderSeasonGainList();
+  }
+}
