@@ -41,21 +41,22 @@ function initUI() {
   wireCoffers();
 
   // Seasonal gains
-  initSeasonSection();   // <-- REQUIRED
+  initSeasonsSection();   // <-- FIXED (correct name)
 
-  // Events section (Add button + sort)
-  initEventSection();    // <-- REQUIRED
+  // Events
+  initEventSection();
 
   // Controlled Hexes
-  initHexSection();      // <-- REQUIRED
+  initHexSection();
 
-  // Render full interface
+  // Render UI
   syncFactionInfoToUI();
   syncCoffersToUI();
   renderSeasonGainList();
   renderEventList();
   renderHexList();
 }
+
 
 // Run after DOM loads
 document.addEventListener("DOMContentLoaded", initUI);
