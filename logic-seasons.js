@@ -39,19 +39,16 @@ function openSeasonModal(entry) {
   const isEdit = !!entry;
   const nowYear = new Date().getFullYear();
 
-  // Set title
   if ($("seasonModalTitle")) {
     $("seasonModalTitle").textContent = isEdit
       ? "Edit Seasonal Resource Gain"
       : "Add Seasonal Resource Gain";
   }
 
-  // Hidden id
   if ($("seasonModalId")) {
     $("seasonModalId").value = isEdit ? entry.id : "";
   }
 
-  // Season & year
   if ($("seasonModalSeason")) {
     $("seasonModalSeason").value = isEdit ? entry.season : "Spring";
   }
@@ -62,7 +59,6 @@ function openSeasonModal(entry) {
         : nowYear;
   }
 
-  // Resources
   if ($("seasonModalFood")) {
     $("seasonModalFood").value = isEdit && entry.food != null ? entry.food : "";
   }
@@ -121,7 +117,6 @@ function saveSeasonFromModal() {
   };
 
   if (id) {
-    // Update existing
     const existing = state.seasonGains.find((s) => s.id === id);
     if (!existing) {
       console.warn("Season entry not found for id", id);
@@ -129,7 +124,6 @@ function saveSeasonFromModal() {
       Object.assign(existing, payload);
     }
   } else {
-    // New
     state.seasonGains.push(payload);
   }
 
@@ -149,6 +143,38 @@ function deleteSeasonGain(id) {
     markDirty();
     renderSeasonGainList();
   }
+}
+
+// ---------- DETAILS MODAL ----------
+function openSeasonDetailsModal(sg) {
+  if (!sg) return;
+  const titleEl = $("detailsModalTitle");
+  const body = $("detailsModalBody");
+  if (!titleEl || !body) return;
+
+  const title = `${sg.season || ""} ${sg.year ?? ""}`.trim();
+  titleEl.textContent = title || "Seasonal Resource Gain";
+
+  const notesHtml = sg.notes
+    ? escapeHtmlForCell(sg.notes).replace(/\n/g, "<br>")
+    : "(none)";
+
+  body.innerHTML = `
+    <div class="details-grid">
+      <p><strong>Season:</strong> ${sg.season || "—"}</p>
+      <p><strong>Year:</strong> ${sg.year != null ? sg.year : "—"}</p>
+      <p><strong>Food:</strong> ${sg.food ?? 0}</p>
+      <p><strong>Wood:</strong> ${sg.wood ?? 0}</p>
+      <p><strong>Stone:</strong> ${sg.stone ?? 0}</p>
+      <p><strong>Ore:</strong> ${sg.ore ?? 0}</p>
+      <p><strong>Silver:</strong> ${sg.silver ?? 0}</p>
+      <p><strong>Gold:</strong> ${sg.gold ?? 0}</p>
+    </div>
+    <hr />
+    <p><strong>Notes:</strong><br>${notesHtml}</p>
+  `;
+
+  openModal("detailsModal");
 }
 
 // ---------- RENDER TABLE ----------
@@ -179,50 +205,21 @@ function renderSeasonGainList() {
       </td>
     `;
 
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "season-details-row";
-    detailsRow.style.display = "none";
-    const detailsCell = document.createElement("td");
-    detailsCell.colSpan = 10;
-    detailsCell.innerHTML = `
-      <div class="details-block">
-        <div><strong>Season:</strong> ${sg.season || ""} ${sg.year ?? ""}</div>
-        <div><strong>Food:</strong> ${sg.food ?? 0}</div>
-        <div><strong>Wood:</strong> ${sg.wood ?? 0}</div>
-        <div><strong>Stone:</strong> ${sg.stone ?? 0}</div>
-        <div><strong>Ore:</strong> ${sg.ore ?? 0}</div>
-        <div><strong>Silver:</strong> ${sg.silver ?? 0}</div>
-        <div><strong>Gold:</strong> ${sg.gold ?? 0}</div>
-        <div><strong>Notes:</strong><br>${sg.notes
-          ? escapeHtmlForCell(sg.notes).replace(/\n/g, "<br>")
-          : "(none)"}</div>
-      </div>
-    `;
-    detailsRow.appendChild(detailsCell);
-
-    // Wire buttons
     const detailsBtn = tr.querySelector(".season-details-btn");
     const editBtn = tr.querySelector(".season-edit-btn");
     const deleteBtn = tr.querySelector(".season-delete-btn");
 
     if (detailsBtn) {
-      detailsBtn.addEventListener("click", () => {
-        const isOpen = detailsRow.style.display !== "none";
-        detailsRow.style.display = isOpen ? "none" : "";
-        detailsBtn.textContent = isOpen ? "Details" : "Hide";
-      });
+      detailsBtn.addEventListener("click", () => openSeasonDetailsModal(sg));
     }
-
     if (editBtn) {
       editBtn.addEventListener("click", () => openSeasonModal(sg));
     }
-
     if (deleteBtn) {
       deleteBtn.addEventListener("click", () => deleteSeasonGain(sg.id));
     }
 
     tbody.appendChild(tr);
-    tbody.appendChild(detailsRow);
   });
 }
 
