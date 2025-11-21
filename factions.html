@@ -1,228 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Faction Resource Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="factions-styles-desktop.css"
-      media="(min-width: 769px)"
-    />
-    <link
-      rel="stylesheet"
-      href="factions-styles-mobile.css"
-      media="(max-width: 768px)"
-    />
-  </head>
-  <body>
-    <div class="app">
-      <!-- Title & subtitle to match character sheet -->
-      <h1>LARP Adventures</h1>
-      <div class="subtitle">Faction Resource Tracker</div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Faction Resource Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="factions-styles-desktop.css" media="(min-width: 769px)" />
+  <link rel="stylesheet" href="factions-styles-mobile.css" media="(max-width: 768px)" />
+</head>
+<body>
+  <div class="app">
+    <h1>Larp Adventures</h1>
+    <div class="subtitle">Faction Resource Tracker</div>
 
-      <!-- Top controls: Load / Save Faction -->
-      <div class="top-controls">
-        <div class="save-load-controls">
-          <button id="loadStateBtn" class="button secondary">
-            Load Faction
-          </button>
-          <input
-            type="file"
-            id="loadStateFile"
-            accept=".json,application/json"
-            style="display: none"
-          />
-          <button id="saveStateBtn" class="button secondary">
-            Save Faction
-          </button>
-        </div>
+    <!-- LOAD / SAVE -->
+    <div class="top-controls">
+      <div class="save-load-controls">
+        <button id="loadStateBtn" class="button secondary">Load Faction</button>
+        <input type="file" id="loadStateFile" accept=".json,application/json" hidden />
+        <button id="saveStateBtn" class="button secondary">Save Faction</button>
       </div>
+    </div>
 
-      <div class="layout-grid">
-        <!-- Faction Info + Coffers -->
-        <div class="card large" id="factionInfoCard">
+    <!-- TOP ROW: Faction Info | Coffers -->
+    <div class="top-row">
+      <!-- Faction Information -->
+      <div class="card" id="factionInfoCard">
+        <div class="card-inner">
           <h2>Faction Information</h2>
           <div class="field">
             <label for="factionName">Name</label>
-            <input type="text" id="factionName" />
+            <input id="factionName" type="text" />
           </div>
           <div class="field">
             <label for="factionNotes">Notes</label>
-            <textarea id="factionNotes" rows="4"></textarea>
+            <textarea id="factionNotes" rows="5"></textarea>
           </div>
+        </div>
+      </div>
 
-          <h3>Coffers &amp; Resources</h3>
+      <!-- Coffers & Resources -->
+      <div class="card" id="coffersCard">
+        <div class="card-inner">
+          <h2>Coffers &amp; Resources</h2>
+
           <div class="coffers-grid">
             <div class="field">
               <label for="food">Food</label>
-              <input type="number" id="food" />
+              <input id="food" type="number" />
             </div>
             <div class="field">
               <label for="wood">Wood</label>
-              <input type="number" id="wood" />
+              <input id="wood" type="number" />
             </div>
             <div class="field">
               <label for="stone">Stone</label>
-              <input type="number" id="stone" />
+              <input id="stone" type="number" />
             </div>
             <div class="field">
               <label for="ore">Ore</label>
-              <input type="number" id="ore" />
+              <input id="ore" type="number" />
             </div>
             <div class="field">
               <label for="silver">Silver</label>
-              <input type="number" id="silver" />
+              <input id="silver" type="number" />
             </div>
             <div class="field">
               <label for="gold">Gold</label>
-              <input type="number" id="gold" />
+              <input id="gold" type="number" />
             </div>
           </div>
-        </div>
-
-        <!-- Seasonal Resource Gains -->
-        <div class="card large" id="seasonalGainsCard">
-          <h2>Seasonal Resource Gains</h2>
-
-          <!-- Season + real-world year -->
-          <div class="section-row">
-            <div class="field">
-              <label for="seasonSelect">Season</label>
-              <select id="seasonSelect">
-                <option value="Spring">Spring</option>
-                <option value="Summer">Summer</option>
-                <option value="Fall">Fall</option>
-                <option value="Winter">Winter</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="seasonYear">Year</label>
-              <input
-                type="number"
-                id="seasonYear"
-                min="0"
-                max="9999"
-                placeholder="2025"
-              />
-            </div>
-          </div>
-
-          <div class="coffers-grid">
-            <div class="field">
-              <label for="seasonFood">Food Gained</label>
-              <input type="number" id="seasonFood" />
-            </div>
-            <div class="field">
-              <label for="seasonWood">Wood Gained</label>
-              <input type="number" id="seasonWood" />
-            </div>
-            <div class="field">
-              <label for="seasonStone">Stone Gained</label>
-              <input type="number" id="seasonStone" />
-            </div>
-            <div class="field">
-              <label for="seasonOre">Ore Gained</label>
-              <input type="number" id="seasonOre" />
-            </div>
-            <div class="field">
-              <label for="seasonSilver">Silver Gained</label>
-              <input type="number" id="seasonSilver" />
-            </div>
-            <div class="field">
-              <label for="seasonGold">Gold Gained</label>
-              <input type="number" id="seasonGold" />
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="seasonNotes">Notes</label>
-            <textarea id="seasonNotes" rows="4"></textarea>
-          </div>
-        </div>
-
-        <!-- Events & Turn Actions -->
-        <div class="card full-width" id="eventsCard">
-          <h2>Events &amp; Turn Actions</h2>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="newEventName">Event Name</label>
-              <input type="text" id="newEventName" />
-            </div>
-            <div class="field">
-              <label for="newEventDate">Date</label>
-              <input type="date" id="newEventDate" />
-            </div>
-            <div class="field">
-              <label for="newEventType">Type</label>
-              <select id="newEventType">
-                <option value="">-- Select Type --</option>
-                <option value="Day Event">Day Event</option>
-                <option value="Campout">Campout</option>
-                <option value="Festival Event">Festival Event</option>
-                <option value="Virtual Event">Virtual Event</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="addEventBtn" class="button small">Add</button>
-            </div>
-          </div>
-
-          <!-- Simple header row + event cards list below -->
-          <table class="event-table">
-            <thead>
-              <tr>
-                <th>Event</th>
-                <th id="eventDateSortHeader">Date ▲</th>
-                <th>Type</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-          </table>
-
-          <!-- Cards rendered by factions-script.js -->
-          <div id="eventList"></div>
-        </div>
-
-        <!-- Controlled Hexes -->
-        <div class="card full-width" id="controlledHexesCard">
-          <h2>Controlled Hexes</h2>
-
-          <div class="section-row">
-            <div class="field">
-              <label for="newHexName">Name</label>
-              <input type="text" id="newHexName" />
-            </div>
-            <div class="field">
-              <label for="newHexNumber">Hex Number</label>
-              <input type="text" id="newHexNumber" />
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="addHexBtn" class="button small">Add Hex</button>
-            </div>
-          </div>
-
-          <table class="hex-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Hex</th>
-                <th>Food</th>
-                <th>Wood</th>
-                <th>Stone</th>
-                <th>Gold</th>
-                <th>Details</th>
-              </tr>
-            </thead>
-            <tbody id="hexListBody"></tbody>
-          </table>
         </div>
       </div>
     </div>
 
-    <script src="factions-script.js"></script>
-  </body>
-</html>
+    <!-- SEASONAL RESOURCE GAINS (works like Events) -->
+    <div class="card" id="seasonalGainsCard">
+      <div class="card-inner">
+        <h2>Seasonal Resource Gains</h2>
+
+        <!-- Input row -->
+        <div
