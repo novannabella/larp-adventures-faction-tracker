@@ -148,3 +148,69 @@ function deleteSeasonGain(id) {
     renderSeasonGainList();
   }
 }
+// ===== RENDER SEASONAL GAINS =====
+function renderSeasonGainList() {
+  const tbody = $("seasonTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  state.seasonGains.forEach(entry => {
+    const row = document.createElement("tr");
+    row.className = "season-row";
+
+    row.innerHTML = `
+      <td>${entry.season}</td>
+      <td>${entry.year}</td>
+      <td>${entry.food || 0}</td>
+      <td>${entry.wood || 0}</td>
+      <td>${entry.stone || 0}</td>
+      <td>${entry.ore || 0}</td>
+      <td>${entry.silver || 0}</td>
+      <td>${entry.gold || 0}</td>
+      <td class="actions-cell">
+        <button class="button small secondary" data-id="${entry.id}" data-action="details">Details</button>
+        <button class="button small secondary" data-id="${entry.id}" data-action="edit">Edit</button>
+        <button class="button small secondary" data-id="${entry.id}" data-action="delete">Delete</button>
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
+
+  // Wire row buttons
+  tbody.querySelectorAll("button").forEach(btn => {
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+
+    btn.addEventListener("click", () => {
+      const entry = state.seasonGains.find(e => e.id === id);
+      if (!entry) return;
+
+      if (action === "edit") openSeasonModal(entry);
+      if (action === "delete") deleteSeasonGain(id);
+      if (action === "details") openSeasonDetails(entry);
+    });
+  });
+}
+
+// ===== DETAILS MODAL =====
+function openSeasonDetails(entry) {
+  const modal = $("detailsModal");
+  const title = $("detailsModalTitle");
+  const body = $("detailsModalBody");
+
+  title.textContent = `${entry.season} ${entry.year}`;
+  body.innerHTML = `
+    <p><strong>Food:</strong> ${entry.food}</p>
+    <p><strong>Wood:</strong> ${entry.wood}</p>
+    <p><strong>Stone:</strong> ${entry.stone}</p>
+    <p><strong>Ore:</strong> ${entry.ore}</p>
+    <p><strong>Silver:</strong> ${entry.silver}</p>
+    <p><strong>Gold:</strong> ${entry.gold}</p>
+    <p><strong>Notes:</strong><br>${entry.notes || "(none)"}</p>
+  `;
+
+  openModal("detailsModal");
+}
+
