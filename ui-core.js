@@ -1,26 +1,24 @@
 // ui-core.js
 
-function openModal(id) {
-  const modal = $(id);
-  const backdrop = $("modalBackdrop");
-  if (!modal || !backdrop) return;
 
+function openModal(id) {
+  const modal = document.getElementById(id);
   modal.classList.add("active");
-  backdrop.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  // Disable background
+  document.body.setAttribute("inert", "true");
+  // Focus modal container
+  modal.focus();
 }
 
+
 function closeModal(id) {
-  const modal = $(id);
-  const backdrop = $("modalBackdrop");
-  if (!modal || !backdrop) return;
-
+  const modal = document.getElementById(id);
   modal.classList.remove("active");
-
-  // If no other modals are active, hide backdrop
-  const anyActive = document.querySelector(".modal.active");
-  if (!anyActive) {
-    backdrop.classList.remove("active");
-  }
+  modal.setAttribute("aria-hidden", "true");
+  // Re-enable background
+  document.body.removeAttribute("inert");
+}
 }
 
 function wireModalCloseButtons() {
@@ -29,6 +27,7 @@ function wireModalCloseButtons() {
     backdrop.addEventListener("click", () => {
       document.querySelectorAll(".modal.active").forEach((m) => {
         m.classList.remove("active");
+        m.setAttribute("aria-hidden", "true");
       });
       backdrop.classList.remove("active");
     });
