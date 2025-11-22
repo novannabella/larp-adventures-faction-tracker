@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>Faction Resource Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="factions-styles-desktop.css?v=20250621">
-<link rel="stylesheet" href="factions-styles-mobile.css?v=20250621">
+<link rel="stylesheet" href="factions-styles-desktop.css?v=20250615">
+<link rel="stylesheet" href="factions-styles-mobile.css?v=20250615">
 
 </head>
 <body>
@@ -227,16 +227,16 @@
         
         <div class="field-row">
           <div class="field">
-            <label for="eventName">Event Name</label>
-            <input id="eventName" type="text" />
+            <label for="eventModalName">Event Name</label>
+            <input id="eventModalName" type="text" />
           </div>
           <div class="field half-width">
-            <label for="eventDate">Date</label>
-            <input id="eventDate" type="date" />
+            <label for="eventModalDate">Date</label>
+            <input id="eventModalDate" type="date" />
           </div>
           <div class="field half-width">
-            <label for="eventType">Type</label>
-            <select id="eventType">
+            <label for="eventModalType">Type</label>
+            <select id="eventModalType">
               <option value="">-- Select Type --</option>
               <option value="Day Event">Day Event</option>
               <option value="Campout">Campout</option>
@@ -248,8 +248,8 @@
         </div>
 
         <div class="field-row" style="margin-top: 8px;">
-          <label for="eventSummary">Event Summary / Notes</label>
-          <textarea id="eventSummary" rows="3"></textarea>
+          <label for="eventModalSummary">Event Summary / Notes</label>
+          <textarea id="eventModalSummary" rows="3"></textarea>
         </div>
 
         <div id="eventBuildList" class="action-list"></div>
@@ -258,12 +258,12 @@
         
         <div class="event-actions-controls" style="margin-top: 12px;">
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="eventModalAddBuildBtn" class="button small secondary" type="button">Add Build</button>
-            <button id="eventModalAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
-            <button id="eventModalAddOffensiveBtn" class="button small secondary" type="button">Add Offensive Action</button>
+            <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
+            <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
+            <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
           </div>
         </div>
-        </div>
+      </div>
       <div class="modal-footer">
         <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
