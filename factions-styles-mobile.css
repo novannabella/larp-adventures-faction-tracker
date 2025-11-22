@@ -1,7 +1,14 @@
-/* Faction Tracker – Mobile Layout */
+/* ==========================================================================
+   Faction Tracker — FULL Mobile Layout (Clean Consolidated Version)
+   Mirrors Character Sheet App Mobile Aesthetic
+   ========================================================================== */
 
 @media (max-width: 768px) {
-  /* Overall app stacking */
+
+  /* --------------------------------------------------
+     Global structure
+  -------------------------------------------------- */
+
   .app {
     display: flex;
     flex-direction: column;
@@ -11,27 +18,30 @@
 
   /* Faction Info above Coffers on mobile */
   .top-row {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
   }
 
   #factionInfoCard,
   #coffersCard {
-    width: 100%;
+    width: 100% !important;
   }
 
-  /* Card shell styling (matches character sheet vibe) */
+  /* --------------------------------------------------
+     Card Shell Styling
+  -------------------------------------------------- */
+
   .card {
     background: linear-gradient(
       180deg,
-      rgba(10, 14, 22, 0.95) 0%,
-      rgba(16, 20, 34, 0.96) 100%
+      rgba(10,14,22,0.95) 0%,
+      rgba(16,20,34,0.96) 100%
     );
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255,255,255,0.06);
     padding: 16px 18px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.55);
   }
 
   .card-inner {
@@ -55,23 +65,27 @@
     text-transform: uppercase;
   }
 
-  /* --- Coffers & Resources: 2-column grid --- */
+  /* --------------------------------------------------
+     Coffers & Resources — 2 Columns
+  -------------------------------------------------- */
+
   .coffers-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
 
   .coffer-box {
-    background: rgba(20, 26, 42, 0.9);
+    background: rgba(20,26,42,0.9);
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255,255,255,0.04);
     padding: 12px 10px;
     font-size: 0.9rem;
-    color: var(--text);
   }
 
-  /* --- Tables → card layout (Season, Events, Hexes) --- */
+  /* --------------------------------------------------
+     Convert Tables to Card Layout (Season, Events, Hex)
+  -------------------------------------------------- */
 
   .season-table thead,
   .event-table thead,
@@ -91,11 +105,11 @@
   .event-row,
   .hex-row {
     display: block;
-    background: rgba(8, 12, 30, 0.97);
+    background: rgba(8,12,30,0.97);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255,255,255,0.06);
     padding: 12px 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
     transition: transform 0.15s ease;
   }
 
@@ -110,10 +124,9 @@
   .hex-row td {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
     font-size: 0.85rem;
     padding: 6px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
   .season-row td:last-child,
@@ -134,82 +147,49 @@
     content: "";
   }
 
-  /* --- Seasonal Resource Gains labels --- */
-  .season-row td:nth-child(1)::before {
-    content: "Season";
-  }
-  .season-row td:nth-child(2)::before {
-    content: "Year";
-  }
-  .season-row td:nth-child(3)::before {
-    content: "Food";
-  }
-  .season-row td:nth-child(4)::before {
-    content: "Wood";
-  }
-  .season-row td:nth-child(5)::before {
-    content: "Stone";
-  }
-  .season-row td:nth-child(6)::before {
-    content: "Ore";
-  }
-  .season-row td:nth-child(7)::before {
-    content: "Silver";
-  }
-  .season-row td:nth-child(8)::before {
-    content: "Gold";
-  }
+  /* --------------------------------------------------
+     Column Labels — Seasonal
+  -------------------------------------------------- */
 
-  /* Hide Notes column on the card (still available in modal) */
+  .season-row td:nth-child(1)::before { content: "Season"; }
+  .season-row td:nth-child(2)::before { content: "Year"; }
+  .season-row td:nth-child(3)::before { content: "Food"; }
+  .season-row td:nth-child(4)::before { content: "Wood"; }
+  .season-row td:nth-child(5)::before { content: "Stone"; }
+  .season-row td:nth-child(6)::before { content: "Ore"; }
+  .season-row td:nth-child(7)::before { content: "Silver"; }
+  .season-row td:nth-child(8)::before { content: "Gold"; }
+
+  /* Hide Notes column on card (still in modal) */
   .season-row td:nth-child(9) {
-    display: none;
+    display: none !important;
   }
 
-  .season-row td:nth-child(10)::before {
-    content: "";
-  }
+  /* --------------------------------------------------
+     Column Labels — Events
+  -------------------------------------------------- */
 
-  /* --- Events & Turn Actions labels --- */
-  .event-row td:nth-child(1)::before {
-    content: "Event";
-  }
-  .event-row td:nth-child(2)::before {
-    content: "Date";
-  }
-  .event-row td:nth-child(3)::before {
-    content: "Type";
-  }
-  .event-row td:nth-child(4)::before {
-    content: "Builds";
-  }
-  .event-row td:nth-child(5)::before {
-    content: "Moves";
-  }
-  .event-row td:nth-child(6)::before {
-    content: "Offense";
-  }
-  .event-row td:nth-child(7)::before {
-    content: "";
-  }
+  .event-row td:nth-child(1)::before { content: "Event"; }
+  .event-row td:nth-child(2)::before { content: "Date"; }
+  .event-row td:nth-child(3)::before { content: "Type"; }
+  .event-row td:nth-child(4)::before { content: "Builds"; }
+  .event-row td:nth-child(5)::before { content: "Moves"; }
+  .event-row td:nth-child(6)::before { content: "Offense"; }
 
-  /* --- Controlled Hexes labels (this is the part that was off) --- */
-  .hex-row td:nth-child(1)::before {
-    content: "Hex";
-  }
-  .hex-row td:nth-child(2)::before {
-    content: "Name";
-  }
-  .hex-row td:nth-child(3)::before {
-    content: "Terrain";
-  }
-  .hex-row td:nth-child(4)::before {
-    content: "Structures";
-  }
-  .hex-row td:nth-child(5)::before {
-    content: "";
-  }
+  /* --------------------------------------------------
+     Column Labels — Controlled Hexes
+     (THIS is what was broken earlier)
+  -------------------------------------------------- */
 
-  /* Buttons: grouped on the bottom row for all three card types */
+  .hex-row td:nth-child(1)::before { content: "Hex"; }
+  .hex-row td:nth-child(2)::before { content: "Name"; }
+  .hex-row td:nth-child(3)::before { content: "Terrain"; }
+  .hex-row td:nth-child(4)::before { content: "Structures"; }
+
+  /* --------------------------------------------------
+     Buttons on Bottom for All Cards
+  -------------------------------------------------- */
+
   .season-row td:last-child,
   .event-row td:last-child,
   .hex-row td:last-child {
@@ -217,8 +197,8 @@
     justify-content: flex-start;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 8px;
     padding-top: 8px;
+    margin-top: 8px;
   }
 
   .season-row td:last-child .button,
@@ -230,7 +210,10 @@
     flex: 0 0 auto;
   }
 
-  /* Details rows under cards */
+  /* --------------------------------------------------
+     Details Rows
+  -------------------------------------------------- */
+
   .season-details-row td,
   .event-details-row td,
   .hex-details-row td {
@@ -243,35 +226,34 @@
   .hex-details-row pre {
     white-space: pre-wrap;
     line-height: 1.35;
-    color: var(--text);
   }
+
 }
-/* --------------------------------------------------
-   Two-Across Card Layout (matches character sheet)
--------------------------------------------------- */
+
+/* ==========================================================================
+   Two-Across Card Layout (Character Sheet Style)
+   ========================================================================== */
 
 @media (min-width: 460px) and (max-width: 768px) {
 
-  /* Make the Seasonal, Event, and Hex card containers into grids */
   .season-table tbody,
   .event-table tbody,
   .hex-table tbody {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
   }
 
-  /* Ensure each card fits naturally into grid */
   .season-row,
   .event-row,
   .hex-row {
-    width: 100%;
+    width: 100% !important;
   }
 
-  /* Details rows remain full-width below the card */
+  /* Detail rows span both columns */
   .season-details-row,
   .event-details-row,
   .hex-details-row {
-    grid-column: span 2;
+    grid-column: span 2 !important;
   }
 }
