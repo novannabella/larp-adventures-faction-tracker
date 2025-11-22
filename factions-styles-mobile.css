@@ -1,24 +1,200 @@
+/* =======================================================
+   Enhanced Mobile Layout — Faction Tracker
+   Matches Desktop Theme + Improves Readability & UX
+   ======================================================= */
 
-/* === Faction Tracker Mobile Overrides (final) === */
-
-.app {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    margin: 0 12px;
+:root {
+  --bg: #050813;
+  --bg-alt: #111729;
+  --card: #151b30;
+  --accent: #f4c76b;
+  --accent-soft: rgba(244, 199, 107, 0.15);
+  --text: #f7f5ff;
+  --muted: #b5bad6;
+  --border: #252f4a;
+  --danger: #ff6b81;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+  --shadow-soft: 0 22px 48px rgba(0, 0, 0, 0.55);
 }
 
-.full-span {
-    grid-column: auto;
-}
 
-.coffers-grid {
-    grid-template-columns: 1fr;
-}
+@media (max-width: 768px) {
 
-.event-row,
-.hex-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
+  /*******************************
+   * GLOBAL LAYOUT
+   *******************************/
+  .app {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      margin: 0 14px;
+  }
+
+  .full-span {
+      width: 100%;
+  }
+
+
+  /*******************************
+   * SECTION CARDS
+   *******************************/
+  section, .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+  }
+
+  h2, h3, .section-title {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+      border-left: 3px solid var(--accent);
+      padding-left: 8px;
+  }
+
+
+  /*******************************
+   * COFFERS / RESOURCES GRID
+   *******************************/
+  .coffers-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+  }
+
+  .coffer-box {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: var(--text);
+  }
+
+
+  /*******************************
+   * TABLE HANDLING (Events/Hexes)
+   *******************************/
+  table {
+      width: 100%;
+      display: block;
+      overflow-x: auto;
+      padding-bottom: 6px;
+  }
+
+  table::-webkit-scrollbar {
+      height: 8px;
+  }
+
+  table::-webkit-scrollbar-thumb {
+      background: var(--accent-soft);
+      border-radius: 4px;
+  }
+
+
+  /*******************************
+   * EVENT & HEX ROW CARDS
+   *******************************/
+  .event-row,
+  .hex-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+  }
+
+  .event-name,
+  .hex-id {
+      font-size: 1.1rem;
+      color: var(--accent);
+      font-weight: 600;
+  }
+
+
+  /*******************************
+   * ACTION BUTTONS (aligned + large tap targets)
+   *******************************/
+  .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+  }
+
+  .button {
+      flex: 1 1 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: var(--radius-sm);
+  }
+
+
+  /*******************************
+   * MODALS (mobile optimized)
+   *******************************/
+  .modal-content {
+      width: 92%;
+      max-width: 92%;
+      margin: 40px auto 0 auto;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: var(--shadow-soft);
+  }
+
+  .modal h2 {
+      font-size: 1.2rem;
+      color: var(--accent);
+  }
+
+  .modal input,
+  .modal select,
+  .modal textarea {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+  }
+
+  .modal .modal-footer {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+  }
+
+  .modal-close {
+      background: none;
+      color: var(--accent);
+      font-size: 1.4rem;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+  }
+
+
+  /*******************************
+   * EVENTS/HEX DETAIL LABELS
+   *******************************/
+  .detail-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+  }
+
+  .detail-value {
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 10px;
+  }
 }
