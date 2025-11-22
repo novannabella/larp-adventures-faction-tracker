@@ -39,8 +39,6 @@ const STRUCTURE_GROUPS = {
 
 const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
 
-let eventSortDirection = "asc";
-
 // ---------- DIRTY / UNSAVED-CHANGES ----------
 let isDirty = false;
 
