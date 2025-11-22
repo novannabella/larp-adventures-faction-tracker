@@ -1,22 +1,27 @@
-// ui-core.js
-
-
+// Safe & accessible modal open
 function openModal(id) {
   const modal = document.getElementById(id);
   modal.classList.add("active");
+
+  // Modal should NEVER be aria-hidden when open
   modal.setAttribute("aria-hidden", "false");
-  // Disable background
-  document.body.setAttribute("inert", "true");
-  // Focus modal container
-  modal.focus();
+
+  // Remove any accidental inert on the body
+  document.body.removeAttribute("inert");
+
+  // Focus modal for accessibility
+  setTimeout(() => modal.focus(), 0);
 }
 
-
+// Safe modal close
 function closeModal(id) {
   const modal = document.getElementById(id);
   modal.classList.remove("active");
+
+  // Closed modals should be aria-hidden
   modal.setAttribute("aria-hidden", "true");
-  // Re-enable background
+
+  // Remove inert to ensure page is interactive
   document.body.removeAttribute("inert");
 }
 
@@ -56,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   wireModalCloseButtons();
 
-  // initial renders
   renderSeasonGainList();
   renderEventList();
   renderHexList();
