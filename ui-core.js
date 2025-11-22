@@ -7,7 +7,6 @@ function openModal(id) {
 
   modal.classList.add("active");
   backdrop.classList.add("active");
-  modal.setAttribute("aria-hidden", "false");
 }
 
 function closeModal(id) {
@@ -16,7 +15,6 @@ function closeModal(id) {
   if (!modal || !backdrop) return;
 
   modal.classList.remove("active");
-  modal.setAttribute("aria-hidden", "true");
 
   // If no other modals are active, hide backdrop
   const anyActive = document.querySelector(".modal.active");
@@ -31,7 +29,6 @@ function wireModalCloseButtons() {
     backdrop.addEventListener("click", () => {
       document.querySelectorAll(".modal.active").forEach((m) => {
         m.classList.remove("active");
-        m.setAttribute("aria-hidden", "true");
       });
       backdrop.classList.remove("active");
     });
