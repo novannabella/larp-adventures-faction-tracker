@@ -447,20 +447,6 @@ function renderEventList() {
 
 // --- Structure helpers (copied from previous version) ---
 
-const STRUCTURE_GROUPS = {
-  Improvements: [
-    "Market",
-    "Carpenter's Shop",
-    "Blacksmith",
-    "Bank",
-    "Stone Mason's Shop"
-  ],
-  Fortifications: ["Watch Tower", "Fort", "Castle"],
-  "Seaborne assets": ["Dock", "Fishing Fleet", "Trading Vessel", "War Galley"]
-};
-
-const ALL_STRUCTURES = Object.values(STRUCTURE_GROUPS).flat();
-
 function structureSelectOptions(selected, allowedList) {
   const options = [];
   options.push(`<option value="">-- Select Structure --</option>`);
