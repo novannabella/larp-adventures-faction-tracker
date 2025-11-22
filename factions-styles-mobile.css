@@ -1,7 +1,6 @@
+/* mobile override version: 2025-02-22 */
 /* =======================================================
    Enhanced Mobile Layout — FIXED VERSION
-   Theme variables are now mobile-only and will NOT override
-   desktop when resizing the browser.
    ======================================================= */
 
 @media (max-width: 768px) {
@@ -72,25 +71,6 @@
   }
 
   /*******************************
-   * TABLE HANDLING (Events/Hexes)
-   *******************************/
-  table {
-      width: 100%;
-      display: block;
-      overflow-x: auto;
-      padding-bottom: 6px;
-  }
-
-  table::-webkit-scrollbar {
-      height: 8px;
-  }
-
-  table::-webkit-scrollbar-thumb {
-      background: var(--accent-soft);
-      border-radius: 4px;
-  }
-
-  /*******************************
    * EVENT & HEX ROW CARDS
    *******************************/
   .event-row,
@@ -127,6 +107,25 @@
       padding: 12px;
       font-size: 1rem;
       border-radius: var(--radius-sm);
+  }
+
+  /*******************************
+   * TABLE HANDLING
+   *******************************/
+  table {
+      width: 100%;
+      display: block;
+      overflow-x: auto;
+      padding-bottom: 6px;
+  }
+
+  table::-webkit-scrollbar {
+      height: 8px;
+  }
+
+  table::-webkit-scrollbar-thumb {
+      background: var(--accent-soft);
+      border-radius: 4px;
   }
 
   /*******************************
@@ -177,7 +176,7 @@
   }
 
   /*******************************
-   * EVENTS/HEX DETAIL LABELS
+   * DETAIL STYLING
    *******************************/
   .detail-label {
       font-size: 0.85rem;
