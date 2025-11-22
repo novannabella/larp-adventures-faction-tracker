@@ -19,7 +19,7 @@ function initHexSection() {
   if (terrAdd && !terrAdd._wired) {
     terrAdd.addEventListener("click", () => {
       const sel = $("hexModalTerrainSelect");
-      const list = $("hexModalTerrain");
+      const list = $("hexModalTerrains");
       if (!sel || !list) return;
       const val = (sel.value || "").trim();
       if (!val) return;
@@ -115,7 +115,7 @@ function openHexModal(hex) {
 
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
-  $("hexModalTerrain").value = hex?.terrain || "";
+  $("hexModalTerrains").value = hex?.terrain || "";
   $("hexModalStructures").value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
   $("hexModalTerrainSelect").value = "";
@@ -129,7 +129,7 @@ function saveHexFromModal() {
 
   const name = $("hexModalName").value.trim();
   const hexNumber = $("hexModalNumber").value.trim();
-  const terrain = $("hexModalTerrain").value.trim();
+  const terrain = $("hexModalTerrains").value.trim();
   const structure = $("hexModalStructures").value.trim();
   const notes = $("hexModalNotes").value.trim();
 
