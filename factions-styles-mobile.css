@@ -246,3 +246,32 @@
     color: var(--text);
   }
 }
+/* --------------------------------------------------
+   Two-Across Card Layout (matches character sheet)
+-------------------------------------------------- */
+
+@media (min-width: 460px) and (max-width: 768px) {
+
+  /* Make the Seasonal, Event, and Hex card containers into grids */
+  .season-table tbody,
+  .event-table tbody,
+  .hex-table tbody {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  /* Ensure each card fits naturally into grid */
+  .season-row,
+  .event-row,
+  .hex-row {
+    width: 100%;
+  }
+
+  /* Details rows remain full-width below the card */
+  .season-details-row,
+  .event-details-row,
+  .hex-details-row {
+    grid-column: span 2;
+  }
+}
