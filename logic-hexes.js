@@ -19,7 +19,7 @@ function initHexSection() {
   if (terrAdd && !terrAdd._wired) {
     terrAdd.addEventListener("click", () => {
       const sel = $("hexModalTerrainSelect");
-      const list = $("hexModalTerrains");
+      const list = $("hexModalTerrain");
       if (!sel || !list) return;
       const val = (sel.value || "").trim();
       if (!val) return;
@@ -115,7 +115,7 @@ function openHexModal(hex) {
 
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
-  $("hexModalTerrains").value = hex?.terrain || "";
+  $("hexModalTerrain").value = hex?.terrain || "";
   $("hexModalStructures").value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
   $("hexModalTerrainSelect").value = "";
@@ -129,7 +129,7 @@ function saveHexFromModal() {
 
   const name = $("hexModalName").value.trim();
   const hexNumber = $("hexModalNumber").value.trim();
-  const terrain = $("hexModalTerrains").value.trim();
+  const terrain = $("hexModalTerrain").value.trim();
   const structure = $("hexModalStructures").value.trim();
   const notes = $("hexModalNotes").value.trim();
 
@@ -141,8 +141,7 @@ function saveHexFromModal() {
       hexNumber,
       terrain,
       structure,
-      notes,
-      detailsOpen: false
+      notes
     });
   } else {
     const hex = state.hexes.find((h) => h.id === id);
@@ -167,6 +166,36 @@ function deleteHex(id) {
   renderHexList();
 }
 
+function openHexDetailsModal(hex) {
+  const titleEl = $("detailsModalTitle");
+  const bodyEl = $("detailsModalBody");
+  if (!titleEl || !bodyEl) return;
+
+  const upkeep = calcHexUpkeep(hex);
+  titleEl.textContent = hex.name
+    ? `Hex Details — ${hex.name}`
+    : `Hex Details — ${hex.hexNumber || ""}`;
+
+  bodyEl.innerHTML = `
+    <div class="details-grid">
+      <p><strong>Name:</strong> ${hex.name || "(Unnamed)"}</p>
+      <p><strong>Hex Number:</strong> ${hex.hexNumber || "—"}</p>
+      <p><strong>Terrain:</strong> ${hex.terrain || "—"}</p>
+      <p><strong>Structures:</strong> ${hex.structure || "—"}</p>
+      <p><strong>Upkeep Food:</strong> ${upkeep.food || 0}</p>
+      <p><strong>Upkeep Wood:</strong> ${upkeep.wood || 0}</p>
+      <p><strong>Upkeep Stone:</strong> ${upkeep.stone || 0}</p>
+      <p><strong>Upkeep Gold:</strong> ${upkeep.gold || 0}</p>
+    </div>
+    <div class="field-row">
+      <label>Notes</label>
+      <textarea readonly rows="4">${hex.notes || "—"}</textarea>
+    </div>
+  `;
+
+  openModal("detailsModal");
+}
+
 function renderHexList() {
   const tbody = $("hexTableBody");
   if (!tbody) return;
@@ -174,10 +203,8 @@ function renderHexList() {
   tbody.innerHTML = "";
 
   state.hexes.forEach((hex) => {
-    const upkeep = calcHexUpkeep(hex);
-
     const row = document.createElement("tr");
-    row.className = "hex-main-row";
+    row.className = "hex-row";
 
     function td(text) {
       const cell = document.createElement("td");
@@ -185,19 +212,18 @@ function renderHexList() {
       return cell;
     }
 
-    row.appendChild(td(hex.name || "(Unnamed)"));
+    // Match the header: Hex | Name | Terrain | Structures | Actions
     row.appendChild(td(hex.hexNumber || ""));
-    row.appendChild(td(upkeep.food || ""));
-    row.appendChild(td(upkeep.wood || ""));
-    row.appendChild(td(upkeep.stone || ""));
-    row.appendChild(td(upkeep.gold || ""));
+    row.appendChild(td(hex.name || "(Unnamed)"));
+    row.appendChild(td(hex.terrain || ""));
+    row.appendChild(td(hex.structure || ""));
 
     const actionsTd = document.createElement("td");
     actionsTd.style.whiteSpace = "nowrap";
 
     const detailsBtn = document.createElement("button");
     detailsBtn.className = "button small secondary";
-    detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
+    detailsBtn.textContent = "Details";
 
     const editBtn = document.createElement("button");
     editBtn.className = "button small secondary";
@@ -212,29 +238,10 @@ function renderHexList() {
     actionsTd.appendChild(delBtn);
     row.appendChild(actionsTd);
 
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "hex-details-row";
-    detailsRow.style.display = hex.detailsOpen ? "" : "none";
-
-    const detailsTd = document.createElement("td");
-    detailsTd.colSpan = 7;
-    detailsTd.innerHTML = `
-      <strong>Terrain:</strong> ${hex.terrain || "—"}<br/>
-      <strong>Structures:</strong> ${hex.structure || "—"}<br/>
-      <strong>Notes:</strong> ${hex.notes || "—"}
-    `;
-    detailsRow.appendChild(detailsTd);
-
-    detailsBtn.addEventListener("click", () => {
-      hex.detailsOpen = !hex.detailsOpen;
-      detailsRow.style.display = hex.detailsOpen ? "" : "none";
-      detailsBtn.textContent = hex.detailsOpen ? "Hide" : "Details";
-    });
-
+    detailsBtn.addEventListener("click", () => openHexDetailsModal(hex));
     editBtn.addEventListener("click", () => openHexModal(hex));
     delBtn.addEventListener("click", () => deleteHex(hex.id));
 
     tbody.appendChild(row);
-    tbody.appendChild(detailsRow);
   });
 }

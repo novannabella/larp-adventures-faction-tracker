@@ -24,6 +24,8 @@ function initEventSection() {
 }
 
 function openEventModal(ev) {
+  // Basic add/edit modal (used when clicking top-level Add button).
+  // For rich details (builds, movements, offensive action) see openEventDetailsModal().
   $("eventModalId").value = ev ? ev.id : "";
   $("eventModalTitle").textContent = ev ? "Edit Event" : "Add Event";
 
@@ -52,8 +54,7 @@ function saveEventFromModal() {
       summary,
       builds: [],
       movements: [],
-      offensiveAction: { type: "", target: "", notes: "" },
-      detailsOpen: false
+      offensiveAction: { type: "", target: "", notes: "" }
     });
   } else {
     const ev = state.events.find((e) => e.id === id);
@@ -154,70 +155,15 @@ function offensiveTypeOptions(current) {
     .join("");
 }
 
-function renderEventList() {
-  const tbody = $("eventTableBody");
-  if (!tbody) return;
+function openEventDetailsModal(ev) {
+  const titleEl = $("detailsModalTitle");
+  const bodyEl = $("detailsModalBody");
+  if (!titleEl || !bodyEl) return;
 
-  tbody.innerHTML = "";
+  titleEl.textContent = ev.name ? `Event Details — ${ev.name}` : "Event Details";
 
-  const eventsCopy = [...state.events];
-  eventsCopy.sort((a, b) => {
-    const da = a.date ? new Date(a.date).getTime() : 0;
-    const db = b.date ? new Date(b.date).getTime() : 0;
-    if (da === db) return state.events.indexOf(a) - state.events.indexOf(b);
-    return da - db;
-  });
-  if (eventSortDirection === "desc") eventsCopy.reverse();
-
-  eventsCopy.forEach((ev) => {
-    const row = document.createElement("tr");
-    row.className = "event-row";
-
-    const nameCell = document.createElement("td");
-    nameCell.textContent = ev.name || "Unnamed Event";
-
-    const dateCell = document.createElement("td");
-    dateCell.textContent = ev.date || "No date";
-
-    const typeCell = document.createElement("td");
-    typeCell.textContent = ev.type || "Type: —";
-
-    const actionsTd = document.createElement("td");
-    actionsTd.style.whiteSpace = "nowrap";
-
-    const detailsBtn = document.createElement("button");
-    detailsBtn.className = "button small secondary";
-    detailsBtn.textContent = ev.detailsOpen ? "Hide" : "Details";
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "button small secondary";
-    editBtn.textContent = "Edit";
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-
-    actionsTd.appendChild(detailsBtn);
-    actionsTd.appendChild(editBtn);
-    actionsTd.appendChild(delBtn);
-
-    row.appendChild(nameCell);
-    row.appendChild(dateCell);
-    row.appendChild(typeCell);
-    row.appendChild(actionsTd);
-
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "event-details-row";
-    detailsRow.style.display = ev.detailsOpen ? "" : "none";
-
-    const detailsTd = document.createElement("td");
-    detailsTd.colSpan = 4;
-
-    // Build the inner detail card
-    const container = document.createElement("div");
-    container.className = "event-body";
-
-    container.innerHTML = `
+  bodyEl.innerHTML = `
+    <div class="event-body">
       <div class="section-row">
         <div class="field">
           <label>Event Name</label>
@@ -245,122 +191,137 @@ function renderEventList() {
 
       <div class="subsection-header">
         <div class="inline">
+          <span class="subsection-title">Turn Actions</span>
+          <div class="inline">
+            <button class="button small ev-toggle-builds-btn">Add Build</button>
+            <button class="button small ev-toggle-movements-btn">Add Movement</button>
+            <button class="button small ev-toggle-offense-btn">Offensive Action</button>
+          </div>
+        </div>
+        <p class="subsection-note">Use the buttons above to add or edit builds, movements, or a single offensive action.</p>
+      </div>
+
+      <div class="mini-section ev-builds-section" style="display: none;">
+        <div class="subsection-header">
           <span class="subsection-title">Builds</span>
-          <button class="button small ev-add-build-btn">+ Add Build</button>
+          <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
         </div>
-        <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
+        <div class="mini-list ev-builds-list"></div>
+        <button class="button small ev-add-build-btn">+ Add Build</button>
       </div>
-      <div class="mini-list ev-builds-list"></div>
 
-      <div class="subsection-header">
-        <div class="inline">
+      <div class="mini-section ev-movements-section" style="display: none;">
+        <div class="subsection-header">
           <span class="subsection-title">Movements</span>
-          <button class="button small ev-add-movement-btn">+ Add Movement</button>
+          <p class="subsection-note">Track unit movements between hexes for this event.</p>
         </div>
-        <p class="subsection-note">Track unit movements between hexes for this event.</p>
+        <div class="mini-list ev-movements-list"></div>
+        <button class="button small ev-add-movement-btn">+ Add Movement</button>
       </div>
-      <div class="mini-list ev-movements-list"></div>
 
-      <div class="subsection-header">
-        <span class="subsection-title">Offensive Action</span>
-        <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
-      </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Action Type</label>
-          <select class="ev-off-type-select">
-            ${offensiveTypeOptions(ev.offensiveAction.type)}
-          </select>
+      <div class="mini-section ev-offense-section" style="display: none;">
+        <div class="subsection-header">
+          <span class="subsection-title">Offensive Action</span>
+          <p class="subsection-note">Land Search, Invasion, or Quest — only one per event.</p>
         </div>
-        <div class="field">
-          <label>Target Hex / Location</label>
-          <input type="text" class="ev-off-target-input" value="${
-            ev.offensiveAction.target || ""
-          }" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
+        <div class="section-row">
+          <div class="field">
+            <label>Action Type</label>
+            <select class="ev-off-type-select">
+              ${offensiveTypeOptions(ev.offensiveAction.type)}
+            </select>
+          </div>
+          <div class="field">
+            <label>Target Hex / Location</label>
+            <input type="text" class="ev-off-target-input" value="${
+              ev.offensiveAction.target || ""
+            }" placeholder="e.g. A3 Forest, Ruins at B5, etc." />
+          </div>
+        </div>
+        <div class="section-row">
+          <div class="field">
+            <label>Action Notes / Result</label>
+            <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${
+              ev.offensiveAction.notes || ""
+            }</textarea>
+          </div>
         </div>
       </div>
-      <div class="section-row">
-        <div class="field">
-          <label>Action Notes / Result</label>
-          <textarea class="ev-off-notes-input" placeholder="Encounter details, combat outcome, treasure, etc.">${
-            ev.offensiveAction.notes || ""
-          }</textarea>
-        </div>
-      </div>
-    `;
+    </div>
+  `;
 
-    detailsTd.appendChild(container);
-    detailsRow.appendChild(detailsTd);
+  // Wire basic fields
+  const nameInput = bodyEl.querySelector(".ev-name-input");
+  const dateInput = bodyEl.querySelector(".ev-date-input");
+  const typeSelect = bodyEl.querySelector(".ev-type-select");
+  const summaryInput = bodyEl.querySelector(".ev-summary-input");
 
-    // Wire header actions
-    detailsBtn.addEventListener("click", () => {
-      ev.detailsOpen = !ev.detailsOpen;
-      detailsRow.style.display = ev.detailsOpen ? "" : "none";
-      detailsBtn.textContent = ev.detailsOpen ? "Hide" : "Details";
-    });
+  nameInput.addEventListener("input", (e) => {
+    ev.name = e.target.value;
+    markDirty();
+    renderEventList();
+  });
 
-    editBtn.addEventListener("click", () => openEventModal(ev));
-    delBtn.addEventListener("click", () => deleteEvent(ev.id));
+  dateInput.addEventListener("input", (e) => {
+    ev.date = e.target.value;
+    markDirty();
+    renderEventList();
+  });
 
-    // Wire inner fields
-    const nameInput = container.querySelector(".ev-name-input");
-    const dateInput = container.querySelector(".ev-date-input");
-    const typeSelect = container.querySelector(".ev-type-select");
-    const summaryInput = container.querySelector(".ev-summary-input");
-    const offTypeSelect = container.querySelector(".ev-off-type-select");
-    const offTargetInput = container.querySelector(".ev-off-target-input");
-    const offNotesInput = container.querySelector(".ev-off-notes-input");
+  typeSelect.addEventListener("change", (e) => {
+    ev.type = e.target.value;
+    markDirty();
+    renderEventList();
+  });
 
-    nameInput.addEventListener("input", (e) => {
-      ev.name = e.target.value;
-      nameCell.textContent = ev.name || "Unnamed Event";
-      markDirty();
-    });
+  summaryInput.addEventListener("input", (e) => {
+    ev.summary = e.target.value;
+    markDirty();
+  });
 
-    dateInput.addEventListener("input", (e) => {
-      ev.date = e.target.value;
-      dateCell.textContent = ev.date || "No date";
-      markDirty();
-    });
+  // Sections + toggles
+  const buildsSection = bodyEl.querySelector(".ev-builds-section");
+  const movementsSection = bodyEl.querySelector(".ev-movements-section");
+  const offenseSection = bodyEl.querySelector(".ev-offense-section");
 
-    typeSelect.addEventListener("change", (e) => {
-      ev.type = e.target.value;
-      typeCell.textContent = ev.type || "Type: —";
-      markDirty();
-    });
+  const toggleBuildsBtn = bodyEl.querySelector(".ev-toggle-builds-btn");
+  const toggleMovementsBtn = bodyEl.querySelector(".ev-toggle-movements-btn");
+  const toggleOffenseBtn = bodyEl.querySelector(".ev-toggle-offense-btn");
 
-    summaryInput.addEventListener("input", (e) => {
-      ev.summary = e.target.value;
-      markDirty();
-    });
+  function showSection(section) {
+    if (section === buildsSection) {
+      buildsSection.style.display = "block";
+    }
+    if (section === movementsSection) {
+      movementsSection.style.display = "block";
+    }
+    if (section === offenseSection) {
+      offenseSection.style.display = "block";
+    }
+  }
 
-    offTypeSelect.addEventListener("change", (e) => {
-      ev.offensiveAction.type = e.target.value;
-      markDirty();
-    });
+  toggleBuildsBtn.addEventListener("click", () => showSection(buildsSection));
+  toggleMovementsBtn.addEventListener("click", () => showSection(movementsSection));
+  toggleOffenseBtn.addEventListener("click", () => showSection(offenseSection));
 
-    offTargetInput.addEventListener("input", (e) => {
-      ev.offensiveAction.target = e.target.value;
-      markDirty();
-    });
+  // Auto-open sections that already have data
+  if (ev.builds && ev.builds.length) {
+    buildsSection.style.display = "block";
+  }
+  if (ev.movements && ev.movements.length) {
+    movementsSection.style.display = "block";
+  }
+  if (ev.offensiveAction && (ev.offensiveAction.type || ev.offensiveAction.target || ev.offensiveAction.notes)) {
+    offenseSection.style.display = "block";
+  }
 
-    offNotesInput.addEventListener("input", (e) => {
-      ev.offensiveAction.notes = e.target.value;
-      markDirty();
-    });
+  // Builds
+  const buildsContainer = bodyEl.querySelector(".ev-builds-list");
+  const addBuildBtn = bodyEl.querySelector(".ev-add-build-btn");
 
-    // Builds
-    const buildsContainer = container.querySelector(".ev-builds-list");
-    const addBuildBtn = container.querySelector(".ev-add-build-btn");
-
-    addBuildBtn.addEventListener("click", () => {
-      const bid = `b_${nextBuildId++}`;
-      ev.builds.push({ id: bid, hexId: "", description: "" });
-      markDirty();
-      renderEventList();
-    });
-
-    ev.builds.forEach((b) => {
+  function renderBuilds() {
+    buildsContainer.innerHTML = "";
+    (ev.builds || []).forEach((b) => {
       const rowDiv = document.createElement("div");
       rowDiv.className = "mini-row";
       rowDiv.dataset.id = b.id;
@@ -399,6 +360,7 @@ function renderEventList() {
         if (idxB !== -1) {
           ev.builds.splice(idxB, 1);
           markDirty();
+          renderBuilds();
           renderEventList();
         }
       });
@@ -413,27 +375,36 @@ function renderEventList() {
       hexSelectEl.addEventListener("change", (e) => {
         b.hexId = e.target.value;
         markDirty();
+        renderBuilds();
         renderEventList();
       });
 
       structSelectEl.addEventListener("change", (e) => {
         b.description = e.target.value;
         markDirty();
+        renderEventList();
       });
     });
+  }
 
-    // Movements
-    const movContainer = container.querySelector(".ev-movements-list");
-    const addMovBtn = container.querySelector(".ev-add-movement-btn");
+  addBuildBtn.addEventListener("click", () => {
+    const bid = `b_${nextBuildId++}`;
+    if (!ev.builds) ev.builds = [];
+    ev.builds.push({ id: bid, hexId: "", description: "" });
+    markDirty();
+    renderBuilds();
+    renderEventList();
+  });
 
-    addMovBtn.addEventListener("click", () => {
-      const mid = `m_${nextMovementId++}`;
-      ev.movements.push({ id: mid, unitName: "", from: "", to: "", notes: "" });
-      markDirty();
-      renderEventList();
-    });
+  renderBuilds();
 
-    ev.movements.forEach((m) => {
+  // Movements
+  const movContainer = bodyEl.querySelector(".ev-movements-list");
+  const addMovBtn = bodyEl.querySelector(".ev-add-movement-btn");
+
+  function renderMovements() {
+    movContainer.innerHTML = "";
+    (ev.movements || []).forEach((m) => {
       const rowDiv = document.createElement("div");
       rowDiv.className = "mini-row";
       rowDiv.dataset.id = m.id;
@@ -487,6 +458,7 @@ function renderEventList() {
         if (idxM !== -1) {
           ev.movements.splice(idxM, 1);
           markDirty();
+          renderMovements();
           renderEventList();
         }
       });
@@ -520,9 +492,113 @@ function renderEventList() {
           markDirty();
         });
     });
+  }
+
+  addMovBtn.addEventListener("click", () => {
+    const mid = `m_${nextMovementId++}`;
+    if (!ev.movements) ev.movements = [];
+    ev.movements.push({ id: mid, unitName: "", from: "", to: "", notes: "" });
+    markDirty();
+    renderMovements();
+    renderEventList();
+  });
+
+  renderMovements();
+
+  // Offensive action
+  const offTypeSelect = bodyEl.querySelector(".ev-off-type-select");
+  const offTargetInput = bodyEl.querySelector(".ev-off-target-input");
+  const offNotesInput = bodyEl.querySelector(".ev-off-notes-input");
+
+  offTypeSelect.addEventListener("change", (e) => {
+    ev.offensiveAction.type = e.target.value;
+    markDirty();
+    renderEventList();
+  });
+
+  offTargetInput.addEventListener("input", (e) => {
+    ev.offensiveAction.target = e.target.value;
+    markDirty();
+  });
+
+  offNotesInput.addEventListener("input", (e) => {
+    ev.offensiveAction.notes = e.target.value;
+    markDirty();
+  });
+
+  openModal("detailsModal");
+}
+
+function renderEventList() {
+  const tbody = $("eventTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  const eventsCopy = [...state.events];
+  eventsCopy.sort((a, b) => {
+    const da = a.date ? new Date(a.date).getTime() : 0;
+    const db = b.date ? new Date(b.date).getTime() : 0;
+    if (da === db) return state.events.indexOf(a) - state.events.indexOf(b);
+    return da - db;
+  });
+  if (eventSortDirection === "desc") eventsCopy.reverse();
+
+  eventsCopy.forEach((ev) => {
+    const row = document.createElement("tr");
+    row.className = "event-row";
+
+    const nameCell = document.createElement("td");
+    nameCell.textContent = ev.name || "Unnamed Event";
+
+    const dateCell = document.createElement("td");
+    dateCell.textContent = ev.date || "No date";
+
+    const typeCell = document.createElement("td");
+    typeCell.textContent = ev.type || "Type: —";
+
+    const buildsCell = document.createElement("td");
+    buildsCell.textContent = (ev.builds && ev.builds.length) ? ev.builds.length : "";
+
+    const movesCell = document.createElement("td");
+    movesCell.textContent = (ev.movements && ev.movements.length) ? ev.movements.length : "";
+
+    const offenseCell = document.createElement("td");
+    offenseCell.textContent =
+      ev.offensiveAction && ev.offensiveAction.type ? "1" : "";
+
+    const actionsTd = document.createElement("td");
+    actionsTd.style.whiteSpace = "nowrap";
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.className = "button small secondary";
+    detailsBtn.textContent = "Details";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "button small secondary";
+    editBtn.textContent = "Edit";
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "button small secondary";
+    delBtn.textContent = "Delete";
+
+    actionsTd.appendChild(detailsBtn);
+    actionsTd.appendChild(editBtn);
+    actionsTd.appendChild(delBtn);
+
+    row.appendChild(nameCell);
+    row.appendChild(dateCell);
+    row.appendChild(typeCell);
+    row.appendChild(buildsCell);
+    row.appendChild(movesCell);
+    row.appendChild(offenseCell);
+    row.appendChild(actionsTd);
+
+    detailsBtn.addEventListener("click", () => openEventDetailsModal(ev));
+    editBtn.addEventListener("click", () => openEventDetailsModal(ev));
+    delBtn.addEventListener("click", () => deleteEvent(ev.id));
 
     tbody.appendChild(row);
-    tbody.appendChild(detailsRow);
   });
 
   const hdr = $("eventDateSortHeader");

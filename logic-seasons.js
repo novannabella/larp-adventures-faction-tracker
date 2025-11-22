@@ -60,8 +60,7 @@ function saveSeasonFromModal() {
       ore,
       silver,
       gold,
-      notes,
-      detailsOpen: false
+      notes
     });
   } else {
     const existing = state.seasonGains.find((sg) => sg.id === id);
@@ -88,6 +87,33 @@ function deleteSeasonGain(id) {
   state.seasonGains = state.seasonGains.filter((sg) => sg.id !== id);
   markDirty();
   renderSeasonGainList();
+}
+
+function openSeasonDetailsModal(sg) {
+  const titleEl = $("detailsModalTitle");
+  const bodyEl = $("detailsModalBody");
+  if (!titleEl || !bodyEl) return;
+
+  titleEl.textContent = `Seasonal Gain — ${sg.season || ""} ${sg.year || ""}`;
+
+  bodyEl.innerHTML = `
+    <div class="details-grid">
+      <p><strong>Season:</strong> ${sg.season || "—"}</p>
+      <p><strong>Year:</strong> ${sg.year || "—"}</p>
+      <p><strong>Food:</strong> ${sg.food || 0}</p>
+      <p><strong>Wood:</strong> ${sg.wood || 0}</p>
+      <p><strong>Stone:</strong> ${sg.stone || 0}</p>
+      <p><strong>Ore:</strong> ${sg.ore || 0}</p>
+      <p><strong>Silver:</strong> ${sg.silver || 0}</p>
+      <p><strong>Gold:</strong> ${sg.gold || 0}</p>
+    </div>
+    <div class="field-row">
+      <label>Notes</label>
+      <textarea readonly rows="4">${sg.notes || "—"}</textarea>
+    </div>
+  `;
+
+  openModal("detailsModal");
 }
 
 function renderSeasonGainList() {
@@ -126,7 +152,7 @@ function renderSeasonGainList() {
 
     const detailsBtn = document.createElement("button");
     detailsBtn.className = "button small secondary";
-    detailsBtn.textContent = sg.detailsOpen ? "Hide" : "Details";
+    detailsBtn.textContent = "Details";
 
     const editBtn = document.createElement("button");
     editBtn.className = "button small secondary";
@@ -141,27 +167,10 @@ function renderSeasonGainList() {
     actionsTd.appendChild(delBtn);
     tr.appendChild(actionsTd);
 
-    const detailsRow = document.createElement("tr");
-    detailsRow.className = "season-details-row";
-    detailsRow.style.display = sg.detailsOpen ? "" : "none";
-
-    const detailsTd = document.createElement("td");
-    detailsTd.colSpan = 10;
-    detailsTd.innerHTML = `
-      <strong>Notes:</strong> ${sg.notes || "—"}
-    `;
-    detailsRow.appendChild(detailsTd);
-
-    detailsBtn.addEventListener("click", () => {
-      sg.detailsOpen = !sg.detailsOpen;
-      detailsRow.style.display = sg.detailsOpen ? "" : "none";
-      detailsBtn.textContent = sg.detailsOpen ? "Hide" : "Details";
-    });
-
+    detailsBtn.addEventListener("click", () => openSeasonDetailsModal(sg));
     editBtn.addEventListener("click", () => openSeasonModal(sg));
     delBtn.addEventListener("click", () => deleteSeasonGain(sg.id));
 
     tbody.appendChild(tr);
-    tbody.appendChild(detailsRow);
   });
 }
