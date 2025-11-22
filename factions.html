@@ -92,7 +92,7 @@
               <th>Silver</th>
               <th>Gold</th>
               <th>Notes</th>
-              <th class="actions-col">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="seasonTableBody"></tbody>
@@ -117,7 +117,7 @@
               <th>Builds</th>
               <th>Moves</th>
               <th>Offense</th>
-              <th class="actions-col">Actions</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="eventTableBody"></tbody>
@@ -130,7 +130,7 @@
       <div class="card-inner">
         <div class="card-header">
           <h2>Controlled Hexes</h2>
-          <button id="hexAddBtn" class="button small">Add</button>
+          <button id="hexAddBtn" class="button small">Add Hex</button>
         </div>
 
 <table class="hex-table">
@@ -140,7 +140,7 @@
       <th>Name</th>
       <th>Terrain</th>
       <th>Structures</th>
-      <th class="actions-col">Actions</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody id="hexTableBody"></tbody>
@@ -150,10 +150,10 @@
     </div>
   </div>
 
-
   <!-- MODAL BACKDROP -->
   <div id="modalBackdrop" class="modal-backdrop"></div>
 
+  
   <!-- SEASON MODAL -->
   <div id="seasonModal" class="modal" aria-hidden="true">
     <div class="modal-content">
@@ -164,65 +164,67 @@
       <div class="modal-body">
         <input type="hidden" id="seasonModalId" />
 
-        <div class="field-row">
-          <label for="seasonModalSeason">Season</label>
-          <select id="seasonModalSeason">
-            <option value="">-- Select Season --</option>
-            <option value="Spring">Spring</option>
-            <option value="Summer">Summer</option>
-            <option value="Autumn">Autumn</option>
-            <option value="Winter">Winter</option>
-          </select>
+        <div class="mini-row-body two-cols">
+          <div class="field-row">
+            <label for="seasonModalSeason">Season</label>
+            <select id="seasonModalSeason">
+              <option value="">-- Select Season --</option>
+              <option value="Spring">Spring</option>
+              <option value="Summer">Summer</option>
+              <option value="Fall">Fall</option>
+              <option value="Winter">Winter</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalYear">Year</label>
+            <input id="seasonModalYear" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalFood">Food</label>
+            <input id="seasonModalFood" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalWood">Wood</label>
+            <input id="seasonModalWood" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalStone">Stone</label>
+            <input id="seasonModalStone" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalOre">Ore</label>
+            <input id="seasonModalOre" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalSilver">Silver</label>
+            <input id="seasonModalSilver" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalGold">Gold</label>
+            <input id="seasonModalGold" type="number" />
+          </div>
         </div>
 
-        <div class="field-row">
-          <label for="seasonModalYear">Year</label>
-          <input id="seasonModalYear" type="number" min="0" max="9999" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalFood">Food Gained</label>
-          <input id="seasonModalFood" type="number" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalWood">Wood Gained</label>
-          <input id="seasonModalWood" type="number" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalStone">Stone Gained</label>
-          <input id="seasonModalStone" type="number" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalOre">Ore Gained</label>
-          <input id="seasonModalOre" type="number" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalSilver">Silver Gained</label>
-          <input id="seasonModalSilver" type="number" />
-        </div>
-
-        <div class="field-row">
-          <label for="seasonModalGold">Gold Gained</label>
-          <input id="seasonModalGold" type="number" />
-        </div>
-
-        <div class="field-row">
+        <div class="field-row" style="margin-top: 8px;">
           <label for="seasonModalNotes">Notes</label>
           <textarea id="seasonModalNotes" rows="3"></textarea>
         </div>
       </div>
       <div class="modal-footer">
-        <button id="seasonModalSaveBtn" class="button small">Save</button>
+        <button id="seasonModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- EVENT MODAL -->
+  <!-- EVENT MODAL (basic add/edit) -->
   <div id="eventModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
@@ -257,42 +259,9 @@
           <label for="eventModalSummary">Summary</label>
           <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
         </div>
-
-        <h3 class="subsection-title" style="margin-top: 22px;">Builds</h3>
-        <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
-        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px; display:none;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Movements</h3>
-        <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
-        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px; display:none;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Offensive Action</h3>
-        <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
-
-        <div id="eventOffenseContainer" style="display:none; margin-top: 12px;">
-          <div class="field-row">
-            <label for="eventOffenseType">Action Type</label>
-            <select id="eventOffenseType">
-              <option value="">None</option>
-              <option value="Land Search">Land Search</option>
-              <option value="Invasion">Invasion</option>
-              <option value="Quest">Quest</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <label for="eventOffenseTarget">Target Hex / Location</label>
-            <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
-          </div>
-
-          <div class="field-row">
-            <label for="eventOffenseNotes">Notes / Result</label>
-            <textarea id="eventOffenseNotes" rows="3" placeholder="Encounter details, results, treasure, etc."></textarea>
-          </div>
-        </div>
       </div>
       <div class="modal-footer">
-        <button id="eventModalSaveBtn" class="button small">Save</button>
+        <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
@@ -327,13 +296,15 @@
               <option value="Forest">Forest</option>
               <option value="Mountain">Mountain</option>
               <option value="Sea">Sea</option>
+              <option value="Hills">Hills</option>
+              <option value="Swamp">Swamp</option>
               <option value="Blasted Lands">Blasted Lands</option>
             </select>
             <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
               Add
             </button>
           </div>
-          <input id="hexModalTerrain" type="text" readonly />
+          <input id="hexModalTerrains" type="text" readonly />
         </div>
 
         <div class="field-row">
@@ -350,14 +321,13 @@
               </optgroup>
               <optgroup label="Fortifications">
                 <option value="Watch Tower">Watch Tower</option>
+                <option value="Palisade">Palisade</option>
                 <option value="Fort">Fort</option>
-                <option value="Castle">Castle</option>
               </optgroup>
-              <optgroup label="Seaborne assets">
-                <option value="Dock">Dock</option>
-                <option value="Fishing Fleet">Fishing Fleet</option>
-                <option value="Trading Vessel">Trading Vessel</option>
-                <option value="War Galley">War Galley</option>
+              <optgroup label="Other">
+                <option value="Shipyard">Shipyard</option>
+                <option value="Temple">Temple</option>
+                <option value="Farm">Farm</option>
               </optgroup>
             </select>
             <button id="hexModalStructureAddBtn" class="button small secondary" type="button">
@@ -373,20 +343,13 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button id="hexModalSaveBtn" class="button small">Save</button>
+        <button id="hexModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- JS -->
-  <script src="app-state.js"></script>
-  <script src="logic-hexes.js"></script>
-  <script src="logic-events.js"></script>
-  <script src="logic-seasons.js"></script>
-  <script src="ui-core.js"></script>
-
-  <!-- SHARED DETAILS MODAL -->
+  <!-- SHARED DETAILS MODAL (seasons + events, etc.) -->
   <div id="detailsModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
@@ -394,8 +357,18 @@
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div id="detailsModalBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="button small secondary" data-close-modal>Close</button>
+      </div>
     </div>
   </div>
+
+  <!-- JS (modular) -->
+  <script src="app-state.js"></script>
+  <script src="logic-seasons.js"></script>
+  <script src="logic-events.js"></script>
+  <script src="logic-hexes.js"></script>
+  <script src="ui-core.js"></script>
 
 </body>
 </html>

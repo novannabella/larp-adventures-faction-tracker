@@ -60,7 +60,8 @@ function saveSeasonFromModal() {
       ore,
       silver,
       gold,
-      notes
+      notes,
+      detailsOpen: false
     });
   } else {
     const existing = state.seasonGains.find((sg) => sg.id === id);
@@ -89,32 +90,6 @@ function deleteSeasonGain(id) {
   renderSeasonGainList();
 }
 
-function openSeasonDetailsModal(sg) {
-  const titleEl = $("detailsModalTitle");
-  const bodyEl = $("detailsModalBody");
-  if (!titleEl || !bodyEl) return;
-
-  titleEl.textContent = `Seasonal Gain — ${sg.season || ""} ${sg.year || ""}`;
-
-  bodyEl.innerHTML = `
-    <div class="details-grid">
-      <p><strong>Season:</strong> ${sg.season || "—"}</p>
-      <p><strong>Year:</strong> ${sg.year || "—"}</p>
-      <p><strong>Food:</strong> ${sg.food || 0}</p>
-      <p><strong>Wood:</strong> ${sg.wood || 0}</p>
-      <p><strong>Stone:</strong> ${sg.stone || 0}</p>
-      <p><strong>Ore:</strong> ${sg.ore || 0}</p>
-      <p><strong>Silver:</strong> ${sg.silver || 0}</p>
-      <p><strong>Gold:</strong> ${sg.gold || 0}</p>
-    </div>
-    <div class="field-row">
-      <label>Notes</label>
-      <textarea readonly rows="4">${sg.notes || "—"}</textarea>
-    </div>
-  `;
-
-  openModal("detailsModal");
-}
 
 function renderSeasonGainList() {
   const tbody = $("seasonTableBody");
@@ -134,21 +109,16 @@ function renderSeasonGainList() {
 
     tr.appendChild(td(sg.season || ""));
     tr.appendChild(td(sg.year || ""));
-    tr.appendChild(td(sg.food || ""));
-    tr.appendChild(td(sg.wood || ""));
-    tr.appendChild(td(sg.stone || ""));
-    tr.appendChild(td(sg.ore || ""));
-    tr.appendChild(td(sg.silver || ""));
-    tr.appendChild(td(sg.gold || ""));
-
-    const preview =
-      sg.notes && sg.notes.length > 40
-        ? sg.notes.slice(0, 37) + "..."
-        : sg.notes || "";
-    tr.appendChild(td(preview));
+    tr.appendChild(td(sg.food ?? ""));
+    tr.appendChild(td(sg.wood ?? ""));
+    tr.appendChild(td(sg.stone ?? ""));
+    tr.appendChild(td(sg.ore ?? ""));
+    tr.appendChild(td(sg.silver ?? ""));
+    tr.appendChild(td(sg.gold ?? ""));
+    tr.appendChild(td(sg.notes ? (sg.notes.length > 60 ? sg.notes.slice(0, 57) + "..." : sg.notes) : ""));
 
     const actionsTd = document.createElement("td");
-    actionsTd.style.whiteSpace = "nowrap";
+    actionsTd.className = "actions-col-cell";
 
     const detailsBtn = document.createElement("button");
     detailsBtn.className = "button small secondary";
@@ -173,4 +143,35 @@ function renderSeasonGainList() {
 
     tbody.appendChild(tr);
   });
+}
+
+function openSeasonDetailsModal(sg) {
+  const titleEl = $("detailsModalTitle");
+  const bodyEl = $("detailsModalBody");
+  if (!titleEl || !bodyEl) return;
+
+  const seasonLabel = sg.season || "";
+  const yearLabel = sg.year || "";
+  const heading = [seasonLabel, yearLabel].filter(Boolean).join(" ");
+
+  titleEl.textContent = heading ? `Seasonal Gain — ${heading}` : "Seasonal Gain Details";
+
+  bodyEl.innerHTML = `
+    <div class="details-grid">
+      <p><strong>Season:</strong> ${sg.season || "—"}</p>
+      <p><strong>Year:</strong> ${sg.year || "—"}</p>
+      <p><strong>Food:</strong> ${sg.food ?? "0"}</p>
+      <p><strong>Wood:</strong> ${sg.wood ?? "0"}</p>
+      <p><strong>Stone:</strong> ${sg.stone ?? "0"}</p>
+      <p><strong>Ore:</strong> ${sg.ore ?? "0"}</p>
+      <p><strong>Silver:</strong> ${sg.silver ?? "0"}</p>
+      <p><strong>Gold:</strong> ${sg.gold ?? "0"}</p>
+      <p style="grid-column: 1 / -1; margin-top: 8px;">
+        <strong>Notes:</strong><br />
+        ${sg.notes ? sg.notes.replace(/\n/g, "<br />") : "—"}
+      </p>
+    </div>
+  `;
+
+  openModal("detailsModal");
 }
