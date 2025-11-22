@@ -19,7 +19,6 @@ function closeModal(id) {
   // Re-enable background
   document.body.removeAttribute("inert");
 }
-}
 
 function wireModalCloseButtons() {
   const backdrop = $("modalBackdrop");
