@@ -13,7 +13,6 @@
     <h1>Larp Adventures</h1>
     <div class="subtitle">Faction Resource Tracker</div>
 
-    <!-- LOAD / SAVE -->
     <div class="top-controls">
       <div class="save-load-controls">
         <button id="loadStateBtn" class="button secondary">Load Faction</button>
@@ -22,9 +21,7 @@
       </div>
     </div>
 
-    <!-- TOP ROW: Faction Info | Coffers -->
     <div class="top-row">
-      <!-- Faction Information -->
       <div class="card" id="factionInfoCard">
         <div class="card-inner">
           <h2>Faction Information</h2>
@@ -39,7 +36,6 @@
         </div>
       </div>
 
-      <!-- Coffers & Resources -->
       <div class="card" id="coffersCard">
         <div class="card-inner">
           <h2>Coffers &amp; Resources</h2>
@@ -73,7 +69,6 @@
       </div>
     </div>
 
-    <!-- SEASONAL RESOURCE GAINS -->
     <div class="card" id="seasonalGainsCard">
       <div class="card-inner">
         <div class="card-header">
@@ -101,7 +96,6 @@
       </div>
     </div>
 
-    <!-- EVENTS & TURNS -->
     <div class="card" id="eventsCard">
       <div class="card-inner">
         <div class="card-header">
@@ -126,7 +120,6 @@
       </div>
     </div>
 
-    <!-- CONTROLLED HEXES -->
     <div class="card" id="controlledHexesCard">
       <div class="card-inner">
         <div class="card-header">
@@ -151,11 +144,9 @@
     </div>
   </div>
 
-  <!-- MODAL BACKDROP -->
   <div id="modalBackdrop" class="modal-backdrop"></div>
 
   
-  <!-- SEASON MODAL -->
   <div id="seasonModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -225,7 +216,6 @@
     </div>
   </div>
 
-  <!-- EVENT MODAL (basic add/edit) -->
   <div id="eventModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -234,17 +224,14 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="eventModalId" />
-
         <div class="field-row">
           <label for="eventModalName">Event Name</label>
           <input id="eventModalName" type="text" />
         </div>
-
         <div class="field-row">
           <label for="eventModalDate">Date</label>
           <input id="eventModalDate" type="date" />
         </div>
-
         <div class="field-row">
           <label for="eventModalType">Type</label>
           <select id="eventModalType">
@@ -253,101 +240,131 @@
             <option value="Campout">Campout</option>
             <option value="Festival Event">Festival Event</option>
             <option value="Virtual Event">Virtual Event</option>
+            <option value="Other">Other</option>
           </select>
         </div>
-
-        <div class="field-row">
-          <label for="eventModalSummary">Summary</label>
-          <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
+        
+        <div class="action-buttons-section" style="margin-top: 12px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="eventBuildAddBtn" class="button small secondary" type="button">Add Build</button>
+            <button id="eventMovementAddBtn" class="button small secondary" type="button">Add Movement</button>
+            <button id="eventOffensiveAddBtn" class="button small secondary" type="button">Add Offensive Action</button>
+          </div>
         </div>
-
-        <!-- Builds subsection -->
-        <div class="modal-subsection">
-          <div class="subsection-header inline-between">
-            <span class="subsection-title">Builds</span>
-            <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
-          </div>
-          <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
-          <div id="eventBuildsContainer" class="mini-list"></div>
-        </div>
-
-        <!-- Movements subsection -->
-        <div class="modal-subsection">
-          <div class="subsection-header inline-between">
-            <span class="subsection-title">Movements</span>
-            <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
-          </div>
-          <p class="subsection-note">Track unit movements between hexes for this event.</p>
-          <div id="eventMovementsContainer" class="mini-list"></div>
-        </div>
-
-        <!-- Offensive Action subsection -->
-        <div class="modal-subsection" id="eventOffenseContainer">
-          <div class="subsection-header inline-between">
-            <span class="subsection-title">Offensive Action</span>
-            <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
-          </div>
-          <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
-
-          <div class="field-row">
-            <label for="eventOffenseType">Type</label>
-            <select id="eventOffenseType">
-              <option value="">-- Select Type --</option>
-              <option value="Land Search">Land Search</option>
-              <option value="Invasion">Invasion</option>
-              <option value="Quest">Quest</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <label for="eventOffenseTarget">Target</label>
-            <input id="eventOffenseTarget" type="text" />
-          </div>
-
-          <div class="field-row">
-            <label for="eventOffenseNotes">Notes</label>
-            <textarea id="eventOffenseNotes" rows="3"></textarea>
-          </div>
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="eventModalSummary">Event Summary / Notes</label>
+          <textarea id="eventModalSummary" rows="3"></textarea>
         </div>
       </div>
-
       <div class="modal-footer">
         <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
   </div>
-<!-- HEX MODAL -->
-<div id="hexModal" class="modal">
-      <div class="modal-content">
+
+  <div id="buildModal" class="modal sub-modal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h3 id="hexModalTitle">Add Hex</h3>
+        <h3 id="buildModalTitle">Add Building Action</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="buildModalId" />
+
+        <div class="field-row">
+          <label for="buildModalTargetHex">Target Hex</label>
+          <select id="buildModalTargetHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="buildModalStructure">Structure / Upgrade</label>
+          <select id="buildModalStructure">
+            </select>
+        </div>
+        
+        <div class="field-row">
+          <label for="buildModalNotes">Notes</label>
+          <textarea id="buildModalNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="buildModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+        <button id="buildModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="movementModal" class="modal sub-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="movementModalTitle">Add Movement Action</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="movementModalId" />
+        
+        <div class="field-row">
+          <label for="movementModalSourceHex">Source Hex</label>
+          <select id="movementModalSourceHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="movementModalTargetHex">Target Hex</label>
+          <select id="movementModalTargetHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="movementModalAssets">Assets Moved</label>
+          <input id="movementModalAssets" type="text" />
+        </div>
+        
+        <div class="field-row">
+          <label for="movementModalNotes">Notes</label>
+          <textarea id="movementModalNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="movementModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+        <button id="movementModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hexModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="hexModalTitle">Add Controlled Hex</h3>
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="hexModalId" />
 
-        <div class="field-row">
-          <label for="hexModalName">Name</label>
-          <input id="hexModalName" type="text" />
+        <div class="mini-row-body two-cols">
+          <div class="field-row">
+            <label for="hexModalNumber">Hex Number</label>
+            <input id="hexModalNumber" type="text" />
+          </div>
+          <div class="field-row">
+            <label for="hexModalName">Name</label>
+            <input id="hexModalName" type="text" />
+          </div>
         </div>
 
-        <div class="field-row">
-          <label for="hexModalNumber">Hex Number</label>
-          <input id="hexModalNumber" type="text" maxlength="5" />
-        </div>
-
-        <div class="field-row">
-          <label for="hexModalTerrainSelect">Terrain</label>
-          <div class="structures-inline">
-            <select id="hexModalTerrainSelect">
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="hexModalTerrainSelect">Add Terrain</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="hexModalTerrainSelect" style="flex-grow: 1;">
               <option value="">-- Select Terrain --</option>
               <option value="Plains">Plains</option>
               <option value="Forest">Forest</option>
               <option value="Mountain">Mountain</option>
               <option value="Sea">Sea</option>
-              <option value="Hills">Hills</option>
-              <option value="Swamp">Swamp</option>
               <option value="Blasted Lands">Blasted Lands</option>
             </select>
             <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
@@ -357,27 +374,27 @@
           <input id="hexModalTerrains" type="text" readonly />
         </div>
 
-        <div class="field-row">
-          <label for="hexModalStructures">Structures</label>
-          <div class="structures-inline">
-            <select id="hexModalStructureSelect">
-              <option value="">-- Add Structure --</option>
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="hexModalStructureSelect">Add Structure / Upgrade</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="hexModalStructureSelect" style="flex-grow: 1;">
               <optgroup label="Improvements">
-                <option value="Market">Market</option>
-                <option value="Carpenter's Shop">Carpenter's Shop</option>
-                <option value="Blacksmith">Blacksmith</option>
-                <option value="Bank">Bank</option>
-                <option value="Stone Mason's Shop">Stone Mason's Shop</option>
+                <option value="market">market</option>
+                <option value="carpenter's shop">carpenter's shop</option>
+                <option value="blacksmith">blacksmith</option>
+                <option value="bank">bank</option>
+                <option value="stone mason's shop">stone mason's shop</option>
               </optgroup>
               <optgroup label="Fortifications">
-                <option value="Watch Tower">Watch Tower</option>
-                <option value="Palisade">Palisade</option>
-                <option value="Fort">Fort</option>
+                <option value="watch tower">watch tower</option>
+                <option value="fort">fort</option>
+                <option value="castle">castle</option>
               </optgroup>
-              <optgroup label="Other">
-                <option value="Shipyard">Shipyard</option>
-                <option value="Temple">Temple</option>
-                <option value="Farm">Farm</option>
+              <optgroup label="Seaborne assets">
+                <option value="Dock">Dock</option>
+                <option value="Fishing Fleet">Fishing Fleet</option>
+                <option value="Trading Vessel">Trading Vessel</option>
+                <option value="War Galley">War Galley</option>
               </optgroup>
             </select>
             <button id="hexModalStructureAddBtn" class="button small secondary" type="button">
@@ -399,7 +416,6 @@
     </div>
   </div>
 
-  <!-- SHARED DETAILS MODAL (seasons + events, etc.) -->
   <div id="detailsModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -413,12 +429,10 @@
     </div>
   </div>
 
-  <!-- JS (modular) -->
   <script src="app-state.js"></script>
   <script src="logic-seasons.js"></script>
   <script src="logic-events.js"></script>
   <script src="logic-hexes.js"></script>
   <script src="ui-core.js"></script>
-
 </body>
 </html>
