@@ -15,11 +15,11 @@ function initHexSection() {
     saveBtn._wired = true;
   }
 
-  const terrAdd = $("hexModalTerrainsAddBtn");
+  const terrAdd = $("hexModalTerrainAddBtn");
   if (terrAdd && !terrAdd._wired) {
     terrAdd.addEventListener("click", () => {
-      const sel = $("hexModalTerrainsSelect");
-      const list = $("hexModalTerrains");
+      const sel = $("hexModalTerrainSelect");
+      const list = $("hexModalTerrain");
       if (!sel || !list) return;
       const val = (sel.value || "").trim();
       if (!val) return;
@@ -115,10 +115,10 @@ function openHexModal(hex) {
 
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
-  $("hexModalTerrains").value = hex?.terrain || "";
+  $("hexModalTerrain").value = hex?.terrain || "";
   $("hexModalStructures").value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
-  $("hexModalTerrainsSelect").value = "";
+  $("hexModalTerrainSelect").value = "";
   $("hexModalStructureSelect").value = "";
 
   openModal("hexModal");
@@ -129,7 +129,7 @@ function saveHexFromModal() {
 
   const name = $("hexModalName").value.trim();
   const hexNumber = $("hexModalNumber").value.trim();
-  const terrain = $("hexModalTerrains").value.trim();
+  const terrain = $("hexModalTerrain").value.trim();
   const structure = $("hexModalStructures").value.trim();
   const notes = $("hexModalNotes").value.trim();
 
