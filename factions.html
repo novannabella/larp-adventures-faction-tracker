@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>Faction Resource Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="factions-styles-desktop.css?v=20250619">
-<link rel="stylesheet" href="factions-styles-mobile.css?v=20250619">
+<link rel="stylesheet" href="factions-styles-desktop.css?v=20250615">
+<link rel="stylesheet" href="factions-styles-mobile.css?v=20250615">
 
 </head>
 <body>
@@ -227,16 +227,16 @@
         
         <div class="field-row">
           <div class="field">
-            <label for="eventModalName">Event Name</label>
-            <input id="eventModalName" type="text" />
+            <label for="eventName">Event Name</label>
+            <input id="eventName" type="text" />
           </div>
           <div class="field half-width">
-            <label for="eventModalDate">Date</label>
-            <input id="eventModalDate" type="date" />
+            <label for="eventDate">Date</label>
+            <input id="eventDate" type="date" />
           </div>
           <div class="field half-width">
-            <label for="eventModalType">Type</label>
-            <select id="eventModalType">
+            <label for="eventType">Type</label>
+            <select id="eventType">
               <option value="">-- Select Type --</option>
               <option value="Day Event">Day Event</option>
               <option value="Campout">Campout</option>
@@ -248,19 +248,19 @@
         </div>
 
         <div class="field-row" style="margin-top: 8px;">
-          <label for="eventModalSummary">Event Summary / Notes</label>
-          <textarea id="eventModalSummary" rows="3"></textarea>
+          <label for="eventSummary">Event Summary / Notes</label>
+          <textarea id="eventSummary" rows="3"></textarea>
         </div>
 
         <div id="eventBuildList" class="action-list"></div>
         <div id="eventMovementList" class="action-list"></div>
         <div id="eventOffensiveAction" class="action-list offensive-action"></div>
         
-        <div class="action-buttons-section" style="margin-top: 12px;">
+        <div class="event-actions-controls" style="margin-top: 12px;">
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="eventBuildAddBtn" class="button small secondary" type="button">Add Build</button>
-            <button id="eventMovementAddBtn" class="button small secondary" type="button">Add Movement</button>
-            <button id="eventOffensiveAddBtn" class="button small secondary" type="button">Add Offensive Action</button>
+            <button id="eventModalAddBuildBtn" class="button small secondary" type="button">Add Build</button>
+            <button id="eventModalAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
+            <button id="eventModalAddOffensiveBtn" class="button small secondary" type="button">Add Offensive Action</button>
           </div>
         </div>
         </div>
@@ -293,4 +293,154 @@
         </div>
         
         <div class="field-row">
-          <label for="buildModalNotes">
+          <label for="buildModalNotes">Notes</label>
+          <textarea id="buildModalNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="buildModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+        <button id="buildModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="movementModal" class="modal sub-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="movementModalTitle">Add Movement Action</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="movementModalId" />
+        
+        <div class="field-row">
+          <label for="movementModalSourceHex">Source Hex</label>
+          <select id="movementModalSourceHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="movementModalTargetHex">Target Hex</label>
+          <select id="movementModalTargetHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="movementModalAssets">Assets Moved</label>
+          <input id="movementModalAssets" type="text" />
+        </div>
+        
+        <div class="field-row">
+          <label for="movementModalNotes">Notes</label>
+          <textarea id="movementModalNotes" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="movementModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+        <button id="movementModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hexModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="hexModalTitle">Add Controlled Hex</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="hexModalId" />
+
+        <div class="mini-row-body two-cols">
+          <div class="field-row">
+            <label for="hexModalNumber">Hex Number</label>
+            <input id="hexModalNumber" type="text" />
+          </div>
+          <div class="field-row">
+            <label for="hexModalName">Name</label>
+            <input id="hexModalName" type="text" />
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="hexModalTerrainSelect">Add Terrain</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="hexModalTerrainSelect" style="flex-grow: 1;">
+              <option value="">-- Select Terrain --</option>
+              <option value="Plains">Plains</option>
+              <option value="Forest">Forest</option>
+              <option value="Mountain">Mountain</option>
+              <option value="Sea">Sea</option>
+              <option value="Blasted Lands">Blasted Lands</option>
+            </select>
+            <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
+              Add
+            </button>
+          </div>
+          <input id="hexModalTerrains" type="text" readonly />
+        </div>
+
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="hexModalStructureSelect">Add Structure / Upgrade</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="hexModalStructureSelect" style="flex-grow: 1;">
+              <optgroup label="Improvements">
+                <option value="market">market</option>
+                <option value="carpenter's shop">carpenter's shop</option>
+                <option value="blacksmith">blacksmith</option>
+                <option value="bank">bank</option>
+                <option value="stone mason's shop">stone mason's shop</option>
+              </optgroup>
+              <optgroup label="Fortifications">
+                <option value="watch tower">watch tower</option>
+                <option value="fort">fort</option>
+                <option value="castle">castle</option>
+              </optgroup>
+              <optgroup label="Seaborne assets">
+                <option value="Dock">Dock</option>
+                <option value="Fishing Fleet">Fishing Fleet</option>
+                <option value="Trading Vessel">Trading Vessel</option>
+                <option value="War Galley">War Galley</option>
+              </optgroup>
+            </select>
+            <button id="hexModalStructureAddBtn" class="button small secondary" type="button">
+              Add
+            </button>
+          </div>
+          <input id="hexModalStructures" type="text" readonly />
+        </div>
+
+        <div class="field-row">
+          <label for="hexModalNotes">Notes</label>
+          <textarea id="hexModalNotes" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="hexModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detailsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="detailsModalTitle">Details</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div id="detailsModalBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="button small secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app-state.js"></script>
+  <script src="logic-seasons.js"></script>
+  <script src="logic-events.js"></script>
+  <script src="logic-hexes.js"></script>
+  <script src="ui-core.js"></script>
+</body>
+</html>
