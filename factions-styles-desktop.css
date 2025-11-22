@@ -237,19 +237,20 @@ tbody tr:hover td {
 }
 
 /* ===== HEX TABLE QUICK FIX ===== */
-.hex-table th:nth-child(1) {
+/* This section is updated to target the new class name */
+.controlled-hexes-table th:nth-child(1) {
   width: 18%;
 }
-.hex-table th:nth-child(2) {
+.controlled-hexes-table th:nth-child(2) {
   width: 20%;
 }
-.hex-table th:nth-child(3) {
+.controlled-hexes-table th:nth-child(3) {
   width: 28%;
 }
-.hex-table th:nth-child(4) {
+.controlled-hexes-table th:nth-child(4) {
   width: 20%;
 }
-.hex-table th:nth-child(5) {
+.controlled-hexes-table th:nth-child(5) {
   width: 14%;
 }
 
@@ -547,13 +548,15 @@ th.actions-col {
 
 .season-table td:last-child,
 .event-table td:last-child,
-.hex-table td:last-child {
+/* This line is updated to target the new class name */
+.controlled-hexes-table td:last-child {
   text-align: right;
   padding-right: 10px;
 }
 
 .season-table td:last-child button,
 .event-table td:last-child button,
-.hex-table td:last-child button {
+/* This line is updated to target the new class name */
+.controlled-hexes-table td:last-child button {
   margin-left: 6px;
 }
