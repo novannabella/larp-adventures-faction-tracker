@@ -1,19 +1,34 @@
 /* ==========================================================================
-   Faction Tracker — FULL Mobile Layout (Clean Consolidated Version)
-   Mirrors Character Sheet App Mobile Aesthetic
+   Faction Tracker — Mobile Layout (Clean + Icon Buttons)
    ========================================================================== */
 
 @media (max-width: 768px) {
 
   /* --------------------------------------------------
-     Global structure
+     Global structure & top spacing
   -------------------------------------------------- */
+
+  body {
+    margin: 0;
+  }
 
   .app {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin: 0 14px 28px;
+    gap: 12px;
+    margin: 6px 14px 24px;
+  }
+
+  .app h1 {
+    margin: 8px 0 4px;
+  }
+
+  .subtitle {
+    margin-bottom: 6px;
+  }
+
+  .top-controls {
+    margin-bottom: 8px;
   }
 
   /* Faction Info above Coffers on mobile */
@@ -40,7 +55,7 @@
     );
     border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.06);
-    padding: 16px 18px;
+    padding: 14px 16px;
     box-shadow: 0 10px 28px rgba(0,0,0,0.55);
   }
 
@@ -160,7 +175,7 @@
   .season-row td:nth-child(7)::before { content: "Silver"; }
   .season-row td:nth-child(8)::before { content: "Gold"; }
 
-  /* Hide Notes column on card (still in modal) */
+  /* Hide Notes column on card (still shown in modal) */
   .season-row td:nth-child(9) {
     display: none !important;
   }
@@ -178,7 +193,6 @@
 
   /* --------------------------------------------------
      Column Labels — Controlled Hexes
-     (THIS is what was broken earlier)
   -------------------------------------------------- */
 
   .hex-row td:nth-child(1)::before { content: "Hex"; }
@@ -187,16 +201,16 @@
   .hex-row td:nth-child(4)::before { content: "Structures"; }
 
   /* --------------------------------------------------
-     Buttons on Bottom for All Cards
+     Button Layout + Icons (Details / Edit / Delete)
   -------------------------------------------------- */
 
+  /* Put Details + Edit on first row, Delete on its own row */
   .season-row td:last-child,
   .event-row td:last-child,
   .hex-row td:last-child {
-    display: flex;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
     gap: 8px;
-    flex-wrap: wrap;
     padding-top: 8px;
     margin-top: 8px;
   }
@@ -204,10 +218,45 @@
   .season-row td:last-child .button,
   .event-row td:last-child .button,
   .hex-row td:last-child .button {
+    min-width: 0;
     font-size: 0.75rem;
     padding: 5px 10px;
-    min-width: 0;
-    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+  }
+
+  /* Delete button spans full width on second row */
+  .season-row td:last-child .button:last-child,
+  .event-row td:last-child .button:last-child,
+  .hex-row td:last-child .button:last-child {
+    grid-column: span 2;
+    justify-self: flex-start;
+  }
+
+  /* Gold outlined-style icons before text */
+  .season-row td:last-child .button:first-child::before,
+  .event-row td:last-child .button:first-child::before,
+  .hex-row td:last-child .button:first-child::before {
+    content: "👁";
+    color: #f4c76b;
+    font-size: 0.9em;
+  }
+
+  .season-row td:last-child .button:nth-child(2)::before,
+  .event-row td:last-child .button:nth-child(2)::before,
+  .hex-row td:last-child .button:nth-child(2)::before {
+    content: "✏";
+    color: #f4c76b;
+    font-size: 0.9em;
+  }
+
+  .season-row td:last-child .button:last-child::before,
+  .event-row td:last-child .button:last-child::before,
+  .hex-row td:last-child .button:last-child::before {
+    content: "🗑";
+    color: #f4c76b;
+    font-size: 0.9em;
   }
 
   /* --------------------------------------------------
@@ -227,14 +276,13 @@
     white-space: pre-wrap;
     line-height: 1.35;
   }
-
 }
 
 /* ==========================================================================
    Two-Across Card Layout (Character Sheet Style)
    ========================================================================== */
 
-@media (min-width: 460px) and (max-width: 768px) {
+@media (min-width: 460px) && (max-width: 768px) {
 
   .season-table tbody,
   .event-table tbody,
