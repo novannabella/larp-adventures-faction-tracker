@@ -150,6 +150,7 @@
     </div>
   </div>
 
+
   <!-- MODAL BACKDROP -->
   <div id="modalBackdrop" class="modal-backdrop"></div>
 
@@ -160,101 +161,56 @@
         <h3 id="seasonModalTitle">Add Seasonal Resource Gain</h3>
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
-
       <div class="modal-body">
-        <input type="hidden" id="eventModalId" />
+        <input type="hidden" id="seasonModalId" />
 
         <div class="field-row">
-          <label for="eventModalName">Event Name</label>
-          <input id="eventModalName" type="text" />
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalDate">Date</label>
-          <input id="eventModalDate" type="date" />
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalType">Type</label>
-          <select id="eventModalType">
-            <option value="">-- Select Type --</option>
-            <option value="Day Event">Day Event</option>
-            <option value="Campout">Campout</option>
-            <option value="Festival Event">Festival Event</option>
-            <option value="Virtual Event">Virtual Event</option>
+          <label for="seasonModalSeason">Season</label>
+          <select id="seasonModalSeason">
+            <option value="">-- Select Season --</option>
+            <option value="Spring">Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Autumn">Autumn</option>
+            <option value="Winter">Winter</option>
           </select>
         </div>
 
         <div class="field-row">
-          <label for="eventModalSummary">Summary</label>
-          <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
+          <label for="seasonModalYear">Year</label>
+          <input id="seasonModalYear" type="number" min="0" max="9999" />
         </div>
 
-        <h3 class="subsection-title" style="margin-top: 22px;">Builds</h3>
-        <button id="eventAddBuildBtn" class="button small secondary">Add Build</button>
-        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Movements</h3>
-        <button id="eventAddMovementBtn" class="button small secondary">Add Movement</button>
-        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Offensive Action</h3>
-        <button id="eventAddOffenseBtn" class="button small secondary">Add Offensive Action</button>
-
-        <div id="eventOffenseContainer" style="display:none; margin-top: 12px;">
-          <label>Action Type</label>
-          <select id="eventOffenseType">
-            <option value="">None</option>
-            <option value="Land Search">Land Search</option>
-            <option value="Invasion">Invasion</option>
-            <option value="Quest">Quest</option>
-          </select>
-
-          <label>Target Hex / Location</label>
-          <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
-
-          <label>Notes / Result</label>
-          <textarea id="eventOffenseNotes" placeholder="Encounter details, results, treasure, etc."></textarea>
-        </div>
-</div>
-
-          <div class="field">
-            <label for="seasonModalYear">Year</label>
-            <input id="seasonModalYear" type="number" min="0" max="9999" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalFood">Food Gained</label>
-            <input id="seasonModalFood" type="number" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalWood">Wood Gained</label>
-            <input id="seasonModalWood" type="number" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalStone">Stone Gained</label>
-            <input id="seasonModalStone" type="number" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalOre">Ore Gained</label>
-            <input id="seasonModalOre" type="number" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalSilver">Silver Gained</label>
-            <input id="seasonModalSilver" type="number" />
-          </div>
-
-          <div class="field">
-            <label for="seasonModalGold">Gold Gained</label>
-            <input id="seasonModalGold" type="number" />
-          </div>
+        <div class="field-row">
+          <label for="seasonModalFood">Food Gained</label>
+          <input id="seasonModalFood" type="number" />
         </div>
 
-        <div class="field" style="margin-top: 8px;">
+        <div class="field-row">
+          <label for="seasonModalWood">Wood Gained</label>
+          <input id="seasonModalWood" type="number" />
+        </div>
+
+        <div class="field-row">
+          <label for="seasonModalStone">Stone Gained</label>
+          <input id="seasonModalStone" type="number" />
+        </div>
+
+        <div class="field-row">
+          <label for="seasonModalOre">Ore Gained</label>
+          <input id="seasonModalOre" type="number" />
+        </div>
+
+        <div class="field-row">
+          <label for="seasonModalSilver">Silver Gained</label>
+          <input id="seasonModalSilver" type="number" />
+        </div>
+
+        <div class="field-row">
+          <label for="seasonModalGold">Gold Gained</label>
+          <input id="seasonModalGold" type="number" />
+        </div>
+
+        <div class="field-row">
           <label for="seasonModalNotes">Notes</label>
           <textarea id="seasonModalNotes" rows="3"></textarea>
         </div>
@@ -266,7 +222,7 @@
     </div>
   </div>
 
-  <!-- EVENT MODAL (basic info; details are handled by JS inline/details row) -->
+  <!-- EVENT MODAL -->
   <div id="eventModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
@@ -303,49 +259,36 @@
         </div>
 
         <h3 class="subsection-title" style="margin-top: 22px;">Builds</h3>
-        <button id="eventAddBuildBtn" class="button small secondary">Add Build</button>
-        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px;"></div>
+        <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
+        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px; display:none;"></div>
 
         <h3 class="subsection-title" style="margin-top: 28px;">Movements</h3>
-        <button id="eventAddMovementBtn" class="button small secondary">Add Movement</button>
-        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px;"></div>
+        <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
+        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px; display:none;"></div>
 
         <h3 class="subsection-title" style="margin-top: 28px;">Offensive Action</h3>
-        <button id="eventAddOffenseBtn" class="button small secondary">Add Offensive Action</button>
+        <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
 
         <div id="eventOffenseContainer" style="display:none; margin-top: 12px;">
-          <label>Action Type</label>
-          <select id="eventOffenseType">
-            <option value="">None</option>
-            <option value="Land Search">Land Search</option>
-            <option value="Invasion">Invasion</option>
-            <option value="Quest">Quest</option>
-          </select>
+          <div class="field-row">
+            <label for="eventOffenseType">Action Type</label>
+            <select id="eventOffenseType">
+              <option value="">None</option>
+              <option value="Land Search">Land Search</option>
+              <option value="Invasion">Invasion</option>
+              <option value="Quest">Quest</option>
+            </select>
+          </div>
 
-          <label>Target Hex / Location</label>
-          <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
+          <div class="field-row">
+            <label for="eventOffenseTarget">Target Hex / Location</label>
+            <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
+          </div>
 
-          <label>Notes / Result</label>
-          <textarea id="eventOffenseNotes" placeholder="Encounter details, results, treasure, etc."></textarea>
-        </div>
-</div>
-        <div class="field-row">
-          <label for="eventModalDate">Date</label>
-          <input id="eventModalDate" type="date" />
-        </div>
-        <div class="field-row">
-          <label for="eventModalType">Type</label>
-          <select id="eventModalType">
-            <option value="">-- Select Type --</option>
-            <option value="Day Event">Day Event</option>
-            <option value="Campout">Campout</option>
-            <option value="Festival Event">Festival Event</option>
-            <option value="Virtual Event">Virtual Event</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <label for="eventModalSummary">Summary</label>
-          <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
+          <div class="field-row">
+            <label for="eventOffenseNotes">Notes / Result</label>
+            <textarea id="eventOffenseNotes" rows="3" placeholder="Encounter details, results, treasure, etc."></textarea>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -363,61 +306,12 @@
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="eventModalId" />
+        <input type="hidden" id="hexModalId" />
 
         <div class="field-row">
-          <label for="eventModalName">Event Name</label>
-          <input id="eventModalName" type="text" />
+          <label for="hexModalName">Name</label>
+          <input id="hexModalName" type="text" />
         </div>
-
-        <div class="field-row">
-          <label for="eventModalDate">Date</label>
-          <input id="eventModalDate" type="date" />
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalType">Type</label>
-          <select id="eventModalType">
-            <option value="">-- Select Type --</option>
-            <option value="Day Event">Day Event</option>
-            <option value="Campout">Campout</option>
-            <option value="Festival Event">Festival Event</option>
-            <option value="Virtual Event">Virtual Event</option>
-          </select>
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalSummary">Summary</label>
-          <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
-        </div>
-
-        <h3 class="subsection-title" style="margin-top: 22px;">Builds</h3>
-        <button id="eventAddBuildBtn" class="button small secondary">Add Build</button>
-        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Movements</h3>
-        <button id="eventAddMovementBtn" class="button small secondary">Add Movement</button>
-        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Offensive Action</h3>
-        <button id="eventAddOffenseBtn" class="button small secondary">Add Offensive Action</button>
-
-        <div id="eventOffenseContainer" style="display:none; margin-top: 12px;">
-          <label>Action Type</label>
-          <select id="eventOffenseType">
-            <option value="">None</option>
-            <option value="Land Search">Land Search</option>
-            <option value="Invasion">Invasion</option>
-            <option value="Quest">Quest</option>
-          </select>
-
-          <label>Target Hex / Location</label>
-          <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
-
-          <label>Notes / Result</label>
-          <textarea id="eventOffenseNotes" placeholder="Encounter details, results, treasure, etc."></textarea>
-        </div>
-</div>
 
         <div class="field-row">
           <label for="hexModalNumber">Hex Number</label>
@@ -485,81 +379,23 @@
     </div>
   </div>
 
-  <!-- JS (modular) -->
+  <!-- JS -->
   <script src="app-state.js"></script>
   <script src="logic-hexes.js"></script>
   <script src="logic-events.js"></script>
   <script src="logic-seasons.js"></script>
   <script src="ui-core.js"></script>
 
-  <!-- Shared Details Modal (currently unused by your JS, safe to keep for later) -->
+  <!-- SHARED DETAILS MODAL -->
   <div id="detailsModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="detailsModalTitle">Details</h3>
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
-      <div class="modal-body">
-        <input type="hidden" id="eventModalId" />
-
-        <div class="field-row">
-          <label for="eventModalName">Event Name</label>
-          <input id="eventModalName" type="text" />
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalDate">Date</label>
-          <input id="eventModalDate" type="date" />
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalType">Type</label>
-          <select id="eventModalType">
-            <option value="">-- Select Type --</option>
-            <option value="Day Event">Day Event</option>
-            <option value="Campout">Campout</option>
-            <option value="Festival Event">Festival Event</option>
-            <option value="Virtual Event">Virtual Event</option>
-          </select>
-        </div>
-
-        <div class="field-row">
-          <label for="eventModalSummary">Summary</label>
-          <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
-        </div>
-
-        <h3 class="subsection-title" style="margin-top: 22px;">Builds</h3>
-        <button id="eventAddBuildBtn" class="button small secondary">Add Build</button>
-        <div id="eventBuildsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Movements</h3>
-        <button id="eventAddMovementBtn" class="button small secondary">Add Movement</button>
-        <div id="eventMovementsContainer" class="mini-list" style="margin-top: 10px;"></div>
-
-        <h3 class="subsection-title" style="margin-top: 28px;">Offensive Action</h3>
-        <button id="eventAddOffenseBtn" class="button small secondary">Add Offensive Action</button>
-
-        <div id="eventOffenseContainer" style="display:none; margin-top: 12px;">
-          <label>Action Type</label>
-          <select id="eventOffenseType">
-            <option value="">None</option>
-            <option value="Land Search">Land Search</option>
-            <option value="Invasion">Invasion</option>
-            <option value="Quest">Quest</option>
-          </select>
-
-          <label>Target Hex / Location</label>
-          <input id="eventOffenseTarget" type="text" placeholder="e.g. A3 Forest, Ruins at B5" />
-
-          <label>Notes / Result</label>
-          <textarea id="eventOffenseNotes" placeholder="Encounter details, results, treasure, etc."></textarea>
-        </div>
-</div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="button small secondary" data-close-modal>Close</button>
-      </div>
+      <div id="detailsModalBody" class="modal-body"></div>
     </div>
   </div>
+
 </body>
 </html>
