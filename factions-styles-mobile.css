@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Faction Tracker — FULL Mobile Visual Upgrade
+   Faction Tracker — FULL Mobile Visual Upgrade (Corrected)
    Matches Character Sheet App Aesthetics
    ========================================================================== */
 
@@ -14,6 +14,18 @@
     flex-direction: column;
     gap: 24px;
     margin: 0 14px 28px;
+  }
+
+  /* Force Faction Info ABOVE Coffers on Mobile */
+  .top-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  #factionInfoCard,
+  #coffersCard {
+    width: 100% !important;
   }
 
   /* Section Title Bars */
@@ -98,8 +110,8 @@
   .event-row td,
   .hex-main-row td {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
     font-size: 0.85rem;
     padding: 6px 0;
     border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -152,7 +164,7 @@
   .event-row td:nth-child(6)::before { content: "Offense"; }
   .event-row td:nth-child(7)::before { content: ""; }
 
-  /* --- Hexes (FULL FIX) --- */
+  /* --- Hexes (Corrected & Final) --- */
   .hex-main-row td:nth-child(1)::before { content: "Hex"; }
   .hex-main-row td:nth-child(2)::before { content: "Name"; }
   .hex-main-row td:nth-child(3)::before { content: "Terrain"; }
@@ -160,7 +172,7 @@
   .hex-main-row td:nth-child(5)::before { content: ""; }
 
   /* --------------------------------------------------
-     4) Button grouping rules
+     4) Button grouping rules (All Cards)
   -------------------------------------------------- */
 
   .season-row td:last-child,
@@ -170,6 +182,8 @@
     justify-content: flex-start;
     gap: 8px;
     flex-wrap: wrap;
+    margin-top: 8px;
+    padding-top: 8px;
   }
 
   .season-row td:last-child .button,
