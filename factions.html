@@ -259,15 +259,64 @@
           <label for="eventModalSummary">Summary</label>
           <textarea id="eventModalSummary" rows="4" placeholder="Overall summary of what happened."></textarea>
         </div>
+
+        <!-- Builds subsection -->
+        <div class="modal-subsection">
+          <div class="subsection-header inline-between">
+            <span class="subsection-title">Builds</span>
+            <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
+          </div>
+          <p class="subsection-note">Structures you are constructing or upgrading during this event.</p>
+          <div id="eventBuildsContainer" class="mini-list"></div>
+        </div>
+
+        <!-- Movements subsection -->
+        <div class="modal-subsection">
+          <div class="subsection-header inline-between">
+            <span class="subsection-title">Movements</span>
+            <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
+          </div>
+          <p class="subsection-note">Track unit movements between hexes for this event.</p>
+          <div id="eventMovementsContainer" class="mini-list"></div>
+        </div>
+
+        <!-- Offensive Action subsection -->
+        <div class="modal-subsection" id="eventOffenseContainer">
+          <div class="subsection-header inline-between">
+            <span class="subsection-title">Offensive Action</span>
+            <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
+          </div>
+          <p class="subsection-note">Land Search, Invasion, or Quest &mdash; only one per event.</p>
+
+          <div class="field-row">
+            <label for="eventOffenseType">Type</label>
+            <select id="eventOffenseType">
+              <option value="">-- Select Type --</option>
+              <option value="Land Search">Land Search</option>
+              <option value="Invasion">Invasion</option>
+              <option value="Quest">Quest</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <label for="eventOffenseTarget">Target</label>
+            <input id="eventOffenseTarget" type="text" />
+          </div>
+
+          <div class="field-row">
+            <label for="eventOffenseNotes">Notes</label>
+            <textarea id="eventOffenseNotes" rows="3"></textarea>
+          </div>
+        </div>
       </div>
+
       <div class="modal-footer">
         <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
   </div>
-
-  <!-- HEX MODAL -->
+<!-- HEX MODAL -->
   <div id="hexModal" class="modal" aria-hidden="true">
     <div class="modal-content">
       <div class="modal-header">
