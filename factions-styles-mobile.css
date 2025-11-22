@@ -1,14 +1,7 @@
-/* ==========================================================================
-   Faction Tracker — FULL Mobile Visual Upgrade (Corrected)
-   Matches Character Sheet App Aesthetics
-   ========================================================================== */
+/* Faction Tracker – Mobile Layout */
 
 @media (max-width: 768px) {
-
-  /* --------------------------------------------------
-     Global Misc Upgrades
-  -------------------------------------------------- */
-
+  /* Overall app stacking */
   .app {
     display: flex;
     flex-direction: column;
@@ -16,21 +9,45 @@
     margin: 0 14px 28px;
   }
 
-  /* Force Faction Info ABOVE Coffers on Mobile */
+  /* Faction Info above Coffers on mobile */
   .top-row {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   #factionInfoCard,
   #coffersCard {
-    width: 100% !important;
+    width: 100%;
   }
 
-  /* Section Title Bars */
+  /* Card shell styling (matches character sheet vibe) */
+  .card {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 14, 22, 0.95) 0%,
+      rgba(16, 20, 34, 0.96) 100%
+    );
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 16px 18px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  }
+
+  .card-inner {
+    padding: 0;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
   .card-header h2 {
-    font-size: 0.95rem !important;
+    font-size: 0.95rem;
     letter-spacing: 0.18em;
     padding-left: 8px;
     border-left: 3px solid var(--accent);
@@ -38,40 +55,23 @@
     text-transform: uppercase;
   }
 
-  .card {
-    background: linear-gradient(180deg,
-      rgba(10,14,22,0.95) 0%,
-      rgba(16,20,34,0.96) 100%);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: var(--radius-lg);
-    padding: 16px 18px;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.55);
-  }
-
-  .card-inner { padding: 0; }
-
-  /* --------------------------------------------------
-     1) Coffers — Two Column Improved Grid
-  -------------------------------------------------- */
-
+  /* --- Coffers & Resources: 2-column grid --- */
   .coffers-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
   }
 
   .coffer-box {
-    background: rgba(20,26,42,0.9);
-    border: 1px solid rgba(255,255,255,0.04);
-    border-radius: var(--radius-sm);
+    background: rgba(20, 26, 42, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
     padding: 12px 10px;
-    color: var(--text);
     font-size: 0.9rem;
+    color: var(--text);
   }
 
-  /* --------------------------------------------------
-     2) Universal Card Row Layout (Season, Event, Hex)
-  -------------------------------------------------- */
+  /* --- Tables → card layout (Season, Events, Hexes) --- */
 
   .season-table thead,
   .event-table thead,
@@ -89,44 +89,42 @@
 
   .season-row,
   .event-row,
-  .hex-main-row {
+  .hex-row {
     display: block;
-    background: rgba(8,12,30,0.97);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(8, 12, 30, 0.97);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     padding: 12px 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
     transition: transform 0.15s ease;
   }
 
   .season-row:active,
   .event-row:active,
-  .hex-main-row:active {
+  .hex-row:active {
     transform: scale(0.98);
   }
 
-  /* Field dividers */
   .season-row td,
   .event-row td,
-  .hex-main-row td {
+  .hex-row td {
     display: flex;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
+    justify-content: space-between;
+    align-items: flex-start;
     font-size: 0.85rem;
     padding: 6px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   .season-row td:last-child,
   .event-row td:last-child,
-  .hex-main-row td:last-child {
+  .hex-row td:last-child {
     border-bottom: none;
   }
 
-  /* Labels */
   .season-row td::before,
   .event-row td::before,
-  .hex-main-row td::before {
+  .hex-row td::before {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -136,48 +134,85 @@
     content: "";
   }
 
-  /* --------------------------------------------------
-     3) Column-specific Labels
-  -------------------------------------------------- */
+  /* --- Seasonal Resource Gains labels --- */
+  .season-row td:nth-child(1)::before {
+    content: "Season";
+  }
+  .season-row td:nth-child(2)::before {
+    content: "Year";
+  }
+  .season-row td:nth-child(3)::before {
+    content: "Food";
+  }
+  .season-row td:nth-child(4)::before {
+    content: "Wood";
+  }
+  .season-row td:nth-child(5)::before {
+    content: "Stone";
+  }
+  .season-row td:nth-child(6)::before {
+    content: "Ore";
+  }
+  .season-row td:nth-child(7)::before {
+    content: "Silver";
+  }
+  .season-row td:nth-child(8)::before {
+    content: "Gold";
+  }
 
-  /* --- Seasonal Gains --- */
-  .season-row td:nth-child(1)::before { content: "Season"; }
-  .season-row td:nth-child(2)::before { content: "Year"; }
-  .season-row td:nth-child(3)::before { content: "Food"; }
-  .season-row td:nth-child(4)::before { content: "Wood"; }
-  .season-row td:nth-child(5)::before { content: "Stone"; }
-  .season-row td:nth-child(6)::before { content: "Ore"; }
-  .season-row td:nth-child(7)::before { content: "Silver"; }
-  .season-row td:nth-child(8)::before { content: "Gold"; }
+  /* Hide Notes column on the card (still available in modal) */
+  .season-row td:nth-child(9) {
+    display: none;
+  }
 
-  /* Hide "Notes" on mobile */
-  .season-row td:nth-child(9) { display: none; }
+  .season-row td:nth-child(10)::before {
+    content: "";
+  }
 
-  .season-row td:nth-child(10)::before { content: ""; }
+  /* --- Events & Turn Actions labels --- */
+  .event-row td:nth-child(1)::before {
+    content: "Event";
+  }
+  .event-row td:nth-child(2)::before {
+    content: "Date";
+  }
+  .event-row td:nth-child(3)::before {
+    content: "Type";
+  }
+  .event-row td:nth-child(4)::before {
+    content: "Builds";
+  }
+  .event-row td:nth-child(5)::before {
+    content: "Moves";
+  }
+  .event-row td:nth-child(6)::before {
+    content: "Offense";
+  }
+  .event-row td:nth-child(7)::before {
+    content: "";
+  }
 
-  /* --- Events --- */
-  .event-row td:nth-child(1)::before { content: "Event"; }
-  .event-row td:nth-child(2)::before { content: "Date"; }
-  .event-row td:nth-child(3)::before { content: "Type"; }
-  .event-row td:nth-child(4)::before { content: "Builds"; }
-  .event-row td:nth-child(5)::before { content: "Moves"; }
-  .event-row td:nth-child(6)::before { content: "Offense"; }
-  .event-row td:nth-child(7)::before { content: ""; }
+  /* --- Controlled Hexes labels (this is the part that was off) --- */
+  .hex-row td:nth-child(1)::before {
+    content: "Hex";
+  }
+  .hex-row td:nth-child(2)::before {
+    content: "Name";
+  }
+  .hex-row td:nth-child(3)::before {
+    content: "Terrain";
+  }
+  .hex-row td:nth-child(4)::before {
+    content: "Structures";
+  }
+  .hex-row td:nth-child(5)::before {
+    content: "";
+  }
 
-  /* --- Hexes (Corrected & Final) --- */
-  .hex-main-row td:nth-child(1)::before { content: "Hex"; }
-  .hex-main-row td:nth-child(2)::before { content: "Name"; }
-  .hex-main-row td:nth-child(3)::before { content: "Terrain"; }
-  .hex-main-row td:nth-child(4)::before { content: "Structures"; }
-  .hex-main-row td:nth-child(5)::before { content: ""; }
-
-  /* --------------------------------------------------
-     4) Button grouping rules (All Cards)
-  -------------------------------------------------- */
-
+  /* Buttons: grouped on the bottom row for all three card types */
   .season-row td:last-child,
   .event-row td:last-child,
-  .hex-main-row td:last-child {
+  .hex-row td:last-child {
     display: flex;
     justify-content: flex-start;
     gap: 8px;
@@ -188,17 +223,14 @@
 
   .season-row td:last-child .button,
   .event-row td:last-child .button,
-  .hex-main-row td:last-child .button {
+  .hex-row td:last-child .button {
     font-size: 0.75rem;
     padding: 5px 10px;
     min-width: 0;
     flex: 0 0 auto;
   }
 
-  /* --------------------------------------------------
-     5) Details row improvements
-  -------------------------------------------------- */
-
+  /* Details rows under cards */
   .season-details-row td,
   .event-details-row td,
   .hex-details-row td {
@@ -213,5 +245,4 @@
     line-height: 1.35;
     color: var(--text);
   }
-
 }
