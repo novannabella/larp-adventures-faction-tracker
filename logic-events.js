@@ -2,7 +2,6 @@
 
 // --- State helpers ---
 let eventSortDirection = "asc";
-let nextEventId = 1;
 
 function initEventSection() {
   const addBtn = $("eventAddBtn");
