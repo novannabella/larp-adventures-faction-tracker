@@ -28,7 +28,7 @@ body {
   min-height: 100vh;
   background: radial-gradient(circle at top, #1a2240 0, #050813 52%);
   color: var(--text);
-  font-family: "EB Garamond", "Times New Roman", serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 /* App shell */
@@ -174,7 +174,7 @@ textarea {
   padding: 6px 8px;
   color: var(--text);
   font-size: 13px;
-  font-family: "EB Garamond", "Times New Roman", serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 input:focus,
@@ -460,4 +460,100 @@ tbody tr:hover td {
 .two-col .field input,
 .two-col .field select {
   width: 100%;
+}
+
+
+
+/* === Override buttons to match character sheet app === */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: linear-gradient(135deg, var(--accent), #f8983c);
+  color: #23120b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.46);
+}
+
+.button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.button.secondary:hover {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: none;
+  transform: none;
+}
+
+.button.small {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+/* Match table typography to character sheet */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+th,
+td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 6px 4px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+tbody tr:hover {
+  background: rgba(244, 199, 107, 0.06);
+}
+
+/* === Right-align all Actions columns === */
+th.actions-col {
+  text-align: right;
+}
+
+.season-table td:last-child,
+.event-table td:last-child,
+.hex-table td:last-child {
+  text-align: right;
+  padding-right: 10px;
+}
+
+.season-table td:last-child button,
+.event-table td:last-child button,
+.hex-table td:last-child button {
+  margin-left: 6px;
 }
