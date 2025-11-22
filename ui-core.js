@@ -1,28 +1,59 @@
+// Simple helper, assuming this exists elsewhere in your codebase.
+// If it doesn't, uncomment this:
+// const $ = (id) => document.getElementById(id);
+
+let lastFocusedElement = null;
+
 // Safe & accessible modal open
 function openModal(id) {
   const modal = document.getElementById(id);
-  modal.classList.add("active");
+  if (!modal) return;
 
-  // Modal should NEVER be aria-hidden when open
+  // Remember what had focus before opening
+  lastFocusedElement = document.activeElement;
+
+  modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
 
-  // Remove any accidental inert on the body
-  document.body.removeAttribute("inert");
+  // Move focus into the modal (first focusable element, or the modal itself)
+  setTimeout(() => {
+    const focusTarget =
+      modal.querySelector("[data-modal-initial-focus]") ||
+      modal.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) ||
+      modal;
 
-  // Focus modal for accessibility
-  setTimeout(() => modal.focus(), 0);
+    if (focusTarget && typeof focusTarget.focus === "function") {
+      focusTarget.focus();
+    }
+  }, 0);
 }
 
-// Safe modal close
+// Safe & accessible modal close
 function closeModal(id) {
   const modal = document.getElementById(id);
+  if (!modal) return;
+
   modal.classList.remove("active");
 
-  // Closed modals should be aria-hidden
+  // If something inside the modal still has focus, blur it first
+  const active = document.activeElement;
+  if (active && modal.contains(active)) {
+    active.blur();
+  }
+
+  // Now it's safe to hide from the accessibility tree
   modal.setAttribute("aria-hidden", "true");
 
-  // Remove inert to ensure page is interactive
-  document.body.removeAttribute("inert");
+  // Restore focus to whatever had it before the modal opened, if still in the DOM
+  if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
+    try {
+      lastFocusedElement.focus();
+    } catch (e) {
+      // ignore if element can't be focused anymore
+    }
+  }
 }
 
 function wireModalCloseButtons() {
@@ -31,9 +62,25 @@ function wireModalCloseButtons() {
     backdrop.addEventListener("click", () => {
       document.querySelectorAll(".modal.active").forEach((m) => {
         m.classList.remove("active");
+
+        // Same pattern as closeModal, but for all modals
+        const active = document.activeElement;
+        if (active && m.contains(active)) {
+          active.blur();
+        }
+
         m.setAttribute("aria-hidden", "true");
       });
       backdrop.classList.remove("active");
+
+      // Restore focus if possible
+      if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
+        try {
+          lastFocusedElement.focus();
+        } catch (e) {
+          // ignore
+        }
+      }
     });
     backdrop._wired = true;
   }
@@ -51,6 +98,7 @@ function wireModalCloseButtons() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // your existing init wiring
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
