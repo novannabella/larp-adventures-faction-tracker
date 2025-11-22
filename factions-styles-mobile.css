@@ -1,135 +1,191 @@
-/* Mobile Styles for Faction Tracker - Updated for 2-across cards + icon-only buttons */
+/* MOBILE CSS FINAL FIX — based on GOOD file, only adds:
+   1. Two-across cards on mobile
+   2. Icon‑only buttons on one row
+   3. No other layout changes
+   ------------------------------------------------------------------ */
 
-/* RESET */
-* {
-  box-sizing: border-box;
-}
+@media (max-width: 768px) {
 
-body {
-  background: #0d1321;
-  margin: 0;
-  padding: 0;
-  font-family: "Cinzel", serif;
-  color: #e6d3a3;
-}
-
-/* SECTION TITLES */
-.section-title {
-  font-size: 1.2rem;
-  margin: 20px 0 12px 0;
-  padding-left: 10px;
-  border-left: 4px solid #e6b869;
-  color: #e6c17b;
-}
-
-/* CARD GRID: 2 ACROSS */
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.card {
-  background: #111a29;
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #0e1623;
-}
-
-/* LABEL + VALUE ROWS */
-.card-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #1f2a3a;
-}
-
-.card-row:last-child {
-  border-bottom: none;
-}
-
-.label {
-  color: #b99f72;
-}
-
-.value {
-  color: #ffffff;
-}
-
-/* ICON-ONLY BUTTON BAR */
-.card-actions {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.card-actions button {
-  background: rgba(230, 184, 105, 0.15);
-  border: 1px solid #e6b869;
-  border-radius: 8px;
-  padding: 8px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.card-actions button img,
-.card-actions button svg {
-  width: 18px;
-  height: 18px;
-  fill: #e6b869;
-  color: #e6b869;
-}
-
-/* ADD BUTTON */
-.add-btn {
-  float: right;
-  margin-bottom: 10px;
-  background: #e6b869;
-  color: #0d1321;
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  border: none;
-  border-radius: 10px;
-}
-
-/* COFFERS - TWO COLUMN LAYOUT */
-.coffers-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.coffer-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid #1f2a3a;
-}
-
-/* CONTROLLED HEXES CARDS (MATCH OTHER CARDS) */
-.hex-card .card-row {
-  padding: 4px 0;
-}
-
-/* MOBILE RESPONSIVE FIXES */
-@media (max-width: 480px) {
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  /* Preserve existing good theme */
+  body {
+    margin: 0;
+    padding: 0;
+    background: #0d1321;
+    font-family: "Cinzel", serif;
+    color: #e6d3a3;
   }
 
-  .section-title {
+  /* Maintain GOOD spacing */
+  .app {
+    margin: 0px 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* HEADER unchanged */
+  h1 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+
+  /* SECTION TITLES (unchanged from GOOD) */
+  .section-title,
+  .card-header h2 {
     font-size: 1rem;
+    letter-spacing: 0.18em;
+    padding-left: 8px;
+    border-left: 3px solid #e6b869;
+    color: #e6c17b;
+    text-transform: uppercase;
   }
 
+  /* CARD SHELL — preserve GOOD style */
   .card {
-    padding: 10px;
+    background: linear-gradient(180deg, rgba(10,14,22,0.95) 0%, rgba(16,20,34,0.96) 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 16px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+  }
+
+  /* TABLE‑TO‑CARD conversion (from GOOD file) */
+  .season-table thead,
+  .event-table thead,
+  .hex-table thead {
+    display: none;
+  }
+
+  .season-table tbody,
+  .event-table tbody,
+  .hex-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .season-row,
+  .event-row,
+  .hex-row {
+    display: block;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 12px;
+    background: rgba(8,12,30,0.97);
+  }
+
+  .season-row td,
+  .event-row td,
+  .hex-row td {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.82rem;
+  }
+
+  .season-row td:last-child,
+  .event-row td:last-child,
+  .hex-row td:last-child {
+    border-bottom: none;
+  }
+
+  /* LABELS preserved from GOOD */
+  .season-row td:nth-child(1)::before { content: "Season"; }
+  .season-row td:nth-child(2)::before { content: "Year"; }
+  .season-row td:nth-child(3)::before { content: "Food"; }
+  .season-row td:nth-child(4)::before { content: "Wood"; }
+  .season-row td:nth-child(5)::before { content: "Stone"; }
+  .season-row td:nth-child(6)::before { content: "Ore"; }
+  .season-row td:nth-child(7)::before { content: "Silver"; }
+  .season-row td:nth-child(8)::before { content: "Gold"; }
+  .season-row td:nth-child(9) { display: none !important; }
+
+  .event-row td:nth-child(1)::before { content: "Event"; }
+  .event-row td:nth-child(2)::before { content: "Date"; }
+  .event-row td:nth-child(3)::before { content: "Type"; }
+  .event-row td:nth-child(4)::before { content: "Builds"; }
+  .event-row td:nth-child(5)::before { content: "Moves"; }
+  .event-row td:nth-child(6)::before { content: "Offense"; }
+
+  .hex-row td:nth-child(1)::before { content: "Hex"; }
+  .hex-row td:nth-child(2)::before { content: "Name"; }
+  .hex-row td:nth-child(3)::before { content: "Terrain"; }
+  .hex-row td:nth-child(4)::before { content: "Structures"; }
+
+  /* -------------------------------------------------- */
+  /* >>> TWO CARDS ACROSS — FIXED (good file compatible) */
+  /* -------------------------------------------------- */
+
+  @media (min-width: 460px) and (max-width: 768px) {
+    .season-table tbody,
+    .event-table tbody,
+    .hex-table tbody {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 14px !important;
+    }
+
+    .season-row,
+    .event-row,
+    .hex-row {
+      width: 100% !important;
+    }
+  }
+
+  /* -------------------------------------------------- */
+  /* >>> ICON‑ONLY BUTTONS — ALL THREE ON SAME ROW */
+  /* -------------------------------------------------- */
+
+  .season-row td:last-child,
+  .event-row td:last-child,
+  .hex-row td:last-child {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding-top: 10px;
+  }
+
+  /* Buttons become icon bubbles */
+  .season-row td:last-child .button,
+  .event-row td:last-child .button,
+  .hex-row td:last-child .button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #f4c76b;
+    background: rgba(244,199,107,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0; /* hide text */
+  }
+
+  /* Gold icons (emoji glyphs) */
+  .season-row td:last-child .button::before,
+  .event-row td:last-child .button::before,
+  .hex-row td:last-child .button::before {
+    font-size: 1.1rem;
+    color: #f4c76b;
+  }
+
+  /* Order: DETAILS, EDIT, DELETE */
+  .season-row td:last-child .button:nth-child(1)::before,
+  .event-row td:last-child .button:nth-child(1)::before,
+  .hex-row td:last-child .button:nth-child(1)::before {
+    content: "👁";
+  }
+
+  .season-row td:last-child .button:nth-child(2)::before,
+  .event-row td:last-child .button:nth-child(2)::before,
+  .hex-row td:last-child .button:nth-child(2)::before {
+    content: "✏";
+  }
+
+  .season-row td:last-child .button:nth-child(3)::before,
+  .event-row td:last-child .button:nth-child(3)::before,
+  .hex-row td:last-child .button:nth-child(3)::before {
+    content: "🗑";
   }
 }
