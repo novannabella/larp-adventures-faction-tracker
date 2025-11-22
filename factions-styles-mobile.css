@@ -281,11 +281,6 @@
     display: none;
   }
 
-  /* Notes (if present as a 9th col) */
-  .season-table tr td:nth-child(9)::before {
-    content: "Notes";
-  }
-
   /* Events & Turn Actions */
   .event-table tr td:nth-child(1)::before {
     content: "Event";
@@ -299,14 +294,14 @@
     content: "Type";
   }
 
-  /* User requested: Remove "Builds" label from mobile cards */
+  /* RESTORED: "Builds" label for mobile cards */
   .event-table tr td:nth-child(4)::before {
-    content: "";
+    content: "Builds";
   }
 
-  /* User requested: Remove "Moves" label from mobile cards */
+  /* RESTORED: "Moves" label for mobile cards */
   .event-table tr td:nth-child(5)::before {
-    content: "";
+    content: "Moves";
   }
 
   .event-table tr td:nth-child(6)::before {
@@ -399,17 +394,4 @@
   }
 
   /* Middle button (Edit) — keep its text but slightly emphasize */
-  .season-table tr td:last-child button:nth-child(2),
-  .event-table tr td:last-child button:nth-child(2),
-  .controlled-hexes-table tr td:last-child button:nth-child(2) {
-    /* text already "Edit" */
-  }
-
-  /* Right‑most (Details) — keep text, no extra changes */
-  .season-table tr td:last-child button:nth-child(1),
-  .event-table tr td:last-child button:nth-child(1),
-  .controlled-hexes-table tr td:last-child button:nth-child(1) {
-    /* text already "Details" */
-  }
-
-}
+  .season-table tr td:last-child button
