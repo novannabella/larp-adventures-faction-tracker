@@ -1,21 +1,30 @@
-/* MOBILE CSS FINAL FIX — based on GOOD file, only adds:
-   1. Two-across cards on mobile
-   2. Icon‑only buttons on one row
-   3. No other layout changes
+/* MOBILE CSS FINAL FIX — CLEAN, CENTERED ICONS, NO BACKGROUND FILL,
+   CHARACTER SHEET COLORS RESTORED
    ------------------------------------------------------------------ */
 
 @media (max-width: 768px) {
 
-  /* Preserve existing good theme */
+  /* -------------------------------------------------- */
+  /* THEME COLORS (MATCH CHARACTER SHEET)
+  -------------------------------------------------- */
+  :root {
+    --gold: #f4c76b;
+    --text: #e6e6e6;
+    --muted: #b8b8b8;
+    --bg-card: rgba(10,14,22,0.95);
+    --bg-card-inner: rgba(16,20,34,0.96);
+    --line: rgba(255,255,255,0.08);
+  }
+
   body {
     margin: 0;
     padding: 0;
     background: #0d1321;
+    color: var(--text);
     font-family: "Cinzel", serif;
-    color: #e6d3a3;
   }
 
-  /* Maintain GOOD spacing */
+  /* KEEP EXISTING SPACING */
   .app {
     margin: 0px 14px 20px;
     display: flex;
@@ -23,33 +32,27 @@
     gap: 16px;
   }
 
-  /* HEADER unchanged */
-  h1 {
-    margin-top: 10px;
-    margin-bottom: 5px;
-  }
-
-  /* SECTION TITLES (unchanged from GOOD) */
+  /* TITLES */
   .section-title,
   .card-header h2 {
     font-size: 1rem;
     letter-spacing: 0.18em;
     padding-left: 8px;
-    border-left: 3px solid #e6b869;
-    color: #e6c17b;
+    border-left: 3px solid var(--gold);
+    color: var(--gold);
     text-transform: uppercase;
   }
 
-  /* CARD SHELL — preserve GOOD style */
+  /* CARD SHELL */
   .card {
-    background: linear-gradient(180deg, rgba(10,14,22,0.95) 0%, rgba(16,20,34,0.96) 100%);
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card-inner) 100%);
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--line);
     padding: 14px 16px;
     box-shadow: 0 10px 28px rgba(0,0,0,0.55);
   }
 
-  /* TABLE‑TO‑CARD conversion (from GOOD file) */
+  /* TABLE → CARD CONVERSION */
   .season-table thead,
   .event-table thead,
   .hex-table thead {
@@ -69,7 +72,7 @@
   .hex-row {
     display: block;
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid var(--line);
     padding: 12px;
     background: rgba(8,12,30,0.97);
   }
@@ -80,8 +83,9 @@
     display: flex;
     justify-content: space-between;
     padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--line);
     font-size: 0.82rem;
+    color: var(--text);
   }
 
   .season-row td:last-child,
@@ -90,7 +94,17 @@
     border-bottom: none;
   }
 
-  /* LABELS preserved from GOOD */
+  /* LABEL COLORS — from good file */
+  .season-row td::before,
+  .event-row td::before,
+  .hex-row td::before {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    margin-right: 8px;
+  }
+
   .season-row td:nth-child(1)::before { content: "Season"; }
   .season-row td:nth-child(2)::before { content: "Year"; }
   .season-row td:nth-child(3)::before { content: "Food"; }
@@ -114,27 +128,20 @@
   .hex-row td:nth-child(4)::before { content: "Structures"; }
 
   /* -------------------------------------------------- */
-  /* >>> TWO CARDS ACROSS — FIXED (good file compatible) */
+  /* TWO CARDS ACROSS */
   /* -------------------------------------------------- */
-
   @media (min-width: 460px) and (max-width: 768px) {
     .season-table tbody,
     .event-table tbody,
     .hex-table tbody {
       display: grid !important;
       grid-template-columns: repeat(2, 1fr) !important;
-      gap: 14px !important;
-    }
-
-    .season-row,
-    .event-row,
-    .hex-row {
-      width: 100% !important;
+      gap: 14px;
     }
   }
 
   /* -------------------------------------------------- */
-  /* >>> ICON‑ONLY BUTTONS — ALL THREE ON SAME ROW */
+  /* ICON-ONLY BUTTONS — CENTERED, NO BACKGROUND FILL */
   /* -------------------------------------------------- */
 
   .season-row td:last-child,
@@ -142,35 +149,38 @@
   .hex-row td:last-child {
     display: flex !important;
     justify-content: center !important;
-    gap: 12px !important;
+    gap: 16px !important;
     padding-top: 10px;
   }
 
-  /* Buttons become icon bubbles */
   .season-row td:last-child .button,
   .event-row td:last-child .button,
   .hex-row td:last-child .button {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1px solid #f4c76b;
-    background: rgba(244,199,107,0.12);
+    border: 2px solid var(--gold);
     display: flex;
     align-items: center;
     justify-content: center;
+    background: none !important; /* remove filled background */
     padding: 0;
     font-size: 0; /* hide text */
   }
 
-  /* Gold icons (emoji glyphs) */
+  /* CENTERED GOLD EMOJI ICONS */
   .season-row td:last-child .button::before,
   .event-row td:last-child .button::before,
   .hex-row td:last-child .button::before {
-    font-size: 1.1rem;
-    color: #f4c76b;
+    font-size: 1.25rem;
+    color: var(--gold);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* Order: DETAILS, EDIT, DELETE */
+  /* ORDER: DETAILS, EDIT, DELETE */
   .season-row td:last-child .button:nth-child(1)::before,
   .event-row td:last-child .button:nth-child(1)::before,
   .hex-row td:last-child .button:nth-child(1)::before {
