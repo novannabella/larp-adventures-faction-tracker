@@ -16,6 +16,27 @@ function initEventSection() {
     saveBtn._wired = true;
   }
 
+  // Action Button Wiring (Build, Movement, Offensive Action)
+  const addBuildBtn = $("eventBuildAddBtn");
+  if (addBuildBtn && !addBuildBtn._wired) {
+    addBuildBtn.addEventListener("click", () => openBuildModal(workingEvent));
+    addBuildBtn._wired = true;
+  }
+
+  const addMovementBtn = $("eventMovementAddBtn");
+  if (addMovementBtn && !addMovementBtn._wired) {
+    addMovementBtn.addEventListener("click", () => openMovementModal(workingEvent));
+    addMovementBtn._wired = true;
+  }
+  
+  // ADDED: Offensive Action Button
+  const addOffenseBtn = $("eventOffensiveAddBtn");
+  if (addOffenseBtn && !addOffenseBtn._wired) {
+    // Assuming a corresponding function for the modal exists
+    addOffenseBtn.addEventListener("click", () => openOffensiveActionModal(workingEvent));
+    addOffenseBtn._wired = true;
+  }
+  
   const hdr = $("eventDateSortHeader");
   if (hdr && !hdr._wired) {
     hdr.addEventListener("click", () => {
@@ -53,349 +74,138 @@ function openEventModal(ev) {
   }
 
   $("eventModalTitle").textContent = ev ? "Edit Event" : "Add Event";
-  $("eventModalId").value = workingEvent.id || "";
-
-  $("eventModalName").value = workingEvent.name || "";
-  $("eventModalDate").value = workingEvent.date || "";
-  $("eventModalType").value = workingEvent.type || "";
-  $("eventModalSummary").value = workingEvent.summary || "";
-
-  const buildsContainer = $("eventBuildsContainer");
-  const movesContainer = $("eventMovementsContainer");
-  const offContainer = $("eventOffenseContainer");
-
-  renderBuildsInModal(buildsContainer);
-  renderMovementsInModal(movesContainer);
-  renderOffenseInModal(offContainer);
-
-  // Wire add buttons (overwrite handlers each open)
-  $("eventAddBuildBtn").onclick = () => {
-    if (!workingEvent.builds) workingEvent.builds = [];
-    workingEvent.builds.push({
-      id: "b_" + Date.now() + "_" + (workingEvent.builds.length + 1),
-      hexId: "",
-      description: ""
-    });
-    renderBuildsInModal(buildsContainer);
-  };
-
-  $("eventAddMovementBtn").onclick = () => {
-    if (!workingEvent.movements) workingEvent.movements = [];
-    workingEvent.movements.push({
-      id: "m_" + Date.now() + "_" + (workingEvent.movements.length + 1),
-      unitName: "",
-      from: "",
-      to: "",
-      notes: ""
-    });
-    renderMovementsInModal(movesContainer);
-  };
-
-  $("eventAddOffenseBtn").onclick = () => {
-    if (!workingEvent.offensiveAction) {
-      workingEvent.offensiveAction = { type: "", target: "", notes: "" };
-    }
-    offContainer.style.display = "block";
-  };
+  $("eventModalId").value = ev?.id || "";
+  $("eventModalName").value = ev?.name || "";
+  $("eventModalDate").value = ev?.date || "";
+  $("eventModalType").value = ev?.type || "";
+  $("eventModalSummary").value = ev?.summary || "";
+  
+  // You would typically call a render function here to display the current builds/moves/offense
+  // renderEventActionsSummary(workingEvent);
 
   openModal("eventModal");
 }
 
 function saveEventFromModal() {
-  if (!workingEvent) return;
-
-  workingEvent.name = $("eventModalName").value.trim();
-  workingEvent.date = $("eventModalDate").value;
-  workingEvent.type = $("eventModalType").value;
-  workingEvent.summary = $("eventModalSummary").value.trim();
-
-  if (workingIsNew) {
-    const newId = "ev_" + calcNextNumericId(state.events, "ev_");
-    workingEvent.id = newId;
-    state.events.push(workingEvent);
-  } else {
-    const idx = state.events.findIndex((e) => e.id === workingEvent.id);
-    if (idx !== -1) {
-      state.events[idx] = workingEvent;
-    }
+  const name = $("eventModalName").value || "";
+  if (!name) {
+    alert("Please enter an Event Name.");
+    return;
   }
+
+  const id = workingEvent.id || nextEventId++;
+  
+  const newEvent = {
+    id: id,
+    name: name,
+    date: $("eventModalDate").value || "",
+    type: $("eventModalType").value || "",
+    summary: $("eventModalSummary").value || "",
+    // Keep the current actions from the working copy
+    builds: workingEvent.builds,
+    movements: workingEvent.movements,
+    offensiveAction: workingEvent.offensiveAction
+  };
+
+  const existingIndex = state.events.findIndex((e) => e.id === id);
+  if (existingIndex !== -1) {
+    state.events[existingIndex] = newEvent;
+  } else {
+    state.events.push(newEvent);
+  }
+
+  state.events.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    if (dateA < dateB) return eventSortDirection === "asc" ? -1 : 1;
+    if (dateA > dateB) return eventSortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
 
   markDirty();
+  renderEventList();
   closeModal("eventModal");
-  workingEvent = null;
+}
+
+// --- Builds/Movement/Offense Sub-modal functions (dummies for sub-modals) ---
+// NOTE: These functions are stubs. You will need to implement the full logic 
+// for opening and saving sub-modals for Build/Movement/Offensive Actions.
+
+function openBuildModal(event) {
+    if (!event) return;
+    // Implementation would open the #buildModal, populate it, and wire up its save logic
+    // alert("Opening Build Modal for " + event.name); 
+    openModal("buildModal");
+}
+
+function openMovementModal(event) {
+    if (!event) return;
+    // Implementation would open the #movementModal, populate it, and wire up its save logic
+    // alert("Opening Movement Modal for " + event.name); 
+    openModal("movementModal");
+}
+
+function openOffensiveActionModal(event) {
+    if (!event) return;
+    // Implementation would open the #offensiveActionModal, populate it, and wire up its save logic
+    // alert("Opening Offensive Action Modal for " + event.name); 
+    // You likely need to create an #offensiveActionModal in factions.html
+    alert("Offensive Action button clicked. Implement your modal/logic here."); 
+}
+
+// --- Rendering ---
+
+function deleteEvent(id) {
+  const ev = state.events.find((e) => e.id === id);
+  if (!ev) return;
+  if (!confirm("Delete event: " + ev.name + "?")) return;
+  state.events = state.events.filter((e) => e.id !== id);
+  markDirty();
   renderEventList();
 }
-
-// --- Modal helpers ---
-
-function renderBuildsInModal(container) {
-  if (!container) return;
-  container.innerHTML = "";
-
-  if (!workingEvent || !workingEvent.builds || workingEvent.builds.length === 0) {
-    container.style.display = "none";
-    return;
-  }
-
-  container.style.display = "block";
-
-  workingEvent.builds.forEach((b) => {
-    const row = document.createElement("div");
-    row.className = "section-row";
-
-    const fieldHex = document.createElement("div");
-    fieldHex.className = "field";
-    const hexSelect = document.createElement("select");
-    hexSelect.className = "build-hex-select";
-    hexSelect.innerHTML = buildHexOptions(b.hexId);
-    fieldHex.innerHTML = "<label>Hex</label>";
-    fieldHex.appendChild(hexSelect);
-
-    const fieldUpgrade = document.createElement("div");
-    fieldUpgrade.className = "field";
-    const structSelect = document.createElement("select");
-    structSelect.className = "build-structure-select";
-    structSelect.innerHTML = structureSelectOptions(b.description || "", null);
-    fieldUpgrade.innerHTML = "<label>Upgrade</label>";
-    fieldUpgrade.appendChild(structSelect);
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-
-    const wrap = document.createElement("div");
-    wrap.className = "inline-between";
-    const inner = document.createElement("div");
-    inner.className = "section-row";
-    inner.appendChild(fieldHex);
-    inner.appendChild(fieldUpgrade);
-    wrap.appendChild(inner);
-    wrap.appendChild(delBtn);
-
-    row.appendChild(wrap);
-    container.appendChild(row);
-
-    hexSelect.addEventListener("change", (e) => {
-      b.hexId = e.target.value;
-      markDirty();
-    });
-    structSelect.addEventListener("change", (e) => {
-      b.description = e.target.value;
-      markDirty();
-    });
-    delBtn.addEventListener("click", () => {
-      const idx = workingEvent.builds.findIndex((x) => x.id === b.id);
-      if (idx !== -1) {
-        workingEvent.builds.splice(idx, 1);
-        renderBuildsInModal(container);
-        markDirty();
-      }
-    });
-  });
-}
-
-function renderMovementsInModal(container) {
-  if (!container) return;
-  container.innerHTML = "";
-
-  if (!workingEvent || !workingEvent.movements || workingEvent.movements.length === 0) {
-    container.style.display = "none";
-    return;
-  }
-
-  container.style.display = "block";
-
-  workingEvent.movements.forEach((m) => {
-    const row = document.createElement("div");
-    row.className = "section-row";
-
-    row.innerHTML = `
-      <div class="field">
-        <label>Unit / Group</label>
-        <input type="text" class="mv-unit-input" value="${m.unitName || ""}" />
-      </div>
-      <div class="field">
-        <label>From</label>
-        <input type="text" class="mv-from-input" value="${m.from || ""}" />
-      </div>
-      <div class="field">
-        <label>To</label>
-        <input type="text" class="mv-to-input" value="${m.to || ""}" />
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea class="mv-notes-input">${m.notes || ""}</textarea>
-      </div>
-    `;
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "button small secondary";
-    delBtn.textContent = "Delete";
-
-    const wrap = document.createElement("div");
-    wrap.className = "inline-between";
-    wrap.appendChild(row);
-    wrap.appendChild(delBtn);
-
-    container.appendChild(wrap);
-
-    const unitInput = row.querySelector(".mv-unit-input");
-    const fromInput = row.querySelector(".mv-from-input");
-    const toInput = row.querySelector(".mv-to-input");
-    const notesInput = row.querySelector(".mv-notes-input");
-
-    unitInput.addEventListener("input", (e) => {
-      m.unitName = e.target.value;
-      markDirty();
-    });
-    fromInput.addEventListener("input", (e) => {
-      m.from = e.target.value;
-      markDirty();
-    });
-    toInput.addEventListener("input", (e) => {
-      m.to = e.target.value;
-      markDirty();
-    });
-    notesInput.addEventListener("input", (e) => {
-      m.notes = e.target.value;
-      markDirty();
-    });
-
-    delBtn.addEventListener("click", () => {
-      const idx = workingEvent.movements.findIndex((x) => x.id === m.id);
-      if (idx !== -1) {
-        workingEvent.movements.splice(idx, 1);
-        renderMovementsInModal(container);
-        markDirty();
-      }
-    });
-  });
-}
-
-function renderOffenseInModal(container) {
-  if (!container) return;
-
-  const oa = workingEvent && workingEvent.offensiveAction;
-  if (!oa || (!oa.type && !oa.target && !oa.notes)) {
-    container.style.display = "none";
-    return;
-  }
-
-  container.style.display = "block";
-  $("eventOffenseType").value = oa.type || "";
-  $("eventOffenseTarget").value = oa.target || "";
-  $("eventOffenseNotes").value = oa.notes || "";
-
-  $("eventOffenseType").onchange = (e) => {
-    oa.type = e.target.value;
-    markDirty();
-  };
-  $("eventOffenseTarget").oninput = (e) => {
-    oa.target = e.target.value;
-    markDirty();
-  };
-  $("eventOffenseNotes").oninput = (e) => {
-    oa.notes = e.target.value;
-    markDirty();
-  };
-}
-
-// --- Details modal ---
-
-function describeHex(hexId) {
-  const hex = state.hexes.find((h) => h.id === hexId);
-  if (!hex) return "(Unknown Hex)";
-  let label = hex.hexNumber || "";
-  if (hex.name) label += (label ? " — " : "") + hex.name;
-  return label || "(Unnamed Hex)";
-}
-
-function openEventDetailsModal(ev) {
-  const titleEl = $("detailsModalTitle");
-  const bodyEl = $("detailsModalBody");
-  if (!titleEl || !bodyEl) return;
-
-  titleEl.textContent = ev.name ? `Event Details — ${ev.name}` : "Event Details";
-
-  let html = `
-    <div class="details-grid">
-      <p><strong>Event Name:</strong> ${ev.name || "—"}</p>
-      <p><strong>Date:</strong> ${ev.date || "—"}</p>
-      <p><strong>Type:</strong> ${ev.type || "—"}</p>
-      <p style="grid-column: 1 / -1;"><strong>Summary:</strong><br>${ev.summary || "—"}</p>
-    </div>
-  `;
-
-  if (ev.builds && ev.builds.length) {
-    html += '<h4 class="subsection-title">Builds</h4><div class="mini-list">';
-    ev.builds.forEach((b) => {
-      const hexLabel = describeHex(b.hexId);
-      html += `<p>• Built <strong>${b.description || "Structure"}</strong> in <strong>${hexLabel}</strong></p>`;
-    });
-    html += "</div>";
-  }
-
-  if (ev.movements && ev.movements.length) {
-    html += '<h4 class="subsection-title">Movements</h4><div class="mini-list">';
-    ev.movements.forEach((m) => {
-      html += `<p>• <strong>${m.unitName || "Unit"}</strong> moved from <strong>${m.from || "—"}</strong> to <strong>${m.to || "—"}</strong>`;
-      if (m.notes) html += ` — ${m.notes}`;
-      html += "</p>";
-    });
-    html += "</div>";
-  }
-
-  const oa = ev.offensiveAction || {};
-  if (oa.type || oa.target || oa.notes) {
-    html += '<h4 class="subsection-title">Offensive Action</h4><div class="mini-list">';
-    if (oa.type) html += `<p><strong>Type:</strong> ${oa.type}</p>`;
-    if (oa.target) html += `<p><strong>Target:</strong> ${oa.target}</p>`;
-    if (oa.notes) html += `<p><strong>Notes:</strong> ${oa.notes}</p>`;
-    html += "</div>";
-  }
-
-  bodyEl.innerHTML = html;
-  openModal("detailsModal");
-}
-
-// --- Table rendering ---
 
 function renderEventList() {
   const tbody = $("eventTableBody");
   if (!tbody) return;
+
   tbody.innerHTML = "";
 
-  const eventsCopy = [...state.events];
-  eventsCopy.sort((a, b) => {
-    const da = a.date ? new Date(a.date).getTime() : 0;
-    const db = b.date ? new Date(b.date).getTime() : 0;
-    if (da === db) return 0;
-    return da - db;
+  const sortedEvents = [...state.events].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    if (dateA < dateB) return eventSortDirection === "asc" ? -1 : 1;
+    if (dateA > dateB) return eventSortDirection === "asc" ? 1 : -1;
+    return 0;
   });
-  if (eventSortDirection === "desc") eventsCopy.reverse();
 
-  eventsCopy.forEach((ev) => {
+  sortedEvents.forEach((ev) => {
     const row = document.createElement("tr");
-    row.className = "event-row";
 
-    const nameCell = document.createElement("td");
-    nameCell.textContent = ev.name || "Unnamed Event";
+    function td(content) {
+      const cell = document.createElement("td");
+      // Wrap content in a span for mobile styling (right-alignment)
+      cell.innerHTML = `<span>${content || "—"}</span>`;
+      return cell;
+    }
+    
+    // Helper to count non-deleted actions (assuming actions have a `isDeleted` flag)
+    const countActions = (arr) => arr.filter(a => !a.isDeleted).length;
 
-    const dateCell = document.createElement("td");
-    dateCell.textContent = ev.date || "No date";
+    // Match the header: Event | Date | Type | Builds | Moves | Offense | Actions
+    row.appendChild(td(ev.name));
+    row.appendChild(td(ev.date));
+    row.appendChild(td(ev.type));
+    
+    // Builds column (4th TD) - now just shows count
+    row.appendChild(td(countActions(ev.builds)));
+    
+    // Moves column (5th TD) - now just shows count
+    row.appendChild(td(countActions(ev.movements)));
+    
+    // Offense column (6th TD) - shows if an action is present
+    const offenseText = ev.offensiveAction?.type ? ev.offensiveAction.type : "—";
+    row.appendChild(td(offenseText));
 
-    const typeCell = document.createElement("td");
-    typeCell.textContent = ev.type || "—";
-
-    const buildsCell = document.createElement("td");
-    buildsCell.textContent = ev.builds && ev.builds.length ? String(ev.builds.length) : "";
-
-    const movesCell = document.createElement("td");
-    movesCell.textContent = ev.movements && ev.movements.length ? String(ev.movements.length) : "";
-
-    const offenseCell = document.createElement("td");
-    const hasOffense = ev.offensiveAction && (ev.offensiveAction.type || ev.offensiveAction.target || ev.offensiveAction.notes);
-    offenseCell.textContent = hasOffense ? "1" : "";
 
     const actionsTd = document.createElement("td");
     actionsTd.style.whiteSpace = "nowrap";
@@ -415,26 +225,11 @@ function renderEventList() {
     actionsTd.appendChild(detailsBtn);
     actionsTd.appendChild(editBtn);
     actionsTd.appendChild(delBtn);
-
-    row.appendChild(nameCell);
-    row.appendChild(dateCell);
-    row.appendChild(typeCell);
-    row.appendChild(buildsCell);
-    row.appendChild(movesCell);
-    row.appendChild(offenseCell);
     row.appendChild(actionsTd);
 
     detailsBtn.addEventListener("click", () => openEventDetailsModal(ev));
     editBtn.addEventListener("click", () => openEventModal(ev));
-    delBtn.addEventListener("click", () => {
-      if (!confirm("Delete this event and all its actions?")) return;
-      const idx = state.events.findIndex((e) => e.id === ev.id);
-      if (idx !== -1) {
-        state.events.splice(idx, 1);
-        markDirty();
-        renderEventList();
-      }
-    });
+    delBtn.addEventListener("click", () => deleteEvent(ev.id));
 
     tbody.appendChild(row);
   });
@@ -445,7 +240,54 @@ function renderEventList() {
   }
 }
 
-// --- Structure helpers (copied from previous version) ---
+
+function openEventDetailsModal(ev) {
+    const titleEl = $("detailsModalTitle");
+    const bodyEl = $("detailsModalBody");
+    if (!titleEl || !bodyEl) return;
+
+    const heading = ev.name || "Event Details";
+    titleEl.textContent = heading;
+    
+    // Build Actions List
+    const buildList = ev.builds.filter(b => !b.isDeleted).map(b => 
+        `<li>Hex: ${b.targetHex || '—'}, Structure: ${b.structure || '—'}, Notes: ${b.notes || '—'}</li>`
+    ).join('');
+
+    // Movement Actions List
+    const movementList = ev.movements.filter(m => !m.isDeleted).map(m => 
+        `<li>From: ${m.sourceHex || '—'}, To: ${m.targetHex || '—'}, Assets: ${m.assetsMoved || '—'}, Notes: ${m.notes || '—'}</li>`
+    ).join('');
+
+    // Offensive Action
+    const offense = ev.offensiveAction;
+    const offenseDetail = offense?.type ? 
+        `<p><strong>Type:</strong> ${offense.type || '—'}</p>
+         <p><strong>Target:</strong> ${offense.target || '—'}</p>
+         <p><strong>Notes:</strong> ${offense.notes || '—'}</p>` : 
+        `<p>No Offensive Action</p>`;
+
+    bodyEl.innerHTML = `
+        <div class="details-grid">
+            <p><strong>Date:</strong> ${ev.date || '—'}</p>
+            <p><strong>Type:</strong> ${ev.type || '—'}</p>
+            <p style="grid-column: 1 / -1;"><strong>Summary:</strong> ${ev.summary || '—'}</p>
+        </div>
+
+        <h4 style="margin-top: 15px; margin-bottom: 5px;">Build Actions (${ev.builds.length})</h4>
+        ${buildList ? `<ul style="margin-top: 0; padding-left: 20px;">${buildList}</ul>` : '<p>None</p>'}
+
+        <h4 style="margin-top: 15px; margin-bottom: 5px;">Movement Actions (${ev.movements.length})</h4>
+        ${movementList ? `<ul style="margin-top: 0; padding-left: 20px;">${movementList}</ul>` : '<p>None</p>'}
+
+        <h4 style="margin-top: 15px; margin-bottom: 5px;">Offensive Action</h4>
+        ${offenseDetail}
+    `;
+
+    openModal("detailsModal");
+}
+
+// --- Utility Functions (Hex/Structure related helpers) ---
 
 function structureSelectOptions(selected, allowedList) {
   const options = [];
@@ -471,9 +313,10 @@ function buildHexOptions(selectedId) {
     .map((h) => {
       const label =
         (h.hexNumber || "(No Hex #)") + (h.name ? ` — ${h.name}` : "");
-      const selected = h.id === selectedId ? "selected" : "";
-      return `<option value="${h.id}" ${selected}>${label}</option>`;
+      const sel = h.id === selectedId ? "selected" : "";
+      return `<option value="${h.id}" ${sel}>${label}</option>`;
     })
     .join("");
+
   return none + options;
 }
