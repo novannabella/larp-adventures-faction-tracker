@@ -1,57 +1,296 @@
-<div id="eventModal" class="modal">
-    <div class="modal-content" id="eventModalContent">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Faction Resource Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="factions-styles-desktop.css?v=20250615">
+<link rel="stylesheet" href="factions-styles-mobile.css?v=20250615">
+
+</head>
+<body>
+  <div class="app">
+    <h1>Larp Adventures</h1>
+    <div class="subtitle">Faction Resource Tracker</div>
+
+    <div class="top-controls">
+      <div class="save-load-controls">
+        <button id="loadStateBtn" class="button secondary">Load Faction</button>
+        <input type="file" id="loadStateFile" accept=".json,application/json" hidden />
+        <button id="saveStateBtn" class="button secondary">Save Faction</button>
+      </div>
+    </div>
+
+    <div class="top-row">
+      <div class="card" id="factionInfoCard">
+        <div class="card-inner">
+          <h2>Faction Information</h2>
+          <div class="field">
+            <label for="factionName">Name</label>
+            <input id="factionName" type="text" />
+          </div>
+          <div class="field">
+            <label for="factionNotes">Notes</label>
+            <textarea id="factionNotes" rows="5"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="coffersCard">
+        <div class="card-inner">
+          <h2>Coffers &amp; Resources</h2>
+          <div class="coffers-grid">
+            <div class="field">
+              <label for="food">Food</label>
+              <input id="food" type="number" />
+            </div>
+            <div class="field">
+              <label for="wood">Wood</label>
+              <input id="wood" type="number" />
+            </div>
+            <div class="field">
+              <label for="stone">Stone</label>
+              <input id="stone" type="number" />
+            </div>
+            <div class="field">
+              <label for="ore">Ore</label>
+              <input id="ore" type="number" />
+            </div>
+            <div class="field">
+              <label for="silver">Silver</label>
+              <input id="silver" type="number" />
+            </div>
+            <div class="field">
+              <label for="gold">Gold</label>
+              <input id="gold" type="number" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="seasonalGainsCard">
+      <div class="card-inner">
+        <div class="card-header">
+          <h2>Seasonal Resource Gains</h2>
+          <button id="seasonAddBtn" class="button small">Add</button>
+        </div>
+
+        <table class="season-table">
+          <thead>
+            <tr>
+              <th>Season</th>
+              <th>Year</th>
+              <th>Food</th>
+              <th>Wood</th>
+              <th>Stone</th>
+              <th>Ore</th>
+              <th>Silver</th>
+              <th>Gold</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="seasonTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="eventsCard">
+      <div class="card-inner">
+        <div class="card-header">
+          <h2>Events &amp; Turn Actions</h2>
+          <button id="eventAddBtn" class="button small">Add</button>
+        </div>
+
+        <table class="event-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th id="eventDateSortHeader">Date ▲</th>
+              <th>Type</th>
+              <th>Builds</th>
+              <th>Moves</th>
+              <th>Offense</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="controlledHexesCard">
+      <div class="card-inner">
+        <div class="card-header">
+          <h2>Controlled Hexes</h2>
+          <button id="hexAddBtn" class="button small">Add</button>
+        </div>
+
+<table class="controlled-hexes-table">
+  <thead>
+    <tr>
+      <th>Hex</th>
+      <th>Name</th>
+      <th>Terrain</th>
+      <th>Structures</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="hexTableBody"></tbody>
+</table>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+
+  
+  <div id="seasonModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="seasonModalTitle">Add Seasonal Resource Gain</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="seasonModalId" />
+
+        <div class="mini-row-body two-cols">
+          <div class="field-row">
+            <label for="seasonModalSeason">Season</label>
+            <select id="seasonModalSeason">
+              <option value="">-- Select Season --</option>
+              <option value="Spring">Spring</option>
+              <option value="Summer">Summer</option>
+              <option value="Fall">Fall</option>
+              <option value="Winter">Winter</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalYear">Year</label>
+            <input id="seasonModalYear" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalFood">Food</label>
+            <input id="seasonModalFood" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalWood">Wood</label>
+            <input id="seasonModalWood" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalStone">Stone</label>
+            <input id="seasonModalStone" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalOre">Ore</label>
+            <input id="seasonModalOre" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalSilver">Silver</label>
+            <input id="seasonModalSilver" type="number" />
+          </div>
+
+          <div class="field-row">
+            <label for="seasonModalGold">Gold</label>
+            <input id="seasonModalGold" type="number" />
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="seasonModalNotes">Notes</label>
+          <textarea id="seasonModalNotes" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="seasonModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="eventModal" class="modal">
+    <div class="modal-content">
       <div class="modal-header">
         <h3 id="eventModalTitle">Add Event</h3>
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="eventModalId" />
-
+        
         <div class="field-row">
           <div class="field">
-            <label for="eventName">Event Name</label>
-            <input id="eventName" type="text" />
+            <label for="eventModalName">Event Name</label>
+            <input id="eventModalName" type="text" />
           </div>
           <div class="field half-width">
-            <label for="eventDate">Date</label>
-            <input id="eventDate" type="date" />
+            <label for="eventModalDate">Date</label>
+            <input id="eventModalDate" type="date" />
           </div>
           <div class="field half-width">
-            <label for="eventType">Type</label>
-            <select id="eventType">
-              <option value="">-- Select --</option>
-              <option value="Diplomatic">Diplomatic</option>
-              <option value="Military">Military</option>
-              <option value="Economic">Economic</option>
-              <option value="Internal">Internal</option>
+            <label for="eventModalType">Type</label>
+            <select id="eventModalType">
+              <option value="">-- Select Type --</option>
+              <option value="Day Event">Day Event</option>
+              <option value="Campout">Campout</option>
+              <option value="Festival Event">Festival Event</option>
+              <option value="Virtual Event">Virtual Event</option>
               <option value="Other">Other</option>
             </select>
           </div>
         </div>
 
-        <div class="field">
-          <label for="eventSummary">Event Summary / Notes</label>
-          <textarea id="eventSummary" rows="3"></textarea>
+        <div class="field-row" style="margin-top: 8px;">
+          <label for="eventModalSummary">Event Summary / Notes</label>
+          <textarea id="eventModalSummary" rows="3"></textarea>
         </div>
-        
-        <div class="event-actions-controls">
-          <button id="eventModalAddBuildBtn" class="button small secondary" type="button">
-            <span class="icon">🏗️</span> Add Build Action
-          </button>
-          <button id="eventModalAddMovementBtn" class="button small secondary" type="button">
-            <span class="icon">🏃</span> Add Movement Action
-          </button>
-          <button id="eventModalAddOffensiveBtn" class="button small secondary" type="button">
-            <span class="icon">⚔️</span> Add Offensive Action
-          </button>
-        </div>
+
         <div id="eventBuildList" class="action-list"></div>
         <div id="eventMovementList" class="action-list"></div>
         <div id="eventOffensiveAction" class="action-list offensive-action"></div>
-      </div>
+        
+        <div class="action-buttons-section" style="margin-top: 12px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="eventBuildAddBtn" class="button small secondary" type="button">Add Build</button>
+            <button id="eventMovementAddBtn" class="button small secondary" type="button">Add Movement</button>
+            <button id="eventOffensiveAddBtn" class="button small secondary" type="button">Add Offensive Action</button>
+          </div>
+        </div>
+        </div>
       <div class="modal-footer">
         <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
   </div>
+
+  <div id="buildModal" class="modal sub-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="buildModalTitle">Add Building Action</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="buildModalId" />
+
+        <div class="field-row">
+          <label for="buildModalTargetHex">Target Hex</label>
+          <select id="buildModalTargetHex">
+            </select>
+        </div>
+
+        <div class="field-row">
+          <label for="buildModalStructure">Structure / Upgrade</label>
+          <select id="buildModalStructure">
+            </select>
+        </div>
+        
+        <div class="field-row">
+          <label for="buildModalNotes">
