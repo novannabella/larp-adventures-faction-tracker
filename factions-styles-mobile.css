@@ -274,7 +274,13 @@
     content: "Gold";
   }
 
+  /* Hide the Notes column (9th td) on mobile */
+  .season-table tr td:nth-child(9) {
+    display: none;
+  }
+
   /* Notes (if present as a 9th col) */
+  /* This label is technically hidden by the rule above, but the rule remains for clarity */
   .season-table tr td:nth-child(9)::before {
     content: "Notes";
   }
