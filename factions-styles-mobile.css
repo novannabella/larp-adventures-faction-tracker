@@ -232,11 +232,13 @@
     border-bottom: none;
   }
 
-  /* Label on the left, value on the right */
+  /* Label on the left, value on the right, ensuring value is right-aligned */
   .season-table tbody td span,
   .event-table tbody td span,
   .controlled-hexes-table tbody td span {
     margin-left: 6px;
+    flex-grow: 1; /* Allows the span to take up all available space */
+    text-align: right; /* Justifies the text content to the right */
   }
 
   /* ===== Per-column labels using ::before ===== */
