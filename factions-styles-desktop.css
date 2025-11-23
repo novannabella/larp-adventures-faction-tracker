@@ -64,6 +64,35 @@ h2 {
   border-bottom: 1px solid var(--border);
 }
 
+/* FIX 1: Ensure Card Headers align titles left and buttons right */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h2 {
+  /* H2 already has bottom border, so we remove the margin/padding that might conflict */
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.card-header > div {
+    /* Targets the div containing multiple buttons (like Hexes section) */
+    display: flex; 
+    gap: 8px;
+}
+/* Restore border below the title group */
+.card-inner > .card-header ~ table {
+    margin-top: 10px;
+    /* Add a visual break below the header since H2 no longer has a bottom border in .card-header */
+    border-top: 1px solid var(--border);
+}
+.card-inner > .card-header ~ table thead tr th {
+    border-top: none; /* remove double border */
+}
+
+
 /* Card Styling */
 .card {
   background-color: var(--card);
@@ -201,7 +230,8 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  margin-top: 10px;
+  /* Reduced margin top to accommodate the new border line */
+  margin-top: 0;
 }
 
 th,
@@ -225,6 +255,21 @@ tr:hover {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
+/* FIX 2: Actions Column Right Alignment and button spacing */
+/* Selects the last column (Actions) of the table body */
+.season-table td:last-child, 
+.event-table td:last-child, 
+.controlled-hexes-table td:last-child {
+  text-align: right;
+  white-space: nowrap; /* Prevent buttons from wrapping */
+}
+
+.season-table td:last-child button, 
+.event-table td:last-child button, 
+.controlled-hexes-table td:last-child button {
+    margin-left: 6px; /* Space buttons apart */
+}
+
 /* Modal Styling */
 .modal-backdrop {
   position: fixed;
@@ -237,7 +282,8 @@ tr:hover {
   z-index: 1000;
 }
 
-.modal.visible .modal-backdrop {
+/* Use .visible instead of .active class, matching the JS */
+.modal.visible, .modal-backdrop.visible {
   display: block;
 }
 
@@ -250,10 +296,6 @@ tr:hover {
   width: 90%;
   max-width: 600px;
   display: none;
-}
-
-.modal.visible {
-  display: block;
 }
 
 .modal-content {
