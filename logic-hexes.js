@@ -1,12 +1,11 @@
 // logic-hexes.js
 
 let upkeepTable = {};
-let nextHexId = 1; // Initialize the counter for new hex IDs
 
 // NEW: Define sorting state for hex list (Keep existing logic)
 let currentHexSort = {
-  column: "hexNumber",
-  direction: "asc"
+  column: "hexNumber", // Default sort column is Hex Number
+  direction: "asc"     // Default sort direction
 };
 
 // NEW: Comparator function for sorting hexes (Keep existing logic)
@@ -21,16 +20,6 @@ function hexComparator(a, b) {
     aVal = a.hexNumber || "";
     bVal = b.hexNumber || "";
     
-    // Attempt to sort numerically if possible
-    const aNum = parseInt(aVal.replace(/[^0-9]/g, ''));
-    const bNum = parseInt(bVal.replace(/[^0-9]/g, ''));
-    
-    if (!isNaN(aNum) && !isNaN(bNum)) {
-        if (aNum < bNum) return -1 * dir;
-        if (aNum > bNum) return 1 * dir;
-    }
-    
-    // Fallback to string comparison
     if (aVal < bVal) return -1 * dir;
     if (aVal > bVal) return 1 * dir;
     return 0;
@@ -318,7 +307,7 @@ function openUpkeepModal() {
     }
   });
 
-  const upkeepTbody = $("upkeepTableBody");
+  const upkeepTbody = $("upkeepTable").querySelector("tbody");
   if (!upkeepTbody) return;
   upkeepTbody.innerHTML = "";
 
@@ -339,10 +328,8 @@ function openUpkeepModal() {
   });
 
   // 2. Add a separator row
-  if (Object.keys(upkeepDetails).length > 0) {
-      const separatorRow = upkeepTbody.insertRow();
-      separatorRow.innerHTML = `<td colspan="6" style="text-align: center; border-bottom: 2px solid var(--text-color);"></td>`;
-  }
+  const separatorRow = upkeepTbody.insertRow();
+  separatorRow.innerHTML = `<td colspan="6" style="text-align: center; border-bottom: 2px solid var(--text-color);"></td>`;
 
   // 3. Add a row for the grand totals
   const totalRow = upkeepTbody.insertRow();
@@ -380,7 +367,6 @@ function openHexModal(hex) {
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
   $("hexModalTerrains").value = hex?.terrain || "";
-  $("hexModalMineralDeposit").value = hex?.mineralDeposit || ""; // NEW: Mineral Deposit
   structureListInput.value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
   $("hexModalTerrainSelect").value = "";
@@ -413,7 +399,6 @@ function saveHexFromModal() {
   
   // Terrains and Structures are now managed via the hidden input fields by renderTags
   const terrain = $("hexModalTerrains").value.trim(); 
-  const mineralDeposit = $("hexModalMineralDeposit").value.trim(); // NEW
   const structure = $("hexModalStructures").value.trim();
   
   const notes = $("hexModalNotes").value.trim();
@@ -425,7 +410,6 @@ function saveHexFromModal() {
       name,
       hexNumber,
       terrain,
-      mineralDeposit, // NEW
       structure,
       notes
     });
@@ -435,7 +419,6 @@ function saveHexFromModal() {
       hex.name = name;
       hex.hexNumber = hexNumber;
       hex.terrain = terrain;
-      hex.mineralDeposit = mineralDeposit; // NEW
       hex.structure = structure;
       hex.notes = notes;
     }
@@ -468,7 +451,6 @@ function openHexDetailsModal(hex) {
       <p><strong>Name:</strong> ${hex.name || "(Unnamed)"}</p>
       <p><strong>Hex Number:</strong> ${hex.hexNumber || "—"}</p>
       <p><strong>Terrain:</strong> ${hex.terrain || "—"}</p>
-      <p><strong>Minerals:</strong> ${hex.mineralDeposit || "—"}</p>
       <p><strong>Structures:</strong> ${hex.structure || "—"}</p>
       <p><strong>Upkeep Food:</strong> ${upkeep.food || 0}</p>
       <p><strong>Upkeep Wood:</strong> ${upkeep.wood || 0}</p>
@@ -518,11 +500,10 @@ function renderHexList() {
       return cell;
     }
 
-    // Match the header: Hex | Name | Terrain | Minerals | Structures | Actions
+    // Match the header: Hex | Name | Terrain | Structures | Actions
     row.appendChild(td(hex.hexNumber || ""));
     row.appendChild(td(hex.name || "(Unnamed)"));
     row.appendChild(td(hex.terrain || ""));
-    row.appendChild(td(hex.mineralDeposit || "")); // NEW: Mineral Deposit
     row.appendChild(td(hex.structure || ""));
 
     const actionsTd = document.createElement("td");
