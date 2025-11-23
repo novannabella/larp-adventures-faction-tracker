@@ -2,13 +2,13 @@
 
 let upkeepTable = {};
 
-// NEW: Define sorting state for hex list
+// NEW: Define sorting state for hex list (Keep existing logic)
 let currentHexSort = {
   column: "hexNumber", // Default sort column is Hex Number
   direction: "asc"     // Default sort direction
 };
 
-// NEW: Comparator function for sorting hexes
+// NEW: Comparator function for sorting hexes (Keep existing logic)
 function hexComparator(a, b) {
   const col = currentHexSort.column;
   const dir = currentHexSort.direction === "asc" ? 1 : -1;
@@ -17,12 +17,9 @@ function hexComparator(a, b) {
   let bVal;
 
   if (col === "hexNumber") {
-    // Attempt numeric comparison for hex numbers if they are purely numeric
-    // Otherwise, treat them as strings (which is safer for mixed inputs like "A1", "1A")
     aVal = a.hexNumber || "";
     bVal = b.hexNumber || "";
     
-    // Simple string comparison for hex numbers
     if (aVal < bVal) return -1 * dir;
     if (aVal > bVal) return 1 * dir;
     return 0;
@@ -31,7 +28,6 @@ function hexComparator(a, b) {
     aVal = a.name || "";
     bVal = b.name || "";
     
-    // Case-insensitive string comparison for names
     const aLower = aVal.toLowerCase();
     const bLower = bVal.toLowerCase();
     
@@ -43,13 +39,74 @@ function hexComparator(a, b) {
   return 0;
 }
 
-// Define prerequisites for structures
+// Define prerequisites for structures (Keep existing logic)
 const structurePrerequisites = {
   "Shipyard": ["Dock"],
   "Fishing Fleet": ["Dock"],
   "Trading Vessel": ["Dock"],
   "War Galley": ["Dock", "Shipyard"] // Requires both a Dock (implicit via Shipyard, but checking explicitly is safer) and a Shipyard
 };
+
+// NEW: Helper function to render the tag list with remove buttons
+function renderTags(inputElId, listElId, selectElId, isStructure = false) {
+  const inputEl = $(inputElId);
+  const listEl = $(listElId);
+  const selectEl = $(selectElId);
+  
+  if (!inputEl || !listEl) return;
+
+  const currentValues = inputEl.value
+    ? inputEl.value.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  listEl.innerHTML = "";
+
+  currentValues.forEach((val) => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.innerHTML = `${val} <span class="remove-tag">&times;</span>`;
+
+    tag.querySelector(".remove-tag").addEventListener("click", () => {
+      // Remove the value from the list
+      const updatedValues = currentValues.filter(v => v !== val);
+      inputEl.value = updatedValues.join(", ");
+
+      // If it's a structure, add the option back to the select dropdown
+      if (isStructure && selectEl) {
+        const option = document.createElement("option");
+        option.value = val;
+        option.textContent = val;
+        
+        // Find the correct optgroup to re-insert the option
+        const template = $("structureOptionsTemplate");
+        let targetOptgroup = null;
+        if (template) {
+          // Find the label in the template that matches the option
+          const allOptions = Array.from(template.querySelectorAll('option'));
+          const originalOption = allOptions.find(opt => opt.value === val);
+
+          if (originalOption && originalOption.parentElement.tagName === 'OPTGROUP') {
+            const optGroupLabel = originalOption.parentElement.label;
+            targetOptgroup = selectEl.querySelector(`optgroup[label="${optGroupLabel}"]`);
+          }
+        }
+        
+        // Fallback to appending directly if optgroup isn't found
+        if (targetOptgroup) {
+            targetOptgroup.appendChild(option);
+        } else {
+            selectEl.appendChild(option);
+        }
+      }
+
+      // Re-render the list to reflect the removal
+      renderTags(inputElId, listElId, selectElId, isStructure);
+    });
+
+    listEl.appendChild(tag);
+  });
+}
+
 
 function initHexSection() {
   const addBtn = $("hexAddBtn");
@@ -78,14 +135,17 @@ function initHexSection() {
       if (!sel || !list) return;
       const val = (sel.value || "").trim();
       if (!val) return;
+      
       const current = list.value
         ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
+        
       if (!current.includes(val)) {
         current.push(val);
         list.value = current.join(", ");
       }
       sel.value = "";
+      renderTags("hexModalTerrains", "hexModalTerrainsList", "hexModalTerrainSelect");
     });
     terrAdd._wired = true;
   }
@@ -103,7 +163,6 @@ function initHexSection() {
         ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
       
-      // NEW PREREQUISITE CHECK LOGIC
       const required = structurePrerequisites[val];
       let canAdd = true;
       let missingPrereqs = [];
@@ -119,10 +178,9 @@ function initHexSection() {
         if (!canAdd) {
           alert(`Cannot add ${val}. Missing prerequisites: ${missingPrereqs.join(', ')}.`);
           sel.value = "";
-          return; // Stop the function if prerequisites are missing
+          return;
         }
       }
-      // END NEW PREREQUISITE CHECK LOGIC
       
       if (!current.includes(val)) {
         current.push(val);
@@ -135,41 +193,35 @@ function initHexSection() {
         }
       }
       sel.value = "";
+      renderTags("hexModalStructures", "hexModalStructuresList", "hexModalStructureSelect", true);
     });
     structAdd._wired = true;
   }
 
-  // NEW: Add click listeners for sorting headers
   const hexSortHexHeader = $("hexSortHexHeader");
   const hexSortNameHeader = $("hexSortNameHeader");
 
   if (hexSortHexHeader && !hexSortHexHeader._wired) {
-    // We use "hexNumber" as the internal column name
     hexSortHexHeader.addEventListener("click", () => handleHexSort("hexNumber"));
     hexSortHexHeader._wired = true;
   }
 
   if (hexSortNameHeader && !hexSortNameHeader._wired) {
-    // We use "name" as the internal column name
     hexSortNameHeader.addEventListener("click", () => handleHexSort("name"));
     hexSortNameHeader._wired = true;
   }
-  // END NEW SORTING LOGIC
 
   loadUpkeepTable();
 }
 
-// NEW: Function to handle sort header clicks
 function handleHexSort(column) {
   if (currentHexSort.column === column) {
-    // Toggle direction if clicking the same column
     currentHexSort.direction = currentHexSort.direction === "asc" ? "desc" : "asc";
   } else {
-    // New column, reset to ascending
     currentHexSort.column = column;
     currentHexSort.direction = "asc";
   }
-  renderHexList(); // Re-render the list with the new sort state
+  renderHexList();
 }
 
 function loadUpkeepTable() {
@@ -303,14 +355,10 @@ function openHexModal(hex) {
   const structureTemplate = $("structureOptionsTemplate");
 
   // Step 1: Reset and load all structure options from the hidden template
-  // Keep the default option
   structureSelect.innerHTML = '<option value="">-- Add Structure / Upgrade --</option>'; 
   
   if (structureTemplate) {
-      // Clone the template content and append it to the select element
       const templateClone = structureTemplate.cloneNode(true);
-      // Append children of the clone (the optgroups)
-      // Note: We move the children, not append the clone itself
       Array.from(templateClone.children).forEach(child => {
           structureSelect.appendChild(child.cloneNode(true));
       });
@@ -335,6 +383,10 @@ function openHexModal(hex) {
           optionToRemove.remove();
       }
   });
+  
+  // NEW: Render tags after setting input values
+  renderTags("hexModalTerrains", "hexModalTerrainsList", "hexModalTerrainSelect");
+  renderTags("hexModalStructures", "hexModalStructuresList", "hexModalStructureSelect", true);
 
   openModal("hexModal");
 }
@@ -344,8 +396,11 @@ function saveHexFromModal() {
 
   const name = $("hexModalName").value.trim();
   const hexNumber = $("hexModalNumber").value.trim();
-  const terrain = $("hexModalTerrains").value.trim();
+  
+  // Terrains and Structures are now managed via the hidden input fields by renderTags
+  const terrain = $("hexModalTerrains").value.trim(); 
   const structure = $("hexModalStructures").value.trim();
+  
   const notes = $("hexModalNotes").value.trim();
 
   if (!id) {
@@ -418,10 +473,10 @@ function renderHexList() {
 
   tbody.innerHTML = "";
   
-  // NEW: 1. Sort the hexes array based on current sort state
+  // 1. Sort the hexes array based on current sort state
   const sortedHexes = [...state.hexes].sort(hexComparator);
 
-  // NEW: 2. Update Header Sort Indicators
+  // 2. Update Header Sort Indicators
   const hexSortHexHeader = $("hexSortHexHeader");
   const hexSortNameHeader = $("hexSortNameHeader");
   const hexCol = currentHexSort.column;

@@ -435,17 +435,18 @@
           <div style="display: flex; gap: 8px;">
             <select id="hexModalTerrainSelect" style="flex-grow: 1;">
               <option value="">-- Select Terrain --</option>
-              <option value="Plains">Plains</option>
+              <option value="Grain Field">Grain Field</option>
               <option value="Forest">Forest</option>
               <option value="Mountain">Mountain</option>
-              <option value="Sea">Sea</option>
+              <option value="Fish">Fish</option>
               <option value="Blasted Lands">Blasted Lands</option>
             </select>
             <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
               Add
             </button>
           </div>
-          <input id="hexModalTerrains" type="text" readonly />
+          <div id="hexModalTerrainsList" class="tag-list"></div>
+          <input id="hexModalTerrains" type="hidden" />
         </div>
 
         <div class="field-row" style="margin-top: 8px;">
@@ -458,7 +459,8 @@
               Add
             </button>
           </div>
-          <input id="hexModalStructures" type="text" readonly />
+          <div id="hexModalStructuresList" class="tag-list"></div>
+          <input id="hexModalStructures" type="hidden" />
         </div>
 
         <div class="field-row">
