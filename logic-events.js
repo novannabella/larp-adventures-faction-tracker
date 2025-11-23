@@ -15,27 +15,25 @@ function initEventSection() {
     saveBtn.addEventListener("click", saveEventFromModal);
     saveBtn._wired = true;
   }
+// Correct IDs from the HTML
+const addBuildBtn = $("eventAddBuildBtn");
+if (addBuildBtn && !addBuildBtn._wired) {
+  addBuildBtn.addEventListener("click", () => openBuildModal(workingEvent));
+  addBuildBtn._wired = true;
+}
 
-  // Action Button Wiring (Build, Movement, Offensive Action)
-  const addBuildBtn = $("eventBuildAddBtn");
-  if (addBuildBtn && !addBuildBtn._wired) {
-    addBuildBtn.addEventListener("click", () => openBuildModal(workingEvent));
-    addBuildBtn._wired = true;
-  }
+const addMovementBtn = $("eventAddMovementBtn");
+if (addMovementBtn && !addMovementBtn._wired) {
+  addMovementBtn.addEventListener("click", () => openMovementModal(workingEvent));
+  addMovementBtn._wired = true;
+}
 
-  const addMovementBtn = $("eventMovementAddBtn");
-  if (addMovementBtn && !addMovementBtn._wired) {
-    addMovementBtn.addEventListener("click", () => openMovementModal(workingEvent));
-    addMovementBtn._wired = true;
-  }
-  
-  // ADDED: Offensive Action Button
-  const addOffenseBtn = $("eventOffensiveAddBtn");
-  if (addOffenseBtn && !addOffenseBtn._wired) {
-    // Assuming a corresponding function for the modal exists
-    addOffenseBtn.addEventListener("click", () => openOffensiveActionModal(workingEvent));
-    addOffenseBtn._wired = true;
-  }
+const addOffenseBtn = $("eventAddOffenseBtn");
+if (addOffenseBtn && !addOffenseBtn._wired) {
+  addOffenseBtn.addEventListener("click", () => openOffensiveActionModal(workingEvent));
+  addOffenseBtn._wired = true;
+}
+
   
   const hdr = $("eventDateSortHeader");
   if (hdr && !hdr._wired) {
