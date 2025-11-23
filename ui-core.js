@@ -1,7 +1,6 @@
 // ui-core.js
 
-// Simple helper, assuming this exists elsewhere in your codebase.
-// If it doesn't, uncomment this:
+// CRITICAL FIX: Ensure $() is defined for all other scripts
 const $ = (id) => document.getElementById(id);
 
 let lastFocusedElement = null;
@@ -110,7 +109,7 @@ function wireModalCloseButtons() {
 function wireTopControls() {
   // Wire Save Button
   const saveBtn = $("saveStateBtn");
-  if (saveBtn && !saveBtn._wired) {
+  if (saveBtn && !saveBtn._wired && typeof saveFactionState === 'function') {
     saveBtn.addEventListener("click", saveFactionState);
     saveBtn._wired = true;
   }
@@ -118,7 +117,7 @@ function wireTopControls() {
   // Wire Load Button
   const loadBtn = $("loadStateBtn");
   const loadFile = $("loadStateFile");
-  if (loadBtn && loadFile && !loadBtn._wired) {
+  if (loadBtn && loadFile && !loadBtn._wired && typeof loadFactionState === 'function') {
     loadBtn.addEventListener("click", () => loadFile.click());
     loadFile.addEventListener("change", loadFactionState);
     loadBtn._wired = true;
@@ -131,8 +130,8 @@ function wireFactionInfo() {
   const notesInput = $("factionNotes");
   [nameInput, notesInput].forEach((el) => {
     if (el && !el._wired) {
-      el.addEventListener("input", markDirty);
-      el.addEventListener("change", saveState);
+      if (typeof markDirty === 'function') el.addEventListener("input", markDirty);
+      if (typeof saveState === 'function') el.addEventListener("change", saveState);
       el._wired = true;
     }
   });
@@ -144,31 +143,31 @@ function wireCoffers() {
   resources.forEach((id) => {
     const input = $(id);
     if (input && !input._wired) {
-      input.addEventListener("input", markDirty);
-      input.addEventListener("change", saveState);
+      if (typeof markDirty === 'function') input.addEventListener("input", markDirty);
+      if (typeof saveState === 'function') input.addEventListener("change", saveState);
       input._wired = true;
     }
   });
 }
 
 function init() {
-  // Note: state should be loaded before rendering, but we call render after load
-  // Load state and wire global elements
-  loadState();
-
-  // Initialize and wire all sections
+  // Initialize and wire all sections first
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
 
-  // These functions call their respective render lists as their last step
-  // They depend on the $() function which is now enabled.
+  // These functions call their respective render lists, creating table buttons
   initSeasonSection();
   initEventSection();
   initHexSection();
 
-  // Wire modal logic globally
+  // Wire modal logic globally (closing by backdrop or X button)
   wireModalCloseButtons();
+  
+  // CRITICAL FIX: Load state last, so an error here doesn't prevent button wiring.
+  if (typeof loadState === 'function') {
+      loadState();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
