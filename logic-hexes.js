@@ -2,6 +2,11 @@
 
 let upkeepTable = {};
 
+// Sorting for Controlled Hexes
+let hexSortColumn = "hex";     // "hex" or "name"
+let hexSortDirection = "asc";  // "asc" or "desc"
+
+
 // Define prerequisites for structures
 const structurePrerequisites = {
   "Shipyard": ["Dock"],
@@ -98,8 +103,38 @@ function initHexSection() {
     structAdd._wired = true;
   }
 
-  loadUpkeepTable();
+// --- Sorting handlers for Controlled Hexes ---
+const hexHeader = $("hexSortHexHeader");
+if (hexHeader && !hexHeader._wired) {
+  hexHeader.addEventListener("click", () => {
+    if (hexSortColumn === "hex") {
+      hexSortDirection = hexSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      hexSortColumn = "hex";
+      hexSortDirection = "asc";
+    }
+    renderHexList();
+  });
+  hexHeader._wired = true;
 }
+
+const nameHeader = $("hexSortNameHeader");
+if (nameHeader && !nameHeader._wired) {
+  nameHeader.addEventListener("click", () => {
+    if (hexSortColumn === "name") {
+      hexSortDirection = hexSortDirection === "asc" ? "desc" : "asc";
+    } else {
+      hexSortColumn = "name";
+      hexSortDirection = "asc";
+    }
+    renderHexList();
+  });
+  nameHeader._wired = true;
+}
+
+loadUpkeepTable();
+}
+
 
 function loadUpkeepTable() {
   fetch("upkeep.csv")
@@ -159,7 +194,28 @@ function openUpkeepModal() {
   const allUpkeep = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
   const upkeepDetails = {}; // Stores total count of each structure type
 
-  state.hexes.forEach((hex) => {
+// Clone list before sorting
+let hexes = [...state.hexes];
+
+// Sort based on selected column & direction
+hexes.sort((a, b) => {
+  let valA = "";
+  let valB = "";
+
+  if (hexSortColumn === "hex") {
+    valA = a.hexNumber || "";
+    valB = b.hexNumber || "";
+  } else if (hexSortColumn === "name") {
+    valA = a.name || "";
+    valB = b.name || "";
+  }
+
+  if (valA < valB) return hexSortDirection === "asc" ? -1 : 1;
+  if (valA > valB) return hexSortDirection === "asc" ? 1 : -1;
+  return 0;
+});
+
+hexes.forEach((hex) => {
     const hexUpkeep = calcHexUpkeep(hex);
     
     // Sum total resource upkeep
@@ -301,6 +357,24 @@ function saveHexFromModal() {
   markDirty();
   closeModal("hexModal");
   renderHexList();
+  // Update header indicators
+const hexHdr = $("hexSortHexHeader");
+const nameHdr = $("hexSortNameHeader");
+
+if (hexHdr) {
+  hexHdr.textContent =
+    hexSortColumn === "hex"
+      ? `Hex ${hexSortDirection === "asc" ? "▲" : "▼"}`
+      : "Hex";
+}
+
+if (nameHdr) {
+  nameHdr.textContent =
+    hexSortColumn === "name"
+      ? `Name ${hexSortDirection === "asc" ? "▲" : "▼"}`
+      : "Name";
+}
+
 }
 
 function deleteHex(id) {
