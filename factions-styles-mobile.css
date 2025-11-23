@@ -17,98 +17,104 @@
   --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
 }
 
-/* factions-styles-mobile.css */
 @media (max-width: 768px) {
+  
   body {
     padding: 12px;
     /* FIX: Use the exact gradient and modern font stack */
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: radial-gradient(circle at top, #151b30 0, #050813 55%);
   }
-  /* ... rest of media query ... */
-}
-
+  
   .app {
     padding: 0; /* Let body padding handle app padding */
     gap: 16px;
   }
   
   /* FIX: Ensure Card Headers align properly on mobile and titles are styled */
-  .card-header {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping if buttons take up too much space */
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 0;
+  .card-inner {
+      padding: 12px;
   }
   
-  .card-header h2 {
-    margin-bottom: 0;
-    font-size: 16px; /* Slightly smaller h2 on mobile */
+  .card-inner h2 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
   }
-
-  /* Stack columns in the top row */
+  
+  /* --- LAYOUT FIXES: Force Single Column Stack on Mobile --- */
+  
   .top-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
+      /* Force single column stack */
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
   }
 
-  /* Coffers grid goes from 3 columns to 2 on small screens */
-  .coffers-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+  /* Target the three-column section to stack on mobile */
+  .bottom-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
   }
   
-  /* Tables become block-level and stack rows */
+  /* Ensure coffer card stacks inputs vertically on mobile */
+  #coffersCard .card-inner {
+      grid-template-columns: 1fr;
+      gap: 8px 0;
+  }
+
+  /* Mobile Table Layout (Force row-per-data-cell) */
   .season-table,
   .event-table,
-  .controlled-hexes-table,
-  .upkeep-table {
-    display: block;
-    width: 100%;
+  .controlled-hexes-table {
+    /* Hide the original header row */
+    & thead {
+      display: none;
+    }
+
+    /* Force table to behave like a block element */
+    & tbody,
+    & tr {
+      display: block;
+      width: 100%;
+    }
+
+    /* Make each row a distinct card-like block */
+    & tbody tr {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-alt);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Make each cell a block */
+    & td {
+      border: none;
+      display: block;
+      padding: 3px 0;
+      text-align: right;
+      position: relative;
+    }
+
+    /* Add custom labels before the data cell */
+    & td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      text-align: left;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 10px;
+    }
   }
 
-  /* --- Mobile Table Rework --- */
-
-  /* Hide header row to save space */
-  .season-table thead, .event-table thead, .controlled-hexes-table thead, .upkeep-table thead {
-    display: none;
-  }
-  
-  /* HIDE: Remove the top border on tables that was added for desktop layout */
-  .card-inner > .card-header ~ table {
-      border-top: none;
-      margin-top: 10px; /* Restore separation if needed */
-  }
-
-  /* Make table rows stack vertically and give them borders/background to look like cards */
-  .season-table tr, .event-table tr, .controlled-hexes-table tr, .upkeep-table tr {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: var(--bg-alt);
-    white-space: normal; /* Allow cell content to wrap */
-  }
-
-  .season-table tr:hover, .event-table tr:hover, .controlled-hexes-table tr:hover, .upkeep-table tr:hover {
-      background-color: var(--bg-alt); /* Remove hover effect for stacked rows */
-  }
-  
-  .season-table td, .event-table td, .controlled-hexes-table td, .upkeep-table td {
-    border: none;
-    padding: 4px 0;
-    text-align: left; /* Ensure text is left-aligned in mobile view */
-  }
-  
-  /* Use ::before to re-add column headers as labels */
-  .controlled-hexes-table td:nth-child(1):before { content: "Hex: "; font-weight: 600; color: var(--muted); }
-  .controlled-hexes-table td:nth-child(2):before { content: "Name: "; font-weight: 600; color: var(--muted); }
-  .controlled-hexes-table td:nth-child(3):before { content: "Terrain: "; font-weight: 600; color: var(--muted); }
-  .controlled-hexes-table td:nth-child(4):before { content: "Structures: "; font-weight: 600; color: var(--muted); }
-  /* The action column should be left-aligned and separated */
+  /* Specific mobile table labels (Hexes) */
+  .controlled-hexes-table td:nth-child(1):before { content: "Hex: "; }
+  .controlled-hexes-table td:nth-child(2):before { content: "Name: "; }
+  .controlled-hexes-table td:nth-child(3):before { content: "Terrain: "; }
+  .controlled-hexes-table td:nth-child(4):before { content: "Structures: "; }
   .controlled-hexes-table td:nth-child(5) { 
       text-align: left; 
       margin-top: 8px; 
@@ -117,14 +123,13 @@
       display: flex; /* Make buttons flow horizontally */
       gap: 6px; /* Space buttons apart */
   } 
-
-  .event-table td:nth-child(1):before { content: "Event: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(2):before { content: "Date: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(3):before { content: "Type: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(4):before { content: "Builds: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(5):before { content: "Moves: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(6):before { content: "Offense: "; font-weight: 600; color: var(--muted); }
-  .event-table td:nth-child(7) { 
+  
+  /* Specific mobile table labels (Events) */
+  .event-table td:nth-child(1):before { content: "#: "; }
+  .event-table td:nth-child(2):before { content: "Event: "; }
+  .event-table td:nth-child(3):before { content: "Date: "; }
+  .event-table td:nth-child(4):before { content: "Type: "; }
+  .event-table td:nth-child(5) { 
       text-align: left; 
       margin-top: 8px; 
       padding-top: 8px; 
@@ -132,9 +137,10 @@
       display: flex; /* Make buttons flow horizontally */
       gap: 6px; /* Space buttons apart */
   } 
-  
-  .season-table td:nth-child(1):before { content: "Season: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(2):before { content: "Year: "; font-weight: 600; color: var(--muted); }
+
+  /* Specific mobile table labels (Seasonal Gains) */
+  .season-table td:nth-child(1):before { content: "Season: "; }
+  .season-table td:nth-child(2):before { content: "Year: "; }
   .season-table td:nth-child(3):before { content: "Food: "; font-weight: 600; color: var(--muted); }
   .season-table td:nth-child(4):before { content: "Wood: "; font-weight: 600; color: var(--muted); }
   .season-table td:nth-child(5):before { content: "Stone: "; font-weight: 600; color: var(--muted); }
@@ -173,16 +179,10 @@
 
   /* REMOVE OLD COMPLEX BUTTON LOGIC */
   /* Remove any ::before content (like the '-' for delete) */
-  .season-table tr td:last-child button::before,
-  .event-table tr td:last-child button::before,
-  .controlled-hexes-table tr td:last-child button::before {
-    content: none !important;
+  .season-table tr td:last-child button:nth-child(3)::before,
+  .event-table tr td:last-child button:nth-child(3)::before,
+  .controlled-hexes-table tr td:last-child button:nth-child(3)::before {
+    content: unset;
   }
-  /* Show the text for all buttons */
-  .season-table tr td:last-child button,
-  .event-table tr td:last-child button,
-  .controlled-hexes-table tr td:last-child button {
-    font-size: 11px !important;
-    padding-inline: 8px !important;
-  }
+  
 }

@@ -12,6 +12,8 @@ function initSeasonSection() {
     saveBtn.addEventListener("click", saveSeasonFromModal);
     saveBtn._wired = true;
   }
+  
+  renderSeasonGainList(); // <--- ADDED: Critical to display existing data and wire the table's buttons
 }
 
 function openSeasonModal(entry) {

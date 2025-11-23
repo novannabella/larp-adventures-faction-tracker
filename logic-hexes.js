@@ -4,10 +4,7 @@ let upkeepTable = {};
 
 // Define prerequisites for structures
 const structurePrerequisites = {
-  "Shipyard": ["Dock"],
-  "Fishing Fleet": ["Dock"],
-  "Trading Vessel": ["Dock"],
-  "War Galley": ["Dock", "Shipyard"] // Requires both a Dock (implicit via Shipyard, but checking explicitly is safer) and a Shipyard
+// ... existing definitions
 };
 
 function initHexSection() {
@@ -48,6 +45,31 @@ function initHexSection() {
     });
     terrAdd._wired = true;
   }
+
+  const structAdd = $("hexModalStructureAddBtn");
+  if (structAdd && !structAdd._wired) {
+    structAdd.addEventListener("click", () => {
+      const sel = $("hexModalStructureSelect");
+      const list = $("hexModalStructures");
+      if (!sel || !list) return;
+      const val = (sel.value || "").trim();
+      if (!val) return;
+      const current = list.value
+        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) {
+        current.push(val);
+        list.value = current.join(", ");
+      }
+      sel.value = "";
+    });
+    structAdd._wired = true;
+  }
+
+  // The rendering call was missing from the end of the init
+  renderHexList(); // <--- ADDED: Critical to display existing data and wire the table's buttons
+}
+// ... rest of file
 
   const structAdd = $("hexModalStructureAddBtn");
   if (structAdd && !structAdd._wired) {

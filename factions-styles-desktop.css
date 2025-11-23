@@ -47,168 +47,147 @@ h1 {
   text-transform: uppercase;
   font-size: 26px;
   color: var(--accent);
+  font-weight: 400;
 }
 
 .subtitle {
   text-align: center;
+  margin-top: 0;
+  margin-bottom: 24px;
   color: var(--muted);
   font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Controls */
+.top-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.save-load-controls {
+  display: flex;
+  gap: 10px;
+}
+
+
+/* --- LAYOUT FIXES: Enforce the two-column/three-column layout --- */
+
+/* Enforce the multi-column layout for the top row (Faction Info and Coffers) */
+.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  gap: 20px;
   margin-bottom: 24px;
 }
 
-h2 {
-  font-size: 18px;
-  text-transform: uppercase;
-  color: var(--accent);
+/* Enforce the three-column layout for the bottom row (hexes, events, seasons) */
+.bottom-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Three equal columns */
+  gap: 20px;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Ensure the card header and content align on desktop */
+.card-inner {
+  padding: 16px;
+  display: flex; 
+  flex-direction: column;
+  height: 100%; /* Important for equal height cards */
+}
+
+/* Card Titles */
+.card-inner h2 {
   margin-top: 0;
   margin-bottom: 12px;
   padding-bottom: 4px;
   border-bottom: 1px solid var(--border);
+  font-size: 1.15rem;
+  color: var(--accent);
+  font-weight: 400;
 }
 
-/* FIX 1: Ensure Card Headers align titles left and buttons right */
-.card-header {
-  display: flex;
-  justify-content: space-between;
+/* Card for Coffers FIX: Two columns for label/input pairs */
+#coffersCard .card-inner {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 12px 20px; /* Vertical and horizontal gap */
   align-items: center;
 }
 
-.card-header h2 {
-  /* H2 already has bottom border, so we remove the margin/padding that might conflict */
-  margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.card-header > div {
-    /* Targets the div containing multiple buttons (like Hexes section) */
-    display: flex; 
-    gap: 8px;
-}
-/* Restore border below the title group */
-.card-inner > .card-header ~ table {
-    margin-top: 10px;
-    /* Add a visual break below the header since H2 no longer has a bottom border in .card-header */
-    border-top: 1px solid var(--border);
-}
-.card-inner > .card-header ~ table thead tr th {
-    border-top: none; /* remove double border */
-}
-
-
-/* Card Styling */
-.card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
-  margin-bottom: 24px;
-}
-
-.card-inner {
-  padding: 18px;
-}
-
-/* factions-styles-desktop.css */
-
-/* FIX: Restore desktop layout for the top section */
-.top-row {
-  display: flex;
-  gap: 20px; /* Adjust spacing as needed */
-  margin-bottom: 20px;
-}
-
-.top-row .card {
-  flex: 1 1 0; /* Ensures both cards grow equally and take up space */
-  min-width: 0;
-}
-
-.coffers-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px 16px;
-}
-
+/* Form Fields */
 .field {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 10px;
 }
 
-.field-row {
-  margin-bottom: 12px;
-}
-
-/* --- Form Elements --- */
-label {
-  display: block;
+.field label {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  color: var(--muted);
   margin-bottom: 4px;
 }
 
 input[type="text"],
 input[type="number"],
-input[type="date"],
 textarea,
 select {
-  width: 100%;
-  padding: 8px 10px;
+  background: var(--bg-alt);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-alt);
   color: var(--text);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+input[type="number"] {
+  width: 100%;
 }
 
 textarea {
   resize: vertical;
 }
 
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23b7bdd7'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 16px;
-}
-
-input[type="file"] {
-  padding: 0;
-}
-
-/* --- Buttons --- */
+/* Buttons */
 .button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: all 0.2s ease;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
-}
-
-.button:not(.secondary) {
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
   background: var(--accent);
-  color: var(--card); /* Dark text on gold accent */
+  color: var(--bg);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2), 0 10px 20px rgba(0, 0, 0, 0.46);
 }
 
-.button:not(.secondary):hover {
+.button:hover {
   filter: brightness(1.05);
   transform: translateY(-1px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
 }
 
 .button.secondary {
   background: transparent;
   color: var(--accent);
-  border: 1px solid var(--border);
+  border-color: var(--border);
   box-shadow: none;
 }
 
@@ -219,63 +198,82 @@ input[type="file"] {
 }
 
 .button.small {
-  padding: 6px 10px;
+  padding: 3px 8px;
   font-size: 11px;
 }
 
-/* Danger Button Override */
-.button[style*="var(--danger)"] {
-  background: var(--danger) !important;
-  border-color: var(--danger) !important;
-  color: var(--text);
-}
-.button[style*="var(--danger)"]:hover {
-  filter: brightness(1.1);
-}
-
-/* --- Tables --- */
+/* Match table typography to character sheet */
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
-  /* Reduced margin top to accommodate the new border line */
-  margin-top: 0;
+  font-size: 12px;
+  margin-top: 6px;
 }
 
 th,
 td {
-  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 6px 4px;
   text-align: left;
   vertical-align: middle;
-  border-bottom: 1px solid var(--border);
 }
 
 th {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--muted);
-  border-bottom: 2px solid var(--border);
-  background: var(--bg-alt);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 400;
 }
 
-tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+td {
+  color: var(--text);
 }
 
-/* FIX 2: Actions Column Right Alignment and button spacing */
-/* Selects the last column (Actions) of the table body */
-.season-table td:last-child, 
-.event-table td:last-child, 
-.controlled-hexes-table td:last-child {
+/* Fix for the button row above the table headers */
+.table-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px; 
+  padding: 0 4px;
+}
+
+/* Table wrapper for proper flexbox/scrolling */
+.table-wrapper {
+  overflow-x: auto;
+  flex-grow: 1; /* Allows the content to expand and fill the card */
+  display: flex;
+  flex-direction: column;
+}
+
+.table-wrapper table {
+  margin-top: 0;
+}
+
+.table-wrapper table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Total Row below tables */
+.total-row {
+  margin-top: 10px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
   text-align: right;
-  white-space: nowrap; /* Prevent buttons from wrapping */
 }
 
-.season-table td:last-child button, 
-.event-table td:last-child button, 
-.controlled-hexes-table td:last-child button {
-    margin-left: 6px; /* Space buttons apart */
+/* Details Grid for Modals */
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.details-grid p {
+  margin: 0;
 }
 
 /* Modal Styling */
@@ -332,39 +330,22 @@ tr:hover {
 .modal-close {
   background: none;
   border: none;
+  color: var(--muted);
   font-size: 1.5rem;
   cursor: pointer;
-  color: var(--muted);
-  transition: color 0.15s;
 }
 
-.modal-close:hover {
-  color: var(--text);
+.modal-body {
+  margin-bottom: 15px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 10px; /* Space for scrollbar */
 }
 
 .modal-footer {
-  margin-top: 20px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-}
-
-/* Hex Details Grid */
-.details-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px dashed var(--border);
-    background-color: var(--card);
-    border-radius: var(--radius-sm);
-}
-
-.details-grid strong {
-    color: var(--accent);
-}
-
-.upkeep-table th {
-    background: var(--card);
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
 }
