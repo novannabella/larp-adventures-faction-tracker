@@ -1,494 +1,392 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Faction Resource Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="factions-styles-desktop.css?v=20250616">
-<link rel="stylesheet" href="factions-styles-mobile.css?v=20250616">
+// logic-hexes.js
 
-</head>
-<body>
-  <div class="app">
-    <h1>Larp Adventures</h1>
-    <div class="subtitle">Faction Resource Tracker</div>
+let upkeepTable = {};
 
-    <div class="top-controls">
-      <div class="save-load-controls">
-        <button id="loadStateBtn" class="button secondary">Load Faction</button>
-        <input type="file" id="loadStateFile" accept=".json,application/json" hidden />
-        <button id="saveStateBtn" class="button secondary">Save Faction</button>
-      </div>
-    </div>
+// Define prerequisites for structures
+const structurePrerequisites = {
+  "Shipyard": ["Dock"],
+  "Fishing Fleet": ["Dock"],
+  "Trading Vessel": ["Dock"],
+  "War Galley": ["Dock", "Shipyard"] // Requires both a Dock (implicit via Shipyard, but checking explicitly is safer) and a Shipyard
+};
 
-    <div class="top-row">
-      <div class="card" id="factionInfoCard">
-        <div class="card-inner">
-          <h2>Faction Information</h2>
-          <div class="field">
-            <label for="factionName">Name</label>
-            <input id="factionName" type="text" />
-          </div>
-          <div class="field">
-            <label for="factionNotes">Notes</label>
-            <textarea id="factionNotes" rows="5"></textarea>
-          </div>
-        </div>
-      </div>
+function initHexSection() {
+  const addBtn = $("hexAddBtn");
+  if (addBtn && !addBtn._wired) {
+    addBtn.addEventListener("click", () => openHexModal());
+    addBtn._wired = true;
+  }
 
-      <div class="card" id="coffersCard">
-        <div class="card-inner">
-          <h2>Coffers &amp; Resources</h2>
-          <div class="coffers-grid">
-            <div class="field">
-              <label for="food">Food</label>
-              <input id="food" type="number" />
-            </div>
-            <div class="field">
-              <label for="wood">Wood</label>
-              <input id="wood" type="number" />
-            </div>
-            <div class="field">
-              <label for="stone">Stone</label>
-              <input id="stone" type="number" />
-            </div>
-            <div class="field">
-              <label for="ore">Ore</label>
-              <input id="ore" type="number" />
-            </div>
-            <div class="field">
-              <label for="silver">Silver</label>
-              <input id="silver" type="number" />
-            </div>
-            <div class="field">
-              <label for="gold">Gold</label>
-              <input id="gold" type="number" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  const upkeepBtn = $("hexUpkeepBtn");
+  if (upkeepBtn && !upkeepBtn._wired) {
+    upkeepBtn.addEventListener("click", openUpkeepModal);
+    upkeepBtn._wired = true;
+  }
 
-    <div class="card" id="seasonalGainsCard">
-      <div class="card-inner">
-        <div class="card-header">
-          <h2>Seasonal Resource Gains</h2>
-          <button id="seasonAddBtn" class="button small">Add</button>
-        </div>
+  const saveBtn = $("hexModalSaveBtn");
+  if (saveBtn && !saveBtn._wired) {
+    saveBtn.addEventListener("click", saveHexFromModal);
+    saveBtn._wired = true;
+  }
 
-        <table class="season-table">
-          <thead>
-            <tr>
-              <th>Season</th>
-              <th>Year</th>
-              <th>Food</th>
-              <th>Wood</th>
-              <th>Stone</th>
-              <th>Ore</th>
-              <th>Silver</th>
-              <th>Gold</th>
-              <th>Notes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="seasonTableBody"></tbody>
-        </table>
-      </div>
-    </div>
+  const terrAdd = $("hexModalTerrainAddBtn");
+  if (terrAdd && !terrAdd._wired) {
+    terrAdd.addEventListener("click", () => {
+      const sel = $("hexModalTerrainSelect");
+      const list = $("hexModalTerrains");
+      if (!sel || !list) return;
+      const val = (sel.value || "").trim();
+      if (!val) return;
+      const current = list.value
+        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      if (!current.includes(val)) {
+        current.push(val);
+        list.value = current.join(", ");
+      }
+      sel.value = "";
+    });
+    terrAdd._wired = true;
+  }
 
-    <div class="card" id="eventsCard">
-      <div class="card-inner">
-        <div class="card-header">
-          <h2>Events &amp; Turn Actions</h2>
-          <button id="eventAddBtn" class="button small">Add</button>
-        </div>
+  const structAdd = $("hexModalStructureAddBtn");
+  if (structAdd && !structAdd._wired) {
+    structAdd.addEventListener("click", () => {
+      const sel = $("hexModalStructureSelect");
+      const list = $("hexModalStructures");
+      if (!sel || !list) return;
+      const val = (sel.value || "").trim();
+      if (!val) return;
 
-        <table class="event-table">
-          <thead>
-            <tr>
-              <th>Event</th>
-              <th id="eventDateSortHeader">Date ▲</th>
-              <th>Type</th>
-              <th>Builds</th>
-              <th>Moves</th>
-              <th>Offense</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="eventTableBody"></tbody>
-        </table>
-      </div>
-    </div>
+      const current = list.value
+        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+      
+      // NEW PREREQUISITE CHECK LOGIC
+      const required = structurePrerequisites[val];
+      let canAdd = true;
+      let missingPrereqs = [];
 
-    <div class="card" id="controlledHexesCard">
-      <div class="card-inner">
-        <div class="card-header">
-          <h2>Controlled Hexes</h2>
-          <div style="display: flex; gap: 8px;">
-            <button id="hexUpkeepBtn" class="button small secondary">Upkeep</button>
-            <button id="hexAddBtn" class="button small">Add</button>
-          </div>
-        </div>
+      if (required) {
+        required.forEach(prereq => {
+          if (!current.includes(prereq)) {
+            canAdd = false;
+            missingPrereqs.push(prereq);
+          }
+        });
 
-<table class="controlled-hexes-table">
-  <thead>
-    <tr>
-      <th>Hex</th>
-      <th>Name</th>
-      <th>Terrain</th>
-      <th>Structures</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="hexTableBody"></tbody>
-</table>
+        if (!canAdd) {
+          alert(`Cannot add ${val}. Missing prerequisites: ${missingPrereqs.join(', ')}.`);
+          sel.value = "";
+          return; // Stop the function if prerequisites are missing
+        }
+      }
+      // END NEW PREREQUISITE CHECK LOGIC
+      
+      if (!current.includes(val)) {
+        current.push(val);
+        list.value = current.join(", ");
 
-      </div>
-    </div>
-  </div>
+        // Remove the selected option from the dropdown
+        const optionToRemove = sel.querySelector(`option[value="${val}"]`);
+        if (optionToRemove) {
+          optionToRemove.remove();
+        }
+      }
+      sel.value = "";
+    });
+    structAdd._wired = true;
+  }
 
-  <div id="modalBackdrop" class="modal-backdrop"></div>
+  loadUpkeepTable();
+}
 
+function loadUpkeepTable() {
+  fetch("upkeep.csv")
+    .then((r) => r.text())
+    .then((text) => {
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+      if (lines.length < 2) return;
+
+      const header = lines[0].split(",").map((h) => h.trim());
+      const idxUpgrade = header.indexOf("Upgrade");
+      const idxFood = header.indexOf("Food");
+      const idxWood = header.indexOf("Wood");
+      const idxStone = header.indexOf("Stone");
+      const idxOre = header.indexOf("Ore");
+      const idxGold = header.indexOf("Gold");
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim());
+        const name = cols[idxUpgrade] || "";
+        if (!name) continue;
+        const food = parseInt(cols[idxFood] || "0", 10) || 0;
+        const wood = parseInt(cols[idxWood] || "0", 10) || 0;
+        const stone = parseInt(cols[idxStone] || "0", 10) || 0;
+        const ore = parseInt(cols[idxOre] || "0", 10) || 0;
+        const gold = parseInt(cols[idxGold] || "0", 10) || 0;
+        upkeepTable[name] = { food, wood, stone, ore, gold };
+      }
+    })
+    .catch(() => {
+      upkeepTable = {};
+    });
+}
+
+function calcHexUpkeep(hex) {
+  const result = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
+  if (!hex.structure) return result;
+
+  const names = hex.structure
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  names.forEach((name) => {
+    const row = upkeepTable[name];
+    if (!row) return;
+    result.food += row.food || 0;
+    result.wood += row.wood || 0;
+    result.stone += row.stone || 0;
+    result.ore += row.ore || 0;
+    result.gold += row.gold || 0;
+  });
+
+  return result;
+}
+
+function openUpkeepModal() {
+  const allUpkeep = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
+  const upkeepDetails = {}; // Stores total count of each structure type
+
+  state.hexes.forEach((hex) => {
+    const hexUpkeep = calcHexUpkeep(hex);
+    
+    // Sum total resource upkeep
+    allUpkeep.food += hexUpkeep.food;
+    allUpkeep.wood += hexUpkeep.wood;
+    allUpkeep.stone += hexUpkeep.stone;
+    allUpkeep.ore += hexUpkeep.ore;
+    allUpkeep.gold += hexUpkeep.gold;
+
+    // Sum total structures
+    if (hex.structure) {
+      const names = hex.structure
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      names.forEach((name) => {
+        if (upkeepTable[name]) { // Only count structures that have an upkeep cost
+          upkeepDetails[name] = (upkeepDetails[name] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  const upkeepTbody = $("upkeepTable").querySelector("tbody");
+  if (!upkeepTbody) return;
+  upkeepTbody.innerHTML = "";
+
+  // 1. Add rows for each individual structure count
+  Object.keys(upkeepDetails).sort().forEach(structureName => {
+    const count = upkeepDetails[structureName];
+    const upkeep = upkeepTable[structureName] || { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
+    
+    const row = upkeepTbody.insertRow();
+    row.innerHTML = `
+      <td>${structureName} (${count})</td>
+      <td>${upkeep.food * count}</td>
+      <td>${upkeep.wood * count}</td>
+      <td>${upkeep.stone * count}</td>
+      <td>${upkeep.ore * count}</td>
+      <td>${upkeep.gold * count}</td>
+    `;
+  });
+
+  // 2. Add a separator row
+  const separatorRow = upkeepTbody.insertRow();
+  separatorRow.innerHTML = `<td colspan="6" style="text-align: center; border-bottom: 2px solid var(--text-color);"></td>`;
+
+  // 3. Add a row for the grand totals
+  const totalRow = upkeepTbody.insertRow();
+  totalRow.className = "total-row";
+  totalRow.innerHTML = `
+    <td><strong>TOTAL UPKEEP</strong></td>
+    <td><strong>${allUpkeep.food}</strong></td>
+    <td><strong>${allUpkeep.wood}</strong></td>
+    <td><strong>${allUpkeep.stone}</strong></td>
+    <td><strong>${allUpkeep.ore}</strong></td>
+    <td><strong>${allUpkeep.gold}</strong></td>
+  `;
+
+  openModal("upkeepModal");
+}
+
+function openHexModal(hex) {
+  $("hexModalId").value = hex ? hex.id : "";
+  $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
+
+  const structureSelect = $("hexModalStructureSelect");
+  const structureListInput = $("hexModalStructures");
+  const structureTemplate = $("structureOptionsTemplate");
+
+  // Step 1: Reset and load all structure options from the hidden template
+  // Keep the default option
+  structureSelect.innerHTML = '<option value="">-- Add Structure / Upgrade --</option>'; 
   
-  <div id="seasonModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="seasonModalTitle">Add Seasonal Resource Gain</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="seasonModalId" />
+  if (structureTemplate) {
+      // Clone the template content and append it to the select element
+      const templateClone = structureTemplate.cloneNode(true);
+      // Append children of the clone (the optgroups)
+      // Note: We move the children, not append the clone itself
+      Array.from(templateClone.children).forEach(child => {
+          structureSelect.appendChild(child.cloneNode(true));
+      });
+  }
 
-        <div class="mini-row-body two-cols">
-          <div class="field-row">
-            <label for="seasonModalSeason">Season</label>
-            <select id="seasonModalSeason">
-              <option value="">-- Select Season --</option>
-              <option value="Spring">Spring</option>
-              <option value="Summer">Summer</option>
-              <option value="Fall">Fall</option>
-              <option value="Winter">Winter</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalYear">Year</label>
-            <input id="seasonModalYear" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalFood">Food</label>
-            <input id="seasonModalFood" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalWood">Wood</label>
-            <input id="seasonModalWood" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalStone">Stone</label>
-            <input id="seasonModalStone" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalOre">Ore</label>
-            <input id="seasonModalOre" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalSilver">Silver</label>
-            <input id="seasonModalSilver" type="number" />
-          </div>
-
-          <div class="field-row">
-            <label for="seasonModalGold">Gold</label>
-            <input id="seasonModalGold" type="number" />
-          </div>
-        </div>
-
-        <div class="field-row" style="margin-top: 8px;">
-          <label for="seasonModalNotes">Notes</label>
-          <textarea id="seasonModalNotes" rows="3"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="seasonModalSaveBtn" class="button small" type="button">Save</button>
-        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="eventModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="eventModalTitle">Add Event</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="eventModalId" />
-        
-        <div class="field-row">
-          <div class="field">
-            <label for="eventModalName">Event Name</label>
-            <input id="eventModalName" type="text" />
-          </div>
-          <div class="field half-width">
-            <label for="eventModalDate">Date</label>
-            <input id="eventModalDate" type="date" />
-          </div>
-          <div class="field half-width">
-            <label for="eventModalType">Type</label>
-            <select id="eventModalType">
-              <option value="">-- Select Type --</option>
-              <option value="Day Event">Day Event</option>
-              <option value="Campout">Campout</option>
-              <option value="Festival Event">Festival Event</option>
-              <option value="Virtual Event">Virtual Event</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field-row" style="margin-top: 8px;">
-          <label for="eventModalSummary">Event Summary / Notes</label>
-          <textarea id="eventModalSummary" rows="3"></textarea>
-        </div>
-
-        <div id="eventBuildList" class="action-list"></div>
-        <div id="eventMovementList" class="action-list"></div>
-        <div id="eventOffensiveAction" class="action-list offensive-action"></div>
-        
-        <div class="event-actions-controls" style="margin-top: 12px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="eventAddBuildBtn" class="button small secondary" type="button">Add Build</button>
-            <button id="eventAddMovementBtn" class="button small secondary" type="button">Add Movement</button>
-            <button id="eventAddOffenseBtn" class="button small secondary" type="button">Add Offensive Action</button>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="eventModalSaveBtn" class="button small" type="button">Save</button>
-        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="buildModal" class="modal sub-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="buildModalTitle">Add Building Action</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="buildModalId" />
-
-        <div class="field-row">
-          <label for="buildModalTargetHex">Target Hex</label>
-          <select id="buildModalTargetHex">
-            </select>
-        </div>
-
-        <div class="field-row">
-          <label for="buildModalStructure">Structure / Upgrade</label>
-          <select id="buildModalStructure">
-            </select>
-        </div>
-        
-        <div class="field-row">
-          <label for="buildModalNotes">Notes</label>
-          <textarea id="buildModalNotes" rows="2"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="buildModalSaveBtn" class="button small" type="button">Save</button>
-        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
-        <button id="buildModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="movementModal" class="modal sub-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="movementModalTitle">Add Movement Action</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="movementModalId" />
-        
-        <div class="field-row">
-          <label for="movementModalSourceHex">Source Hex</label>
-          <select id="movementModalSourceHex">
-            </select>
-        </div>
-
-        <div class="field-row">
-          <label for="movementModalTargetHex">Target Hex</label>
-          <select id="movementModalTargetHex">
-            </select>
-        </div>
-
-        <div class="field-row">
-          <label for="movementModalAssets">Assets Moved</label>
-          <input id="movementModalAssets" type="text" />
-        </div>
-        
-        <div class="field-row">
-          <label for="movementModalNotes">Notes</label>
-          <textarea id="movementModalNotes" rows="2"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="movementModalSaveBtn" class="button small" type="button">Save</button>
-        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
-        <button id="movementModalDeleteBtn" class="button small" type="button" style="background: var(--danger); border-color: var(--danger); margin-left: auto;">Delete</button>
-      </div>
-    </div>
-  </div>
+  $("hexModalName").value = hex?.name || "";
+  $("hexModalNumber").value = hex?.hexNumber || "";
+  $("hexModalTerrains").value = hex?.terrain || "";
+  structureListInput.value = hex?.structure || "";
+  $("hexModalNotes").value = hex?.notes || "";
+  $("hexModalTerrainSelect").value = "";
+  $("hexModalStructureSelect").value = "";
   
-  <div id="structureOptionsTemplate" style="display: none;">
-    <optgroup label="Population Centers">
-      <option value="Village">Village</option>
-      <option value="Town">Town</option>
-      <option value="City">City</option>
-    </optgroup>
-    <optgroup label="Resource Structures">
-      <option value="Farm">Farm</option>
-      <option value="Lumber Mill">Lumber Mill</option>
-      <option value="Quarry">Quarry</option>
-      <option value="Iron Mine">Iron Mine</option>
-      <option value="Silver Mine">Silver Mine</option>
-      <option value="Gold Mine">Gold Mine</option>
-    </optgroup>
-    <optgroup label="Improvements">
-      <option value="Market">Market</option>
-      <option value="Carpenter's Shop">Carpenter's Shop</option>
-      <option value="Blacksmith">Blacksmith</option>
-      <option value="Bank">Bank</option>
-      <option value="Stone Mason's Shop">Stone Mason's Shop</option>
-    </optgroup>
-    <optgroup label="Fortifications">
-      <option value="Watch Tower">Watch Tower</option>
-      <option value="Fort">Fort</option>
-      <option value="Castle">Castle</option>
-    </optgroup>
-    <optgroup label="Seaborne Assets">
-      <option value="Dock">Dock</option>
-      <option value="Shipyard">Shipyard</option>
-      <option value="Fishing Fleet">Fishing Fleet</option>
-      <option value="Trading Vessel">Trading Vessel</option>
-      <option value="War Galley">War Galley</option>
-    </optgroup>
-  </div>
-  <div id="hexModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="hexModalTitle">Add Controlled Hex</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" id="hexModalId" />
+  const currentStructures = structureListInput.value
+      ? structureListInput.value.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
-        <div class="mini-row-body two-cols">
-          <div class="field-row">
-            <label for="hexModalNumber">Hex Number</label>
-            <input id="hexModalNumber" type="text" />
-          </div>
-          <div class="field-row">
-            <label for="hexModalName">Name</label>
-            <input id="hexModalName" type="text" />
-          </div>
-        </div>
+  // Step 2: Remove options already present in the hex
+  currentStructures.forEach(structure => {
+      const optionToRemove = structureSelect.querySelector(`option[value="${structure}"]`);
+      if (optionToRemove) {
+          optionToRemove.remove();
+      }
+  });
 
-        <div class="field-row" style="margin-top: 8px;">
-          <label for="hexModalTerrainSelect">Add Terrain</label>
-          <div style="display: flex; gap: 8px;">
-            <select id="hexModalTerrainSelect" style="flex-grow: 1;">
-              <option value="">-- Select Terrain --</option>
-              <option value="Plains">Plains</option>
-              <option value="Forest">Forest</option>
-              <option value="Mountain">Mountain</option>
-              <option value="Sea">Sea</option>
-              <option value="Blasted Lands">Blasted Lands</option>
-            </select>
-            <button id="hexModalTerrainAddBtn" class="button small secondary" type="button">
-              Add
-            </button>
-          </div>
-          <input id="hexModalTerrains" type="text" readonly />
-        </div>
+  openModal("hexModal");
+}
 
-        <div class="field-row" style="margin-top: 8px;">
-          <label for="hexModalStructureSelect">Add Structure / Upgrade</label>
-          <div style="display: flex; gap: 8px;">
-            <select id="hexModalStructureSelect" style="flex-grow: 1;">
-              <option value="">-- Add Structure / Upgrade --</option>
-              </select>
-            <button id="hexModalStructureAddBtn" class="button small secondary" type="button">
-              Add
-            </button>
-          </div>
-          <input id="hexModalStructures" type="text" readonly />
-        </div>
+function saveHexFromModal() {
+  const id = $("hexModalId").value || null;
 
-        <div class="field-row">
-          <label for="hexModalNotes">Notes</label>
-          <textarea id="hexModalNotes" rows="3"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button id="hexModalSaveBtn" class="button small" type="button">Save</button>
-        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
-      </div>
+  const name = $("hexModalName").value.trim();
+  const hexNumber = $("hexModalNumber").value.trim();
+  const terrain = $("hexModalTerrains").value.trim();
+  const structure = $("hexModalStructures").value.trim();
+  const notes = $("hexModalNotes").value.trim();
+
+  if (!id) {
+    const newId = `hex_${nextHexId++}`;
+    state.hexes.push({
+      id: newId,
+      name,
+      hexNumber,
+      terrain,
+      structure,
+      notes
+    });
+  } else {
+    const hex = state.hexes.find((h) => h.id === id);
+    if (hex) {
+      hex.name = name;
+      hex.hexNumber = hexNumber;
+      hex.terrain = terrain;
+      hex.structure = structure;
+      hex.notes = notes;
+    }
+  }
+
+  markDirty();
+  closeModal("hexModal");
+  renderHexList();
+}
+
+function deleteHex(id) {
+  if (!confirm("Delete this hex from the faction?")) return;
+  state.hexes = state.hexes.filter((h) => h.id !== id);
+  markDirty();
+  renderHexList();
+}
+
+function openHexDetailsModal(hex) {
+  const titleEl = $("detailsModalTitle");
+  const bodyEl = $("detailsModalBody");
+  if (!titleEl || !bodyEl) return;
+
+  const upkeep = calcHexUpkeep(hex);
+  titleEl.textContent = hex.name
+    ? `Hex Details — ${hex.name}`
+    : `Hex Details — ${hex.hexNumber || ""}`;
+
+  bodyEl.innerHTML = `
+    <div class="details-grid">
+      <p><strong>Name:</strong> ${hex.name || "(Unnamed)"}</p>
+      <p><strong>Hex Number:</strong> ${hex.hexNumber || "—"}</p>
+      <p><strong>Terrain:</strong> ${hex.terrain || "—"}</p>
+      <p><strong>Structures:</strong> ${hex.structure || "—"}</p>
+      <p><strong>Upkeep Food:</strong> ${upkeep.food || 0}</p>
+      <p><strong>Upkeep Wood:</strong> ${upkeep.wood || 0}</p>
+      <p><strong>Upkeep Stone:</strong> ${upkeep.stone || 0}</p>
+      <p><strong>Upkeep Ore:</strong> ${upkeep.ore || 0}</p>
+      <p><strong>Upkeep Gold:</strong> ${upkeep.gold || 0}</p>
     </div>
-  </div>
-
-  <div id="detailsModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="detailsModalTitle">Details</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div id="detailsModalBody" class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="button small secondary" data-close-modal>Close</button>
-      </div>
+    <div class="field-row">
+      <label>Notes</label>
+      <textarea readonly rows="4">${hex.notes || "—"}</textarea>
     </div>
-  </div>
+  `;
 
-  <div id="upkeepModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="upkeepModalTitle">Total Seasonal Upkeep</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
-      </div>
-      <div class="modal-body">
-        <table id="upkeepTable" class="upkeep-table">
-          <thead>
-            <tr>
-              <th>Assets with an upkeep</th>
-              <th>Food</th>
-              <th>Wood</th>
-              <th>Stone</th>
-              <th>Ore</th>
-              <th>Gold</th>
-            </tr>
-          </thead>
-          <tbody>
-            </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="button small secondary" data-close-modal>Close</button>
-      </div>
-    </div>
-  </div>
+  openModal("detailsModal");
+}
 
-  <script src="app-state.js"></script>
-  <script src="logic-seasons.js"></script>
-  <script src="logic-events.js"></script>
-  <script src="logic-hexes.js"></script>
-  <script src="ui-core.js"></script>
-</body>
-</html>
+function renderHexList() {
+  const tbody = $("hexTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  state.hexes.forEach((hex) => {
+    const row = document.createElement("tr");
+    row.className = "hex-row";
+
+    function td(text) {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      return cell;
+    }
+
+    // Match the header: Hex | Name | Terrain | Structures | Actions
+    row.appendChild(td(hex.hexNumber || ""));
+    row.appendChild(td(hex.name || "(Unnamed)"));
+    row.appendChild(td(hex.terrain || ""));
+    row.appendChild(td(hex.structure || ""));
+
+    const actionsTd = document.createElement("td");
+    actionsTd.style.whiteSpace = "nowrap";
+
+    const detailsBtn = document.createElement("button");
+    detailsBtn.className = "button small secondary";
+    detailsBtn.textContent = "Details";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "button small secondary";
+    editBtn.textContent = "Edit";
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "button small secondary";
+    delBtn.textContent = "Delete";
+
+    actionsTd.appendChild(detailsBtn);
+    actionsTd.appendChild(editBtn);
+    actionsTd.appendChild(delBtn);
+    row.appendChild(actionsTd);
+
+    detailsBtn.addEventListener("click", () => openHexDetailsModal(hex));
+    editBtn.addEventListener("click", () => openHexModal(hex));
+    delBtn.addEventListener("click", () => deleteHex(hex.id));
+
+    tbody.appendChild(row);
+  });
+}
