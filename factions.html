@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>Faction Resource Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="factions-styles-desktop.css?v=20250616">
-<link rel="stylesheet" href="factions-styles-mobile.css?v=20250616">
+<link rel="stylesheet" href="factions-styles-desktop.css?v=20250634">
+<link rel="stylesheet" href="factions-styles-mobile.css?v=20250634">
 
 </head>
 <body>
@@ -124,7 +124,10 @@
       <div class="card-inner">
         <div class="card-header">
           <h2>Controlled Hexes</h2>
-          <button id="hexAddBtn" class="button small">Add</button>
+          <div style="display: flex; gap: 8px;">
+            <button id="hexUpkeepBtn" class="button small secondary">Upkeep</button>
+            <button id="hexAddBtn" class="button small">Add</button>
+          </div>
         </div>
 
 <table class="controlled-hexes-table">
@@ -386,6 +389,12 @@
           <label for="hexModalStructureSelect">Add Structure / Upgrade</label>
           <div style="display: flex; gap: 8px;">
             <select id="hexModalStructureSelect" style="flex-grow: 1;">
+              <option value="">-- Add Structure / Upgrade --</option>
+              <optgroup label="Population Centers">
+                <option value="Village">Village</option>
+                <option value="Town">Town</option>
+                <option value="City">City</option>
+              </optgroup>
               <optgroup label="Improvements">
                 <option value="Market">Market</option>
                 <option value="Carpenter's Shop">Carpenter's Shop</option>
@@ -398,7 +407,7 @@
                 <option value="Fort">Fort</option>
                 <option value="Castle">Castle</option>
               </optgroup>
-              <optgroup label="Seaborne assets">
+              <optgroup label="Seaborne Assets">
                 <option value="Dock">Dock</option>
                 <option value="Fishing Fleet">Fishing Fleet</option>
                 <option value="Trading Vessel">Trading Vessel</option>
@@ -431,6 +440,34 @@
         <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div id="detailsModalBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="button small secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="upkeepModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="upkeepModalTitle">Total Seasonal Upkeep</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <table id="upkeepTable" class="upkeep-table">
+          <thead>
+            <tr>
+              <th>Assets with an upkeep</th>
+              <th>Food</th>
+              <th>Wood</th>
+              <th>Stone</th>
+              <th>Ore</th>
+              <th>Gold</th>
+            </tr>
+          </thead>
+          <tbody>
+            </tbody>
+        </table>
+      </div>
       <div class="modal-footer">
         <button type="button" class="button small secondary" data-close-modal>Close</button>
       </div>

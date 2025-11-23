@@ -1,6 +1,9 @@
-﻿Upgrade,Food,Wood,Stone,Gold
-Watch Tower,1,1,2,
-Fort,2,2,,10
-Castle,2,2,2,25
-Trading Vessel,1,1,,
-War Galley,1,1,,
+﻿Upgrade,Food,Wood,Stone,Gold,Ore
+Village,1,,,,
+Town,2,1,,,
+City,3,2,1,,
+Watch Tower,1,1,2,,1
+Fort,2,2,,10,
+Castle,2,2,2,25,
+Trading Vessel,1,1,,,
+War Galley,1,1,,,

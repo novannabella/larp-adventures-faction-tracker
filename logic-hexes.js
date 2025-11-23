@@ -9,6 +9,14 @@ function initHexSection() {
     addBtn._wired = true;
   }
 
+  // NEW: Wire up the Upkeep Button
+  const upkeepBtn = $("hexUpkeepBtn");
+  if (upkeepBtn && !upkeepBtn._wired) {
+    upkeepBtn.addEventListener("click", openUpkeepModal);
+    upkeepBtn._wired = true;
+  }
+  // END NEW
+
   const saveBtn = $("hexModalSaveBtn");
   if (saveBtn && !saveBtn._wired) {
     saveBtn.addEventListener("click", saveHexFromModal);
@@ -70,6 +78,7 @@ function loadUpkeepTable() {
       const idxFood = header.indexOf("Food");
       const idxWood = header.indexOf("Wood");
       const idxStone = header.indexOf("Stone");
+      const idxOre = header.indexOf("Ore");
       const idxGold = header.indexOf("Gold");
 
       for (let i = 1; i < lines.length; i++) {
@@ -79,8 +88,9 @@ function loadUpkeepTable() {
         const food = parseInt(cols[idxFood] || "0", 10) || 0;
         const wood = parseInt(cols[idxWood] || "0", 10) || 0;
         const stone = parseInt(cols[idxStone] || "0", 10) || 0;
+        const ore = parseInt(cols[idxOre] || "0", 10) || 0;
         const gold = parseInt(cols[idxGold] || "0", 10) || 0;
-        upkeepTable[name] = { food, wood, stone, gold };
+        upkeepTable[name] = { food, wood, stone, ore, gold };
       }
     })
     .catch(() => {
@@ -89,7 +99,7 @@ function loadUpkeepTable() {
 }
 
 function calcHexUpkeep(hex) {
-  const result = { food: 0, wood: 0, stone: 0, gold: 0 };
+  const result = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
   if (!hex.structure) return result;
 
   const names = hex.structure
@@ -103,11 +113,82 @@ function calcHexUpkeep(hex) {
     result.food += row.food || 0;
     result.wood += row.wood || 0;
     result.stone += row.stone || 0;
+    result.ore += row.ore || 0;
     result.gold += row.gold || 0;
   });
 
   return result;
 }
+
+// NEW FUNCTION: Calculate and display total upkeep
+function openUpkeepModal() {
+  const allUpkeep = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
+  const upkeepDetails = {}; // Stores total count of each structure type
+
+  state.hexes.forEach((hex) => {
+    const hexUpkeep = calcHexUpkeep(hex);
+    
+    // Sum total resource upkeep
+    allUpkeep.food += hexUpkeep.food;
+    allUpkeep.wood += hexUpkeep.wood;
+    allUpkeep.stone += hexUpkeep.stone;
+    allUpkeep.ore += hexUpkeep.ore;
+    allUpkeep.gold += hexUpkeep.gold;
+
+    // Sum total structures
+    if (hex.structure) {
+      const names = hex.structure
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      names.forEach((name) => {
+        if (upkeepTable[name]) { // Only count structures that have an upkeep cost
+          upkeepDetails[name] = (upkeepDetails[name] || 0) + 1;
+        }
+      });
+    }
+  });
+
+  const upkeepTbody = $("upkeepTable").querySelector("tbody");
+  if (!upkeepTbody) return;
+  upkeepTbody.innerHTML = "";
+
+  // 1. Add rows for each individual structure count
+  Object.keys(upkeepDetails).sort().forEach(structureName => {
+    const count = upkeepDetails[structureName];
+    const upkeep = upkeepTable[structureName] || { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
+    
+    const row = upkeepTbody.insertRow();
+    row.innerHTML = `
+      <td>${structureName} (${count})</td>
+      <td>${upkeep.food * count}</td>
+      <td>${upkeep.wood * count}</td>
+      <td>${upkeep.stone * count}</td>
+      <td>${upkeep.ore * count}</td>
+      <td>${upkeep.gold * count}</td>
+    `;
+  });
+
+  // 2. Add a separator row
+  const separatorRow = upkeepTbody.insertRow();
+  separatorRow.innerHTML = `<td colspan="6" style="text-align: center; border-bottom: 2px solid var(--text-color);"></td>`;
+
+  // 3. Add a row for the grand totals
+  const totalRow = upkeepTbody.insertRow();
+  totalRow.className = "total-row";
+  totalRow.innerHTML = `
+    <td><strong>TOTAL UPKEEP</strong></td>
+    <td><strong>${allUpkeep.food}</strong></td>
+    <td><strong>${allUpkeep.wood}</strong></td>
+    <td><strong>${allUpkeep.stone}</strong></td>
+    <td><strong>${allUpkeep.ore}</strong></td>
+    <td><strong>${allUpkeep.gold}</strong></td>
+  `;
+
+  openModal("upkeepModal");
+}
+// END NEW FUNCTION
 
 function openHexModal(hex) {
   $("hexModalId").value = hex ? hex.id : "";
@@ -185,6 +266,7 @@ function openHexDetailsModal(hex) {
       <p><strong>Upkeep Food:</strong> ${upkeep.food || 0}</p>
       <p><strong>Upkeep Wood:</strong> ${upkeep.wood || 0}</p>
       <p><strong>Upkeep Stone:</strong> ${upkeep.stone || 0}</p>
+      <p><strong>Upkeep Ore:</strong> ${upkeep.ore || 0}</p>
       <p><strong>Upkeep Gold:</strong> ${upkeep.gold || 0}</p>
     </div>
     <div class="field-row">
