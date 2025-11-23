@@ -135,6 +135,7 @@
 			  <th id="hexSortHexHeader" class="sortable">Hex ▲</th>
 			  <th id="hexSortNameHeader" class="sortable">Name</th>
               <th>Terrain</th>
+              <th>Minerals</th>
               <th>Structures</th>
               <th>Actions</th>
             </tr>
@@ -155,6 +156,7 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="seasonModalId" />
+        <input type="hidden" id="seasonModalAssignments" />
 
         <div class="mini-row-body two-cols">
           <div class="field-row">
@@ -172,35 +174,37 @@
             <label for="seasonModalYear">Year</label>
             <input id="seasonModalYear" type="number" />
           </div>
+          
+          <button id="calculateHarvestBtn" class="button small primary" type="button" style="grid-column: 1 / 3; margin-top: 10px;" onclick="calculateSeasonalGains();">Calculate Harvest</button>
 
           <div class="field-row">
             <label for="seasonModalFood">Food</label>
-            <input id="seasonModalFood" type="number" />
+            <input id="seasonModalFood" type="number" readonly />
           </div>
 
           <div class="field-row">
             <label for="seasonModalWood">Wood</label>
-            <input id="seasonModalWood" type="number" />
+            <input id="seasonModalWood" type="number" readonly />
           </div>
 
           <div class="field-row">
             <label for="seasonModalStone">Stone</label>
-            <input id="seasonModalStone" type="number" />
+            <input id="seasonModalStone" type="number" readonly />
           </div>
 
           <div class="field-row">
             <label for="seasonModalOre">Ore</label>
-            <input id="seasonModalOre" type="number" />
+            <input id="seasonModalOre" type="number" readonly />
           </div>
 
           <div class="field-row">
             <label for="seasonModalSilver">Silver</label>
-            <input id="seasonModalSilver" type="number" />
+            <input id="seasonModalSilver" type="number" readonly />
           </div>
 
           <div class="field-row">
             <label for="seasonModalGold">Gold</label>
-            <input id="seasonModalGold" type="number" />
+            <input id="seasonModalGold" type="number" readonly />
           </div>
         </div>
 
@@ -210,6 +214,7 @@
         </div>
       </div>
       <div class="modal-footer">
+        <button id="seasonModalAssignmentsBtn" class="button small secondary" type="button" onclick="openAssignmentModal();" style="margin-right: auto;">Resource Assignments</button>
         <button id="seasonModalSaveBtn" class="button small" type="button">Save</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
@@ -448,6 +453,16 @@
           <div id="hexModalTerrainsList" class="tag-list"></div>
           <input id="hexModalTerrains" type="hidden" />
         </div>
+        
+        <div class="field-row" style="margin-top: 8px;">
+            <label for="hexModalMineralDeposit">Mineral Deposit (Optional)</label>
+            <select id="hexModalMineralDeposit">
+              <option value="">-- None --</option>
+              <option value="Mineral Deposit - Ore">Mineral Deposit - Ore</option>
+              <option value="Mineral Deposit - Silver">Mineral Deposit - Silver</option>
+              <option value="Mineral Deposit - Gold">Mineral Deposit - Gold</option>
+            </select>
+        </div>
 
         <div class="field-row" style="margin-top: 8px;">
           <label for="hexModalStructureSelect">Add Structure / Upgrade</label>
@@ -470,6 +485,26 @@
       </div>
       <div class="modal-footer">
         <button id="hexModalSaveBtn" class="button small" type="button">Save</button>
+        <button type="button" class="button small secondary" data-close-modal>Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="assignmentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="assignmentModalTitle">End-of-Season Resource Assignments</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Assign resources to improvements before saving the seasonal gain. This will affect next season's gold/resources.</p>
+        <p><strong>Current Coffers: </strong><span id="currentCofferAmounts"></span></p>
+        <div id="assignmentsBody" class="mini-row-body two-cols">
+          </div>
+        <p class="warning" style="margin-top: 15px;">**Note:** Assigned resources must be available in your **Coffers** at the end of the season to count.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="assignmentModalSaveBtn" class="button small" type="button" onclick="saveAssignments();">Save Assignments</button>
         <button type="button" class="button small secondary" data-close-modal>Cancel</button>
       </div>
     </div>
@@ -506,7 +541,7 @@
               <th>Gold</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody id="upkeepTableBody"></tbody>
         </table>
       </div>
       <div class="modal-footer">
