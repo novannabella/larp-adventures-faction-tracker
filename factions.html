@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>Faction Resource Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="factions-styles-desktop.css?v=20250634">
-<link rel="stylesheet" href="factions-styles-mobile.css?v=20250634">
+<link rel="stylesheet" href="factions-styles-desktop.css?v=20250635">
+<link rel="stylesheet" href="factions-styles-mobile.css?v=20250635">
 
 </head>
 <body>
@@ -346,7 +346,40 @@
       </div>
     </div>
   </div>
-
+  
+  <div id="structureOptionsTemplate" style="display: none;">
+    <optgroup label="Population Centers">
+      <option value="Village">Village</option>
+      <option value="Town">Town</option>
+      <option value="City">City</option>
+    </optgroup>
+    <optgroup label="Resource Structures">
+      <option value="Farm">Farm</option>
+      <option value="Lumber Mill">Lumber Mill</option>
+      <option value="Quarry">Quarry</option>
+      <option value="Iron Mine">Iron Mine</option>
+      <option value="Silver Mine">Silver Mine</option>
+      <option value="Gold Mine">Gold Mine</option>
+    </optgroup>
+    <optgroup label="Improvements">
+      <option value="Market">Market</option>
+      <option value="Carpenter's Shop">Carpenter's Shop</option>
+      <option value="Blacksmith">Blacksmith</option>
+      <option value="Bank">Bank</option>
+      <option value="Stone Mason's Shop">Stone Mason's Shop</option>
+    </optgroup>
+    <optgroup label="Fortifications">
+      <option value="Watch Tower">Watch Tower</option>
+      <option value="Fort">Fort</option>
+      <option value="Castle">Castle</option>
+    </optgroup>
+    <optgroup label="Seaborne Assets">
+      <option value="Dock">Dock</option>
+      <option value="Fishing Fleet">Fishing Fleet</option>
+      <option value="Trading Vessel">Trading Vessel</option>
+      <option value="War Galley">War Galley</option>
+    </optgroup>
+  </div>
   <div id="hexModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -390,30 +423,7 @@
           <div style="display: flex; gap: 8px;">
             <select id="hexModalStructureSelect" style="flex-grow: 1;">
               <option value="">-- Add Structure / Upgrade --</option>
-              <optgroup label="Population Centers">
-                <option value="Village">Village</option>
-                <option value="Town">Town</option>
-                <option value="City">City</option>
-              </optgroup>
-              <optgroup label="Improvements">
-                <option value="Market">Market</option>
-                <option value="Carpenter's Shop">Carpenter's Shop</option>
-                <option value="Blacksmith">Blacksmith</option>
-                <option value="Bank">Bank</option>
-                <option value="Stone Mason's Shop">Stone Mason's Shop</option>
-              </optgroup>
-              <optgroup label="Fortifications">
-                <option value="Watch Tower">Watch Tower</option>
-                <option value="Fort">Fort</option>
-                <option value="Castle">Castle</option>
-              </optgroup>
-              <optgroup label="Seaborne Assets">
-                <option value="Dock">Dock</option>
-                <option value="Fishing Fleet">Fishing Fleet</option>
-                <option value="Trading Vessel">Trading Vessel</option>
-                <option value="War Galley">War Galley</option>
-              </optgroup>
-            </select>
+              </select>
             <button id="hexModalStructureAddBtn" class="button small secondary" type="button">
               Add
             </button>

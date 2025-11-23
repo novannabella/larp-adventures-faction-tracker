@@ -9,13 +9,11 @@ function initHexSection() {
     addBtn._wired = true;
   }
 
-  // NEW: Wire up the Upkeep Button
   const upkeepBtn = $("hexUpkeepBtn");
   if (upkeepBtn && !upkeepBtn._wired) {
     upkeepBtn.addEventListener("click", openUpkeepModal);
     upkeepBtn._wired = true;
   }
-  // END NEW
 
   const saveBtn = $("hexModalSaveBtn");
   if (saveBtn && !saveBtn._wired) {
@@ -57,6 +55,12 @@ function initHexSection() {
       if (!current.includes(val)) {
         current.push(val);
         list.value = current.join(", ");
+
+        // NEW LOGIC: Remove the selected option from the dropdown
+        const optionToRemove = sel.querySelector(`option[value="${val}"]`);
+        if (optionToRemove) {
+          optionToRemove.remove();
+        }
       }
       sel.value = "";
     });
@@ -120,7 +124,6 @@ function calcHexUpkeep(hex) {
   return result;
 }
 
-// NEW FUNCTION: Calculate and display total upkeep
 function openUpkeepModal() {
   const allUpkeep = { food: 0, wood: 0, stone: 0, ore: 0, gold: 0 };
   const upkeepDetails = {}; // Stores total count of each structure type
@@ -188,19 +191,48 @@ function openUpkeepModal() {
 
   openModal("upkeepModal");
 }
-// END NEW FUNCTION
 
 function openHexModal(hex) {
   $("hexModalId").value = hex ? hex.id : "";
   $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
 
+  const structureSelect = $("hexModalStructureSelect");
+  const structureListInput = $("hexModalStructures");
+  const structureTemplate = $("structureOptionsTemplate");
+
+  // Step 1: Reset and load all structure options from the hidden template
+  // Keep the default option
+  structureSelect.innerHTML = '<option value="">-- Add Structure / Upgrade --</option>'; 
+  
+  if (structureTemplate) {
+      // Clone the template content and append it to the select element
+      const templateClone = structureTemplate.cloneNode(true);
+      // Append children of the clone (the optgroups)
+      // Note: We move the children, not append the clone itself
+      Array.from(templateClone.children).forEach(child => {
+          structureSelect.appendChild(child.cloneNode(true));
+      });
+  }
+
   $("hexModalName").value = hex?.name || "";
   $("hexModalNumber").value = hex?.hexNumber || "";
   $("hexModalTerrains").value = hex?.terrain || "";
-  $("hexModalStructures").value = hex?.structure || "";
+  structureListInput.value = hex?.structure || "";
   $("hexModalNotes").value = hex?.notes || "";
   $("hexModalTerrainSelect").value = "";
   $("hexModalStructureSelect").value = "";
+  
+  const currentStructures = structureListInput.value
+      ? structureListInput.value.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+  // Step 2: Remove options already present in the hex
+  currentStructures.forEach(structure => {
+      const optionToRemove = structureSelect.querySelector(`option[value="${structure}"]`);
+      if (optionToRemove) {
+          optionToRemove.remove();
+      }
+  });
 
   openModal("hexModal");
 }
