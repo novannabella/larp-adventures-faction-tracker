@@ -2,6 +2,14 @@
 
 let upkeepTable = {};
 
+// Define prerequisites for structures
+const structurePrerequisites = {
+  "Shipyard": ["Dock"],
+  "Fishing Fleet": ["Dock"],
+  "Trading Vessel": ["Dock"],
+  "War Galley": ["Dock", "Shipyard"] // Requires both a Dock (implicit via Shipyard, but checking explicitly is safer) and a Shipyard
+};
+
 function initHexSection() {
   const addBtn = $("hexAddBtn");
   if (addBtn && !addBtn._wired) {
@@ -49,14 +57,37 @@ function initHexSection() {
       if (!sel || !list) return;
       const val = (sel.value || "").trim();
       if (!val) return;
+
       const current = list.value
         ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
         : [];
+      
+      // NEW PREREQUISITE CHECK LOGIC
+      const required = structurePrerequisites[val];
+      let canAdd = true;
+      let missingPrereqs = [];
+
+      if (required) {
+        required.forEach(prereq => {
+          if (!current.includes(prereq)) {
+            canAdd = false;
+            missingPrereqs.push(prereq);
+          }
+        });
+
+        if (!canAdd) {
+          alert(`Cannot add ${val}. Missing prerequisites: ${missingPrereqs.join(', ')}.`);
+          sel.value = "";
+          return; // Stop the function if prerequisites are missing
+        }
+      }
+      // END NEW PREREQUISITE CHECK LOGIC
+      
       if (!current.includes(val)) {
         current.push(val);
         list.value = current.join(", ");
 
-        // NEW LOGIC: Remove the selected option from the dropdown
+        // Remove the selected option from the dropdown
         const optionToRemove = sel.querySelector(`option[value="${val}"]`);
         if (optionToRemove) {
           optionToRemove.remove();
