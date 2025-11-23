@@ -2,6 +2,47 @@
 
 let upkeepTable = {};
 
+// NEW: Define sorting state for hex list
+let currentHexSort = {
+  column: "hexNumber", // Default sort column is Hex Number
+  direction: "asc"     // Default sort direction
+};
+
+// NEW: Comparator function for sorting hexes
+function hexComparator(a, b) {
+  const col = currentHexSort.column;
+  const dir = currentHexSort.direction === "asc" ? 1 : -1;
+
+  let aVal;
+  let bVal;
+
+  if (col === "hexNumber") {
+    // Attempt numeric comparison for hex numbers if they are purely numeric
+    // Otherwise, treat them as strings (which is safer for mixed inputs like "A1", "1A")
+    aVal = a.hexNumber || "";
+    bVal = b.hexNumber || "";
+    
+    // Simple string comparison for hex numbers
+    if (aVal < bVal) return -1 * dir;
+    if (aVal > bVal) return 1 * dir;
+    return 0;
+    
+  } else if (col === "name") {
+    aVal = a.name || "";
+    bVal = b.name || "";
+    
+    // Case-insensitive string comparison for names
+    const aLower = aVal.toLowerCase();
+    const bLower = bVal.toLowerCase();
+    
+    if (aLower < bLower) return -1 * dir;
+    if (aLower > bLower) return 1 * dir;
+    return 0;
+  }
+  
+  return 0;
+}
+
 // Define prerequisites for structures
 const structurePrerequisites = {
   "Shipyard": ["Dock"],
@@ -98,7 +139,37 @@ function initHexSection() {
     structAdd._wired = true;
   }
 
+  // NEW: Add click listeners for sorting headers
+  const hexSortHexHeader = $("hexSortHexHeader");
+  const hexSortNameHeader = $("hexSortNameHeader");
+
+  if (hexSortHexHeader && !hexSortHexHeader._wired) {
+    // We use "hexNumber" as the internal column name
+    hexSortHexHeader.addEventListener("click", () => handleHexSort("hexNumber"));
+    hexSortHexHeader._wired = true;
+  }
+
+  if (hexSortNameHeader && !hexSortNameHeader._wired) {
+    // We use "name" as the internal column name
+    hexSortNameHeader.addEventListener("click", () => handleHexSort("name"));
+    hexSortNameHeader._wired = true;
+  }
+  // END NEW SORTING LOGIC
+
   loadUpkeepTable();
+}
+
+// NEW: Function to handle sort header clicks
+function handleHexSort(column) {
+  if (currentHexSort.column === column) {
+    // Toggle direction if clicking the same column
+    currentHexSort.direction = currentHexSort.direction === "asc" ? "desc" : "asc";
+  } else {
+    // New column, reset to ascending
+    currentHexSort.column = column;
+    currentHexSort.direction = "asc";
+  }
+  renderHexList(); // Re-render the list with the new sort state
 }
 
 function loadUpkeepTable() {
@@ -346,8 +417,25 @@ function renderHexList() {
   if (!tbody) return;
 
   tbody.innerHTML = "";
+  
+  // NEW: 1. Sort the hexes array based on current sort state
+  const sortedHexes = [...state.hexes].sort(hexComparator);
 
-  state.hexes.forEach((hex) => {
+  // NEW: 2. Update Header Sort Indicators
+  const hexSortHexHeader = $("hexSortHexHeader");
+  const hexSortNameHeader = $("hexSortNameHeader");
+  const hexCol = currentHexSort.column;
+  const hexDir = currentHexSort.direction === 'asc' ? '▲' : '▼';
+
+  if (hexSortHexHeader) {
+      hexSortHexHeader.innerHTML = `Hex ${hexCol === 'hexNumber' ? hexDir : ''}`;
+  }
+  if (hexSortNameHeader) {
+      hexSortNameHeader.innerHTML = `Name ${hexCol === 'name' ? hexDir : ''}`;
+  }
+
+  // 3. Iterate over the sorted array
+  sortedHexes.forEach((hex) => {
     const row = document.createElement("tr");
     row.className = "hex-row";
 
