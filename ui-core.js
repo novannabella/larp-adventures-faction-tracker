@@ -46,7 +46,11 @@ function closeModal(id) {
   // If something inside the modal still has focus, blur it first
   const active = document.activeElement;
   if (active && modal.contains(active)) {
-    active.blur();
+    try {
+      active.blur();
+    } catch (e) {
+      // ignore if element can't be focused anymore
+    }
   }
 
   // Now it's safe to hide from the accessibility tree
@@ -57,69 +61,23 @@ function closeModal(id) {
     try {
       lastFocusedElement.focus();
     } catch (e) {
-      // ignore if element can't be focused anymore
+      // ignore
     }
   }
 }
 
-function wireModalCloseButtons() {
-  const backdrop = $("modalBackdrop");
-  if (backdrop && !backdrop._wired) {
-    backdrop.addEventListener("click", (e) => {
-      // Only close if clicking the backdrop, not elements inside it
-      if (e.target !== backdrop) return;
-
-      document.querySelectorAll(".modal.visible").forEach((m) => {
-        m.classList.remove("visible");
-        m.classList.add("hidden");
-        // Same pattern as closeModal, but for all modals
-        const active = document.activeElement;
-        if (active && m.contains(active)) {
-          active.blur();
-        }
-
-        m.setAttribute("aria-hidden", "true");
-      });
-      backdrop.classList.remove("visible");
-
-      // Restore focus if possible
-      if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
-        try {
-          lastFocusedElement.focus();
-        } catch (e) {
-          // ignore
-        }
-      }
-    });
-    backdrop._wired = true;
-  }
-
-  document.querySelectorAll("[data-close-modal]").forEach((btn) => {
-    if (btn._wired) return;
-    btn.addEventListener("click", () => {
-      const modal = btn.closest(".modal");
-      if (modal && modal.id) {
-        closeModal(modal.id);
-      }
-    });
-    btn._wired = true;
-  });
-}
-
 function wireTopControls() {
-  // Wire Save Button
   const saveBtn = $("saveStateBtn");
-  if (saveBtn && !saveBtn._wired && typeof saveFactionState === 'function') {
-    saveBtn.addEventListener("click", saveFactionState);
+  if (saveBtn && !saveBtn._wired) {
+    if (typeof saveState === 'function') saveBtn.addEventListener("click", saveState);
     saveBtn._wired = true;
   }
 
-  // Wire Load Button
   const loadBtn = $("loadStateBtn");
-  const loadFile = $("loadStateFile");
-  if (loadBtn && loadFile && !loadBtn._wired && typeof loadFactionState === 'function') {
-    loadBtn.addEventListener("click", () => loadFile.click());
-    loadFile.addEventListener("change", loadFactionState);
+  const loadInput = $("loadStateFile");
+  if (loadBtn && loadInput && !loadBtn._wired) {
+    loadBtn.addEventListener("click", () => loadInput.click());
+    loadInput.addEventListener("change", loadFactionState);
     loadBtn._wired = true;
   }
 }
@@ -150,6 +108,50 @@ function wireCoffers() {
   });
 }
 
+function wireModalCloseButtons() {
+  const backdrop = $("modalBackdrop");
+  if (backdrop && !backdrop._wired) {
+    backdrop.addEventListener("click", () => {
+      document.querySelectorAll(".modal.visible").forEach((m) => {
+        m.classList.remove("visible");
+        m.classList.add("hidden");
+
+        // Same pattern as closeModal, but for all modals
+        const active = document.activeElement;
+        if (active && m.contains(active)) {
+          active.blur();
+        }
+
+        m.setAttribute("aria-hidden", "true");
+      });
+      backdrop.classList.remove("visible");
+      backdrop.classList.add("hidden");
+
+      // Restore focus if possible
+      if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
+        try {
+          lastFocusedElement.focus();
+        } catch (e) {
+          // ignore
+        }
+      }
+    });
+    backdrop._wired = true;
+  }
+
+  document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+    if (btn._wired) return;
+    btn.addEventListener("click", () => {
+      const modal = btn.closest(".modal");
+      if (modal && modal.id) {
+        closeModal(modal.id);
+      }
+    });
+    btn._wired = true;
+  });
+}
+
+// The main initialization function, called explicitly from the HTML
 function init() {
   // Initialize and wire all sections first
   wireTopControls();
@@ -157,17 +159,19 @@ function init() {
   wireCoffers();
 
   // These functions call their respective render lists, creating table buttons
-  initSeasonSection();
-  initEventSection();
-  initHexSection();
+  // and need the functions defined above to be loaded first.
+  if (typeof initSeasonSection === 'function') initSeasonSection();
+  if (typeof initEventSection === 'function') initEventSection();
+  if (typeof initHexSection === 'function') initHexSection();
 
   // Wire modal logic globally (closing by backdrop or X button)
   wireModalCloseButtons();
   
-  // CRITICAL FIX: Load state last, so an error here doesn't prevent button wiring.
+  // Load state last
   if (typeof loadState === 'function') {
-      loadState();
+    loadState();
   }
 }
 
-document.addEventListener("DOMContentLoaded", init);
+// NOTE: The previous document.addEventListener("DOMContentLoaded", ...) block was removed.
+// It is now the user's responsibility to call init() after all scripts are loaded.
