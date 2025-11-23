@@ -1,6 +1,3 @@
-/* Faction Tracker – Mobile */
-
-/* Set Variables for Mobile Context (Copied from Character Sheet styles-desktop.css) */
 :root {
   --bg: #0b1020;
   --bg-alt: #151b30;
@@ -18,171 +15,399 @@
 }
 
 @media (max-width: 768px) {
-  
+
+  /* ===== Base mobile look to match character sheet ===== */
+
   body {
+    margin: 0;
     padding: 12px;
-    /* FIX: Use the exact gradient and modern font stack */
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: radial-gradient(circle at top, #151b30 0, #050813 55%);
+    color: var(--text);
   }
-  
+
   .app {
-    padding: 0; /* Let body padding handle app padding */
-    gap: 16px;
+    max-width: 100%;
+    margin: 0 auto 20px auto;
+    display: grid;
+    gap: 14px;
   }
-  
-  /* FIX: Ensure Card Headers align properly on mobile and titles are styled */
+
+  h1 {
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    text-align: center;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: linear-gradient(145deg, var(--card), #141a2b);
+    border-radius: var(--radius-lg);
+    padding: 10px 12px 12px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
   .card-inner {
-      padding: 12px;
+    position: relative;
+    z-index: 1;
   }
-  
-  .card-inner h2 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
+
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
   }
-  
-  /* --- LAYOUT FIXES: Force Single Column Stack on Mobile --- */
-  
+
+  /* ===== Stack Faction Info then Coffers on mobile ONLY ===== */
+
   .top-row {
-      /* Force single column stack */
-      grid-template-columns: 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+    display: block;
   }
 
-  /* Target the three-column section to stack on mobile */
-  .bottom-row {
-      grid-template-columns: 1fr;
-      gap: 16px;
-  }
-  
-  /* Ensure coffer card stacks inputs vertically on mobile */
-  #coffersCard .card-inner {
-      grid-template-columns: 1fr;
-      gap: 8px 0;
+  #factionInfoSection,
+  #factionInfoCard,
+  #coffersSection,
+  #coffersCard {
+    width: 100%;
   }
 
-  /* Mobile Table Layout (Force row-per-data-cell) */
+  #coffersSection,
+  #coffersCard {
+    margin-top: 10px;
+  }
+
+  /* ===== Shared field layout ===== */
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 12px;
+  }
+
+  label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    padding: 5px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: rgba(10, 15, 34, 0.9);
+    color: var(--text);
+    font-size: 12px;
+    outline: none;
+    width: 100%;
+  }
+
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  input[type="date"]:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent-soft);
+  }
+
+  /* ===== Buttons (match character sheet styling) ===== */
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    background: linear-gradient(135deg, var(--accent), #f8983c);
+    color: #23120b;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  }
+
+  .button.secondary {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  .button.small {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  /* ==========================================================================
+     SEASONAL / EVENTS / CONTROLLED HEXES
+     Turn table rows into 2-up "cards" on mobile ONLY
+     ========================================================================== */
+
   .season-table,
   .event-table,
   .controlled-hexes-table {
-    /* Hide the original header row */
-    & thead {
-      display: none;
-    }
-
-    /* Force table to behave like a block element */
-    & tbody,
-    & tr {
-      display: block;
-      width: 100%;
-    }
-
-    /* Make each row a distinct card-like block */
-    & tbody tr {
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      padding: 10px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-alt);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Make each cell a block */
-    & td {
-      border: none;
-      display: block;
-      padding: 3px 0;
-      text-align: right;
-      position: relative;
-    }
-
-    /* Add custom labels before the data cell */
-    & td::before {
-      content: attr(data-label);
-      position: absolute;
-      left: 0;
-      text-align: left;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      font-size: 10px;
-    }
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
   }
 
-  /* Specific mobile table labels (Hexes) */
-  .controlled-hexes-table td:nth-child(1):before { content: "Hex: "; }
-  .controlled-hexes-table td:nth-child(2):before { content: "Name: "; }
-  .controlled-hexes-table td:nth-child(3):before { content: "Terrain: "; }
-  .controlled-hexes-table td:nth-child(4):before { content: "Structures: "; }
-  .controlled-hexes-table td:nth-child(5) { 
-      text-align: left; 
-      margin-top: 8px; 
-      padding-top: 8px; 
-      border-top: 1px solid var(--border); 
-      display: flex; /* Make buttons flow horizontally */
-      gap: 6px; /* Space buttons apart */
-  } 
-  
-  /* Specific mobile table labels (Events) */
-  .event-table td:nth-child(1):before { content: "#: "; }
-  .event-table td:nth-child(2):before { content: "Event: "; }
-  .event-table td:nth-child(3):before { content: "Date: "; }
-  .event-table td:nth-child(4):before { content: "Type: "; }
-  .event-table td:nth-child(5) { 
-      text-align: left; 
-      margin-top: 8px; 
-      padding-top: 8px; 
-      border-top: 1px solid var(--border); 
-      display: flex; /* Make buttons flow horizontally */
-      gap: 6px; /* Space buttons apart */
-  } 
-
-  /* Specific mobile table labels (Seasonal Gains) */
-  .season-table td:nth-child(1):before { content: "Season: "; }
-  .season-table td:nth-child(2):before { content: "Year: "; }
-  .season-table td:nth-child(3):before { content: "Food: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(4):before { content: "Wood: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(5):before { content: "Stone: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(6):before { content: "Ore: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(7):before { content: "Silver: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(8):before { content: "Gold: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(9):before { content: "Notes: "; font-weight: 600; color: var(--muted); }
-  .season-table td:nth-child(10) { 
-      text-align: left; 
-      margin-top: 8px; 
-      padding-top: 8px; 
-      border-top: 1px solid var(--border); 
-      display: flex; /* Make buttons flow horizontally */
-      gap: 6px; /* Space buttons apart */
-  } 
-
-  /* Upkeep Details Grid stacks */
-  .details-grid {
-      grid-template-columns: 1fr;
+  .season-table thead,
+  .event-table thead,
+  .controlled-hexes-table thead {
+    display: none;
   }
-  
-  /* Modal styling adjustments */
-  .modal-content {
-      padding: 15px;
+
+  .season-table tbody,
+  .event-table tbody,
+  .controlled-hexes-table tbody {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  
-  /* FIX: Ensure buttons use the proper small secondary style for mobile */
+
+  .season-table tbody tr,
+  .event-table tbody tr,
+  .controlled-hexes-table tbody tr {
+    display: block;
+    position: relative;
+    width: calc(50% - 8px); /* two cards per row, always */
+    background: linear-gradient(145deg, var(--card), #141a2b);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    padding: 26px 9px 8px; /* top padding leaves room for button row */
+    margin: 0;
+  }
+
+  .season-table tbody td,
+  .event-table tbody td,
+  .controlled-hexes-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .season-table tbody td:last-child,
+  .event-table tbody td:last-child,
+  .controlled-hexes-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* FIX: Ensure all value spans are right-aligned, even if content wraps (Structures fix) */
+  .season-table tbody td span,
+  .event-table tbody td span,
+  .controlled-hexes-table tbody td span {
+    margin-left: 6px;
+    flex-grow: 1; /* Allows the span to take up all available space to the right */
+    text-align: right; /* Justifies the text content to the right edge of the card */
+  }
+
+  /* ===== Per-column labels using ::before ===== */
+
+  /* Seasonal Resource Gains */
+  .season-table tr td:nth-child(1)::before {
+    content: "Season";
+  }
+
+  .season-table tr td:nth-child(2)::before {
+    content: "Year";
+  }
+
+  .season-table tr td:nth-child(3)::before {
+    content: "Food";
+  }
+
+  .season-table tr td:nth-child(4)::before {
+    content: "Wood";
+  }
+
+  .season-table tr td:nth-child(5)::before {
+    content: "Stone";
+  }
+
+  .season-table tr td:nth-child(6)::before {
+    content: "Ore";
+  }
+
+  .season-table tr td:nth-child(7)::before {
+    content: "Silver";
+  }
+
+  .season-table tr td:nth-child(8)::before {
+    content: "Gold";
+  }
+
+  /* FIX: Hide the Notes column (9th td) on mobile */
+  .season-table tr td:nth-child(9) {
+    display: none;
+  }
+
+  /* Notes (if present as a 9th col) */
+  .season-table tr td:nth-child(9)::before {
+    content: "Notes";
+  }
+
+  /* Events & Turn Actions */
+  .event-table tr td:nth-child(1)::before {
+    content: "Event";
+  }
+
+  .event-table tr td:nth-child(2)::before {
+    content: "Date";
+  }
+
+  .event-table tr td:nth-child(3)::before {
+    content: "Type";
+  }
+
+  .event-table tr td:nth-child(4)::before {
+    content: "Builds";
+  }
+
+  .event-table tr td:nth-child(5)::before {
+    content: "Moves";
+  }
+
+  .event-table tr td:nth-child(6)::before {
+    content: "Offense";
+  }
+
+  /* Controlled Hexes */
+  .controlled-hexes-table tr td:nth-child(1)::before {
+    content: "Hex";
+  }
+
+  .controlled-hexes-table tr td:nth-child(2)::before {
+    content: "Name";
+  }
+
+  .controlled-hexes-table tr td:nth-child(3)::before {
+    content: "Terrain";
+  }
+
+  .controlled-hexes-table tr td:nth-child(4)::before {
+    content: "Structures";
+  }
+
+  /* Shared label styling */
+  .season-table tr td::before,
+  .event-table tr td::before,
+  .controlled-hexes-table tr td::before {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 6px;
+  }
+
+  /* No label for the actions column */
+  .season-table tr td:last-child::before,
+  .event-table tr td:last-child::before,
+  .controlled-hexes-table tr td:last-child::before {
+    content: "";
+    margin-right: 0;
+  }
+
+  /* ===== Button bar: [ - ] Edit Details at top-left of each card ===== */
+
+  .season-table tr td:last-child,
+  .event-table tr td:last-child,
+  .controlled-hexes-table tr td:last-child {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    display: inline-flex;
+    flex-direction: row-reverse; /* makes Delete appear on the left */
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: none;
+  }
+
   .season-table tr td:last-child button,
   .event-table tr td:last-child button,
   .controlled-hexes-table tr td:last-child button {
-    font-size: 11px;
-    padding: 4px 8px;
-    margin: 0;
-    min-width: unset; /* Revert min-width: 0 */
+    min-width: 0;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    background: rgba(15, 23, 42, 0.95);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    box-shadow: none;
   }
 
-  /* REMOVE OLD COMPLEX BUTTON LOGIC */
-  /* Remove any ::before content (like the '-' for delete) */
+  /* First in visual order = Delete button => show as "-" */
+  .season-table tr td:last-child button:nth-child(3),
+  .event-table tr td:last-child button:nth-child(3),
+  .controlled-hexes-table tr td:last-child button:nth-child(3) {
+    font-size: 0; /* hide "Delete" text */
+    padding-inline: 8px;
+  }
+
   .season-table tr td:last-child button:nth-child(3)::before,
   .event-table tr td:last-child button:nth-child(3)::before,
   .controlled-hexes-table tr td:last-child button:nth-child(3)::before {
-    content: unset;
+    content: "-";
+    font-size: 14px;
+    line-height: 1;
+    color: var(--accent);
   }
-  
+
+  /* Middle button (Edit) — keep its text but slightly emphasize */
+  .season-table tr td:last-child button:nth-child(2),
+  .event-table tr td:last-child button:nth-child(2),
+  .controlled-hexes-table tr td:last-child button:nth-child(2) {
+    /* text already "Edit" */
+  }
+
+  /* Right‑most (Details) — keep text, no extra changes */
+  .season-table tr td:last-child button:nth-child(1),
+  .event-table tr td:last-child button:nth-child(1),
+  .controlled-hexes-table tr td:last-child button:nth-child(1) {
+    /* text already "Details" */
+  }
+
 }

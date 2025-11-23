@@ -1,7 +1,6 @@
-// ui-core.js
-
-// CRITICAL FIX: Ensure $() is defined for all other scripts
-const $ = (id) => document.getElementById(id);
+// Simple helper, assuming this exists elsewhere in your codebase.
+// If it doesn't, uncomment this:
+// const $ = (id) => document.getElementById(id);
 
 let lastFocusedElement = null;
 
@@ -13,10 +12,7 @@ function openModal(id) {
   // Remember what had focus before opening
   lastFocusedElement = document.activeElement;
 
-  modal.classList.add("visible");
-  modal.classList.remove("hidden");
-  $("modalBackdrop").classList.add("visible");
-
+  modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
 
   // Move focus into the modal (first focusable element, or the modal itself)
@@ -39,18 +35,12 @@ function closeModal(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
 
-  modal.classList.remove("visible");
-  modal.classList.add("hidden");
-  $("modalBackdrop").classList.remove("visible");
+  modal.classList.remove("active");
 
   // If something inside the modal still has focus, blur it first
   const active = document.activeElement;
   if (active && modal.contains(active)) {
-    try {
-      active.blur();
-    } catch (e) {
-      // ignore if element can't be focused anymore
-    }
+    active.blur();
   }
 
   // Now it's safe to hide from the accessibility tree
@@ -61,60 +51,17 @@ function closeModal(id) {
     try {
       lastFocusedElement.focus();
     } catch (e) {
-      // ignore
+      // ignore if element can't be focused anymore
     }
   }
-}
-
-function wireTopControls() {
-  const saveBtn = $("saveStateBtn");
-  if (saveBtn && !saveBtn._wired) {
-    if (typeof saveState === 'function') saveBtn.addEventListener("click", saveState);
-    saveBtn._wired = true;
-  }
-
-  const loadBtn = $("loadStateBtn");
-  const loadInput = $("loadStateFile");
-  if (loadBtn && loadInput && !loadBtn._wired) {
-    loadBtn.addEventListener("click", () => loadInput.click());
-    loadInput.addEventListener("change", loadFactionState);
-    loadBtn._wired = true;
-  }
-}
-
-function wireFactionInfo() {
-  // Save faction name and notes on input/change
-  const nameInput = $("factionName");
-  const notesInput = $("factionNotes");
-  [nameInput, notesInput].forEach((el) => {
-    if (el && !el._wired) {
-      if (typeof markDirty === 'function') el.addEventListener("input", markDirty);
-      if (typeof saveState === 'function') el.addEventListener("change", saveState);
-      el._wired = true;
-    }
-  });
-}
-
-function wireCoffers() {
-  // Save coffers on input/change
-  const resources = ["food", "wood", "stone", "ore", "silver", "gold"];
-  resources.forEach((id) => {
-    const input = $(id);
-    if (input && !input._wired) {
-      if (typeof markDirty === 'function') input.addEventListener("input", markDirty);
-      if (typeof saveState === 'function') input.addEventListener("change", saveState);
-      input._wired = true;
-    }
-  });
 }
 
 function wireModalCloseButtons() {
   const backdrop = $("modalBackdrop");
   if (backdrop && !backdrop._wired) {
     backdrop.addEventListener("click", () => {
-      document.querySelectorAll(".modal.visible").forEach((m) => {
-        m.classList.remove("visible");
-        m.classList.add("hidden");
+      document.querySelectorAll(".modal.active").forEach((m) => {
+        m.classList.remove("active");
 
         // Same pattern as closeModal, but for all modals
         const active = document.activeElement;
@@ -124,8 +71,7 @@ function wireModalCloseButtons() {
 
         m.setAttribute("aria-hidden", "true");
       });
-      backdrop.classList.remove("visible");
-      backdrop.classList.add("hidden");
+      backdrop.classList.remove("active");
 
       // Restore focus if possible
       if (lastFocusedElement && document.body.contains(lastFocusedElement)) {
@@ -151,27 +97,19 @@ function wireModalCloseButtons() {
   });
 }
 
-// The main initialization function, called explicitly from the HTML
-function init() {
-  // Initialize and wire all sections first
+document.addEventListener("DOMContentLoaded", () => {
+  // your existing init wiring
   wireTopControls();
   wireFactionInfo();
   wireCoffers();
 
-  // These functions call their respective render lists, creating table buttons
-  // and need the functions defined above to be loaded first.
-  if (typeof initSeasonSection === 'function') initSeasonSection();
-  if (typeof initEventSection === 'function') initEventSection();
-  if (typeof initHexSection === 'function') initHexSection();
+  initSeasonSection();
+  initEventSection();
+  initHexSection();
 
-  // Wire modal logic globally (closing by backdrop or X button)
   wireModalCloseButtons();
-  
-  // Load state last
-  if (typeof loadState === 'function') {
-    loadState();
-  }
-}
 
-// NOTE: The previous document.addEventListener("DOMContentLoaded", ...) block was removed.
-// It is now the user's responsibility to call init() after all scripts are loaded.
+  renderSeasonGainList();
+  renderEventList();
+  renderHexList();
+});
