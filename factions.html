@@ -490,5 +490,10 @@
   <script src="logic-seasons.js"></script>
   <script src="logic-events.js"></script>
   <script src="logic-hexes.js"></script>
-  <script src="ui-core.js"></script> </body>
+  <script src="ui-core.js"></script> <script>
+    if (typeof init === 'function') {
+      init(); // 2. CALL THE CENTRAL INITIALIZATION FUNCTION
+    }
+  </script>
+</body>
 </html>

@@ -108,12 +108,18 @@ h2 {
   padding: 18px;
 }
 
-/* Layout */
+/* factions-styles-desktop.css */
+
+/* FIX: Restore desktop layout for the top section */
 .top-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  display: flex;
+  gap: 20px; /* Adjust spacing as needed */
+  margin-bottom: 20px;
+}
+
+.top-row .card {
+  flex: 1 1 0; /* Ensures both cards grow equally and take up space */
+  min-width: 0;
 }
 
 .coffers-grid {
