@@ -1,8 +1,5 @@
 // ui-core.js
 
-// Simple helper, assuming this exists elsewhere in your codebase.
-const $ = (id) => document.getElementById(id);
-
 let lastFocusedElement = null;
 const MODAL_ACTIVE_CLASS = "active"; 
 
@@ -111,7 +108,7 @@ function wireModalCloseButtons() {
 
 // Central initialization function
 document.addEventListener("DOMContentLoaded", () => {
-  // Wire the top controls, faction info, and coffers first
+  // Wire the top controls, faction info, and coffers first (functions defined in app-state.js)
   if (typeof wireTopControls === 'function') wireTopControls();
   if (typeof wireFactionInfo === 'function') wireFactionInfo();
   if (typeof wireCoffers === 'function') wireCoffers();
@@ -121,6 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof initEventSection === 'function') initEventSection(); 
   if (typeof initHexSection === 'function') initHexSection();
 
-  // FIX: This must run to make the close buttons work.
+  // FIX: This must run to make the modal close buttons work.
   wireModalCloseButtons(); 
 });

@@ -8,7 +8,7 @@ let currentHexSort = {
   direction: "asc"     // Default sort direction
 };
 
-// NEW: Comparator function for sorting hexes
+// NEW: Comparator function for sorting hexes 
 function hexComparator(a, b) {
   const col = currentHexSort.column;
   const dir = currentHexSort.direction === "asc" ? 1 : -1;
@@ -92,7 +92,7 @@ function renderTags(inputElId, listElId, selectElId, isStructure = false) {
         let targetOptgroup = null;
         if (template) {
           // Find the label in the template that matches the option
-          const allOptions = Array.from(template.querySelectorAll('option'));
+          const allOptions = Array.from(template.content.querySelectorAll('option'));
           const originalOption = allOptions.find(opt => opt.value === val);
 
           if (originalOption && originalOption.parentElement.tagName === 'OPTGROUP') {
@@ -120,6 +120,7 @@ function renderTags(inputElId, listElId, selectElId, isStructure = false) {
 
 function initHexSection() {
   const addBtn = $("hexAddBtn");
+  // The wiring is correct here, it relies on ui-core.js running initHexSection
   if (addBtn && !addBtn._wired) {
     addBtn.addEventListener("click", () => openHexModal());
     addBtn._wired = true;
@@ -226,7 +227,6 @@ function handleHexSortClick(column) {
   renderHexList();
 }
 
-// ... (Functions openHexModal, saveHexFromModal, deleteHex, renderHexList, etc.)
 function openHexModal(hex) {
   $("hexModalId").value = hex ? hex.id : "";
   $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
@@ -488,14 +488,16 @@ War Galley,,-2,-2,,,-2
     const idxFood = header.indexOf("Food");
     const idxWood = header.indexOf("Wood");
     const idxStone = header.indexOf("Stone");
-    const idxGold = header.indexOf("Gold");
     const idxOre = header.indexOf("Ore");
+    const idxGold = header.indexOf("Gold");
+    
 
     for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(",").map((c) => c.trim());
         const name = (cols[idxUpgrade] || "").toLowerCase();
         if (!name) continue;
 
+        // Upkeep numbers in the mock data are negative for loss
         const food = parseInt(cols[idxFood] || "0", 10) || 0;
         const wood = parseInt(cols[idxWood] || "0", 10) || 0;
         const stone = parseInt(cols[idxStone] || "0", 10) || 0;
