@@ -369,31 +369,31 @@ function deleteHex(id) {
 }
 
 
+// logic-hexes.js (Updated renderHexList function)
+
 function renderHexList() {
   const tbody = $("hexTableBody");
   if (!tbody) return;
 
   tbody.innerHTML = "";
-  
+
   // 1. Sort the hexes
   const sortedHexes = [...state.hexes].sort(hexComparator);
-  
-  // 2. Update the sort headers' indicators
-  const hexCol = currentHexSort.column === "hexNumber" ? "Hex" : "";
-  const hexDir = currentHexSort.direction === "asc" ? "▲" : "▼";
-  const nameCol = currentHexSort.column === "name" ? "Name" : "";
-  const nameDir = currentHexSort.direction === "asc" ? "▲" : "▼";
 
-  // FIX: Use a span for the indicator to prevent header text reflow/re-rendering
+  // 2. Update the sort headers' indicators
+  const hexColIndicator = currentHexSort.column === "hexNumber" ? (currentHexSort.direction === "asc" ? "▲" : "▼") : "";
+  const nameColIndicator = currentHexSort.column === "name" ? (currentHexSort.direction === "asc" ? "▲" : "▼") : "";
+
+  // FIX: Ensure the header text is always present, and append the indicator span
   if ($("hexSortHexHeader")) {
       const header = $("hexSortHexHeader");
-      header.innerHTML = `Hex <span class="sort-indicator">${hexCol === 'Hex' ? hexDir : ''}</span>`;
+      header.innerHTML = `Hex <span class="sort-indicator">${hexColIndicator}</span>`;
   }
   if ($("hexSortNameHeader")) {
       const header = $("hexSortNameHeader");
-      header.innerHTML = `Name <span class="sort-indicator">${nameCol === 'Name' ? nameDir : ''}</span>`;
+      header.innerHTML = `Name <span class="sort-indicator">${nameColIndicator}</span>`;
   }
-
+  
   // 3. Iterate over the sorted array
   sortedHexes.forEach((hex) => {
     const row = document.createElement("tr");
@@ -438,7 +438,6 @@ function renderHexList() {
     tbody.appendChild(row);
   });
 }
-
 function openHexDetailsModal(hex) {
   // Assuming a global upkeepTable is loaded from CSV
   const structureUpkeep = hex.structure?.split(",").map(s => s.trim()).filter(Boolean).reduce((acc, struct) => {
