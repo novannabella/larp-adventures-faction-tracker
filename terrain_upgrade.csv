@@ -1,0 +1,20 @@
+﻿Terrain/Upgrade,Food,Wood,Stone,Gold,Silver,Ore
+Grain Field,2,,,,,
+Fish,2,,,,,
+Forest,2,,,,,
+Mountains,,,2,,,
+Mineral Deposit - Ore,,,,,,1d10
+Mineral Deposit - Silver,,,,,1d6*10,
+Mineral Deposit - Gold,,,,1d6*10,,
+Village,,,,10,,
+Town,,,,25,,
+City,,,,100,,
+Farm,*2,,,,,
+Lumber Mill,,*2,,,,
+Quarry,,,*2,,,
+Iron Mine,,,,,,*2
+Silver Mine,,,,,*2,
+Gold Mine,,,,*2,,
+Fishing Fleet,2,,,,,
+Trading Vessel,,,,25,,
+War Galley,,,,25,,
