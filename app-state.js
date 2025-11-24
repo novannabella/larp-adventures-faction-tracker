@@ -62,7 +62,7 @@ function clearDirty() {
   }
 }
 
-// ---------- HELPERS (Including the global $) ----------
+// ---------- HELPERS ----------
 function $(id) {
   return document.getElementById(id);
 }
@@ -81,58 +81,70 @@ function calcNextNumericId(arr, prefix) {
 
 function flattenBuilds(events) {
   const list = [];
-  events.forEach(e => e.builds?.forEach(b => list.push(b)));
+  events.forEach((ev) => (ev.builds || []).forEach((b) => list.push(b)));
   return list;
 }
 
 function flattenMovements(events) {
   const list = [];
-  events.forEach(e => e.movements?.forEach(m => list.push(m)));
+  events.forEach((ev) => (ev.movements || []).forEach((m) => list.push(m)));
   return list;
 }
 
+// ---------- TOP CONTROLS (LOAD / SAVE) ----------
+function wireTopControls() {
+  const loadBtn = $("loadStateBtn");
+  const loadFile = $("loadStateFile");
+  const saveBtn = $("saveStateBtn");
 
-// ---------- SAVE/LOAD LOGIC ----------
+  if (loadBtn && loadFile) {
+    loadBtn.addEventListener("click", () => loadFile.click());
+    loadFile.addEventListener("change", handleLoadFile);
+  }
 
-function saveState() {
-  const data = JSON.stringify(state, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
+  if (saveBtn) {
+    saveBtn.addEventListener("click", handleSaveState);
+  }
+}
+
+function handleSaveState() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const now = new Date().toISOString().replace(/:/g, "-").slice(0, 19);
-  const filename = `${state.factionName || 'faction'}-state-${now}.json`;
-
   const a = document.createElement("a");
+
+  const faction =
+    state.factionName && state.factionName.trim().length
+      ? state.factionName.trim().replace(/\s+/g, "_")
+      : "faction";
+
   a.href = url;
-  a.download = filename;
+  a.download = `${faction}_state.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 
   clearDirty();
 }
 
-function loadStateFile() {
-  const fileInput = $("loadStateFile");
-  if (!fileInput) return;
+function handleLoadFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
 
-  fileInput.click();
-  fileInput.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const obj = JSON.parse(event.target.result);
-        loadStateObject(obj);
-      } catch (error) {
-        alert("Invalid JSON file. Please check the file contents.");
-      } finally {
-        e.target.value = "";
-      }
-    };
-    reader.readAsText(file);
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const obj = JSON.parse(evt.target.result);
+      loadStateObject(obj);
+      clearDirty();
+    } catch (err) {
+      alert("Could not parse JSON file. Please check the file contents.");
+    } finally {
+      e.target.value = "";
+    }
   };
+  reader.readAsText(file);
 }
 
 function loadStateObject(obj) {
@@ -140,10 +152,10 @@ function loadStateObject(obj) {
     alert("Invalid state file.");
     return;
   }
-  
-  // FIX: Make the merge logic robust for old data missing new properties
+
   state.factionName = obj.factionName || "";
   state.factionNotes = obj.factionNotes || "";
+
   state.coffers = {
     food: Number(obj.coffers?.food ?? 0),
     wood: Number(obj.coffers?.wood ?? 0),
@@ -153,56 +165,80 @@ function loadStateObject(obj) {
     gold: Number(obj.coffers?.gold ?? 0)
   };
 
-  // Hexes: Ensure all hexes have mineralDeposit, or default to empty string/assignmentsApplied
-  state.hexes = (obj.hexes || []).map(hex => ({
-    mineralDeposit: hex.mineralDeposit || "",
-    ...hex
-  }));
+  // Hexes
+  state.hexes = Array.isArray(obj.hexes)
+    ? obj.hexes.map((h) => ({
+        id: h.id || `hex_${nextHexId++}`,
+        hexNumber: h.hexNumber || h.hex_number || h.coords || "",
+        name: h.name || "",
+        terrain: h.terrain || "",
+        structure: h.structure || "",
+        notes: h.notes || "",
+        detailsOpen: !!h.detailsOpen
+      }))
+    : [];
 
-  // SeasonGains: Ensure assignmentsApplied exists
-  state.seasonGains = (obj.seasonGains || []).map(sg => ({
-    ...sg,
-    assignments: sg.assignments || "{}", 
-    assignmentsApplied: sg.assignmentsApplied ?? false, // Ensure assignmentsApplied exists and defaults to false
-  }));
-  
-  // Events and nested actions
-  state.events = (obj.events || []).map(event => ({
-    ...event,
-    builds: (event.builds || []).map(b => ({ ...b })),
-    movements: (event.movements || []).map(m => ({ ...m })),
-    offensiveAction: event.offensiveAction || null
-  }));
+  // Events
+  state.events = Array.isArray(obj.events)
+    ? obj.events.map((ev) => ({
+        id: ev.id || `ev_${nextEventId++}`,
+        name: ev.name || "",
+        date: ev.date || "",
+        type: ev.type || "",
+        summary: ev.summary || "",
+        builds: Array.isArray(ev.builds)
+          ? ev.builds.map((b) => ({
+              id: b.id || `b_${nextBuildId++}`,
+              hexId: b.hexId || "",
+              description: b.description || ""
+            }))
+          : [],
+        movements: Array.isArray(ev.movements)
+          ? ev.movements.map((m) => ({
+              id: m.id || `m_${nextMovementId++}`,
+              unitName: m.unitName || "",
+              from: m.from || "",
+              to: m.to || "",
+              notes: m.notes || ""
+            }))
+          : [],
+        offensiveAction: {
+          type: ev.offensiveAction?.type || "",
+          target: ev.offensiveAction?.target || "",
+          notes: ev.offensiveAction?.notes || ""
+        },
+        detailsOpen: !!ev.detailsOpen
+      }))
+    : [];
 
+  // Seasonal gains
+  state.seasonGains = Array.isArray(obj.seasonGains)
+    ? obj.seasonGains.map((sg) => ({
+        id: sg.id || `sg_${nextSeasonGainId++}`,
+        season: sg.season || "Spring",
+        year: Number(sg.year ?? new Date().getFullYear()),
+        food: Number(sg.food ?? 0),
+        wood: Number(sg.wood ?? 0),
+        stone: Number(sg.stone ?? 0),
+        ore: Number(sg.ore ?? 0),
+        silver: Number(sg.silver ?? 0),
+        gold: Number(sg.gold ?? 0),
+        notes: sg.notes || "",
+        detailsOpen: !!sg.detailsOpen
+      }))
+    : [];
 
-  // FIX: Recalculate ALL IDs to prevent collision on next creation
   nextHexId = calcNextNumericId(state.hexes, "hex_");
-  nextEventId = calcNextNumericId(state.events, "event_");
-  nextBuildId = calcNextNumericId(flattenBuilds(state.events), "build_");
-  nextMovementId = calcNextNumericId(flattenMovements(state.events), "move_");
+  nextEventId = calcNextNumericId(state.events, "ev_");
+  nextBuildId = calcNextNumericId(flattenBuilds(state.events), "b_");
+  nextMovementId = calcNextNumericId(flattenMovements(state.events), "m_");
   nextSeasonGainId = calcNextNumericId(state.seasonGains, "sg_");
-  
-  // Rerender UI functions (assuming they are globally available after scripts load)
-  if (typeof syncCoffersToUI === 'function') syncCoffersToUI();
-  if (typeof syncFactionInfoToUI === 'function') syncFactionInfoToUI();
-  if (typeof renderHexList === 'function') renderHexList();
-  if (typeof renderEventList === 'function') renderEventList();
-  if (typeof renderSeasonGainList === 'function') renderSeasonGainList();
-  
-  clearDirty();
-}
 
-// ---------- TOP CONTROLS ----------
-function wireTopControls() {
-  const loadBtn = $("loadStateBtn");
-  const saveBtn = $("saveStateBtn");
-
-  if (loadBtn) {
-    loadBtn.addEventListener("click", loadStateFile);
-  }
-  if (saveBtn) {
-    saveBtn.addEventListener("click", saveState);
-  }
+  syncFactionInfoToUI();
+  syncCoffersToUI();
+  renderHexList();
+  renderEventList();
+  renderSeasonGainList();
 }
 
 // ---------- FACTION INFO ----------
