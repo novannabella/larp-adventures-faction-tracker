@@ -49,7 +49,7 @@ function hexComparator(a, b) {
   return 0;
 }
 
-// Define prerequisites for structures
+// Define prerequisites for structures (Uses Title Case for keys/values for consistency with template)
 const structurePrerequisites = {
   "Shipyard": ["Dock"],
   "Fishing Fleet": ["Dock"],
@@ -65,6 +65,7 @@ function renderTags(inputElId, listElId, selectElId, isStructure = false) {
   
   if (!inputEl || !listEl) return;
 
+  // Values stored in inputEl.value should match the Title Case options in the template
   const currentValues = inputEl.value
     ? inputEl.value.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
@@ -90,7 +91,9 @@ function renderTags(inputElId, listElId, selectElId, isStructure = false) {
         // Find the correct optgroup to re-insert the option
         const template = $("structureOptionsTemplate");
         let targetOptgroup = null;
-        if (template) {
+        
+        // FIX: Ensure template and template.content exist before cloning/searching
+        if (template && template.content) { 
           // Find the label in the template that matches the option
           const allOptions = Array.from(template.content.querySelectorAll('option'));
           const originalOption = allOptions.find(opt => opt.value === val);
@@ -120,7 +123,6 @@ function renderTags(inputElId, listElId, selectElId, isStructure = false) {
 
 function initHexSection() {
   const addBtn = $("hexAddBtn");
-  // The wiring is correct here, it relies on ui-core.js running initHexSection
   if (addBtn && !addBtn._wired) {
     addBtn.addEventListener("click", () => openHexModal());
     addBtn._wired = true;
@@ -172,18 +174,26 @@ function initHexSection() {
 
       if (!sel || !list || !tagsContainer) return;
 
-      const val = (sel.value || "").trim();
+      const val = (sel.value || "").trim(); // This is the Title Case structure name (e.g., "Shipyard")
       if (!val) return;
       
       const current = list.value
-        ? list.value.split(",").map((s) => s.trim()).filter(Boolean)
+        ? list.value.split(",").map((s) => s.trim()).filter(Boolean) // Array of Title Case structures
         : [];
       
-      // Prerequisite check (simplified, assumes a global structurePrerequisites)
+      // Map current list to lowercase for case-insensitive checking
+      const currentLower = current.map(s => s.toLowerCase());
+
+      // Prerequisite check (keys in structurePrerequisites are Title Case)
       const prereqs = structurePrerequisites[val];
-      if (prereqs && !prereqs.every(p => current.includes(p))) {
-        alert(`Cannot add ${val}. Missing prerequisites: ${prereqs.filter(p => !current.includes(p)).join(', ')}`);
-        return;
+      if (prereqs) {
+          // Check if ALL prerequisites (converted to lowercase) are in the current list (converted to lowercase)
+          const missingPrereqs = prereqs.filter(p => !currentLower.includes(p.toLowerCase()));
+          
+          if (missingPrereqs.length > 0) {
+              alert(`Cannot add ${val}. Missing prerequisites: ${missingPrereqs.join(', ')}`);
+              return;
+          }
       }
         
       if (!current.includes(val)) {
@@ -251,7 +261,9 @@ function openHexModal(hex) {
   // Re-populate the structures dropdown by cloning the template
   const selectEl = $("hexModalStructureSelect");
   const template = $("structureOptionsTemplate");
-  if (selectEl && template) {
+
+  // FIX: Added check for template.content to ensure we only proceed if a valid <template> was found
+  if (selectEl && template && template.content) {
     selectEl.innerHTML = ""; // Clear existing options
     const clone = template.content.cloneNode(true);
     selectEl.appendChild(clone);
@@ -264,6 +276,7 @@ function openHexModal(hex) {
   
   if (selectEl) {
     currentStructures.forEach(struct => {
+      // struct will be Title Case, matching the option's value
       const option = selectEl.querySelector(`option[value="${struct}"]`);
       if (option) option.remove();
     });
@@ -285,7 +298,7 @@ function saveHexFromModal() {
   const notes = $("hexModalNotes")?.value.trim();
   const mineralDeposit = $("hexModalMineralDeposit")?.value.trim();
 
-  // Get comma-separated list values
+  // Get comma-separated list values (will be Title Case from the tags/input)
   const terrain = $("hexModalTerrainsInput")?.value.trim();
   const structure = $("hexModalStructuresInput")?.value.trim();
   
@@ -296,12 +309,20 @@ function saveHexFromModal() {
   
   // Prerequisite check for *new* structures
   const structuresList = structure?.split(",").map(s => s.trim()).filter(Boolean) || [];
+  const structuresListLower = structuresList.map(s => s.toLowerCase());
+
   let failedPrereq = false;
   structuresList.forEach(s => {
+      // s is Title Case structure name
       const prereqs = structurePrerequisites[s];
-      if (prereqs && !prereqs.every(p => structuresList.includes(p))) {
-          alert(`Cannot save. Structure "${s}" requires: ${prereqs.filter(p => !structuresList.includes(p)).join(', ')}`);
-          failedPrereq = true;
+      if (prereqs) {
+          // Check if ALL prerequisites (converted to lowercase) are in the full list (converted to lowercase)
+          const missingPrereqs = prereqs.filter(p => !structuresListLower.includes(p.toLowerCase()));
+          
+          if (missingPrereqs.length > 0) {
+              alert(`Cannot save. Structure "${s}" requires: ${missingPrereqs.join(', ')}`);
+              failedPrereq = true;
+          }
       }
   });
   if (failedPrereq) return;
@@ -421,6 +442,7 @@ function renderHexList() {
 function openHexDetailsModal(hex) {
   // Assuming a global upkeepTable is loaded from CSV
   const structureUpkeep = hex.structure?.split(",").map(s => s.trim()).filter(Boolean).reduce((acc, struct) => {
+      // Look up upkeep using the lowercase name for consistency with loadUpkeepTable
       const entry = upkeepTable[struct.toLowerCase()];
       if (entry) {
           acc.food += entry.food;
@@ -471,8 +493,7 @@ function openHexDetailsModal(hex) {
 
 // Function to load the upkeep table from CSV (or local storage/hardcoded)
 function loadUpkeepTable() {
-    // NOTE: This is a placeholder for upkeep data, as your provided CSV was for *gains*.
-    // I am including a mock-up upkeep data structure to prevent the openUpkeepModal logic from failing.
+    // NOTE: Keys here MUST be lowercase to match the .toLowerCase() lookup in openHexDetailsModal
     const csvData = `Terrain/Upgrade,Food,Wood,Stone,Gold,Silver,Ore
 market,-1,,-1,,,-1
 carpenter's shop,,*2,,,
@@ -482,10 +503,10 @@ stone mason's shop,,,2,,
 watch tower,,-1,,,
 fort,,,-2,,,-1
 castle,,,,-5,,
-Dock,,-1,,,
-Fishing Fleet,-1,,-1,,,-1
-Trading Vessel,,,-1,,,-1
-War Galley,,-2,-2,,,-2
+dock,,-1,,,
+fishing fleet,-1,,-1,,,-1
+trading vessel,,,-1,,,-1
+war galley,,-2,-2,,,-2
 `; 
 
     const lines = csvData.split("\n").map(l => l.trim()).filter(l => l.trim().length);
@@ -503,7 +524,8 @@ War Galley,,-2,-2,,,-2
 
     for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(",").map((c) => c.trim());
-        const name = (cols[idxUpgrade] || "").toLowerCase();
+        // Force the lookup key to lowercase to match the rest of the logic
+        const name = (cols[idxUpgrade] || "").toLowerCase(); 
         if (!name) continue;
 
         // Upkeep numbers in the mock data are negative for loss
@@ -533,6 +555,7 @@ function openUpkeepModal() {
   // Group structures by type for easier display
   const structureCounts = {};
   state.hexes.forEach(hex => {
+    // Convert to lowercase before counting to group structures correctly
     hex.structure?.split(",").map(s => s.trim().toLowerCase()).filter(Boolean).forEach(s => {
       structureCounts[s] = (structureCounts[s] || 0) + 1;
     });
@@ -544,6 +567,7 @@ function openUpkeepModal() {
   // 1. Calculate and display upkeep per structure type
   Object.keys(structureCounts).sort().forEach(structName => {
     const count = structureCounts[structName];
+    // structName is lowercase, matching the upkeepTable keys
     const upkeep = upkeepTable[structName];
 
     if (!upkeep || (upkeep.food === 0 && upkeep.wood === 0 && upkeep.stone === 0 && upkeep.ore === 0 && upkeep.gold === 0)) {
@@ -552,9 +576,12 @@ function openUpkeepModal() {
     
     hasUpkeep = true;
 
+    // Use a function to convert the lowercase name back to Title Case for display in the modal
+    const displayName = structName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').replace(/'S/g, "'s");
+
     const row = upkeepTbody.insertRow();
     row.innerHTML = `
-      <td>${structName} (${count} total)</td>
+      <td>${displayName} (${count} total)</td>
       <td>${upkeep.food * count}</td>
       <td>${upkeep.wood * count}</td>
       <td>${upkeep.stone * count}</td>
