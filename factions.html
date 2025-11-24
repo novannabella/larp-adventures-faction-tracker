@@ -119,15 +119,15 @@
       </div>
     </div>
 
-    <div class="card" id="controlledHexesCard">
-      <div class="card-inner">
-        <div class="card-header">
-          <h2>Controlled Hexes</h2>
-          <div style="display: flex; gap: 8px;">
-            <button id="hexUpkeepBtn" class="button small secondary">Upkeep</button>
-            <button id="hexAddBtn" class="button small">Add</button>
-          </div>
-        </div>
+    <div class="card-header">
+      <h2>Controlled Hexes</h2>
+      <div style="display: flex; gap: 8px;">
+        <button id="hexResourceBtn" class="button small secondary">Resources</button>
+        <button id="hexUpkeepBtn" class="button small secondary">Upkeep</button>
+        <button id="hexAddBtn" class="button small">Add</button>
+      </div>
+    </div>
+
 
         <table class="controlled-hexes-table">
           <thead>
@@ -503,6 +503,34 @@
               <th>Wood</th>
               <th>Stone</th>
               <th>Ore</th>
+              <th>Gold</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="button small secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="resourceModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="resourceModalTitle">Total Seasonal Resources</h3>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <table id="resourceTable" class="upkeep-table">
+          <thead>
+            <tr>
+              <th>Asset Type</th>
+              <th>Count</th>
+              <th>Food</th>
+              <th>Wood</th>
+              <th>Stone</th>
+              <th>Ore</th>
+              <th>Silver</th>
               <th>Gold</th>
             </tr>
           </thead>
