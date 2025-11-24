@@ -228,22 +228,25 @@ function handleHexSortClick(column) {
 }
 
 function openHexModal(hex) {
-  $("hexModalId").value = hex ? hex.id : "";
-  $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
+  // FIX: Added defensive checks for all input fields to prevent TypeError if the element is missing.
+  if ($("hexModalId")) $("hexModalId").value = hex ? hex.id : "";
+  if ($("hexModalTitle")) $("hexModalTitle").textContent = hex ? "Edit Hex" : "Add Hex";
 
-  $("hexModalHexNumber").value = hex?.hexNumber || "";
-  $("hexModalName").value = hex?.name || "";
-  $("hexModalController").value = hex?.controller || "Faction";
-  $("hexModalTroops").value = hex?.troops || "";
-  $("hexModalNotes").value = hex?.notes || "";
-  $("hexModalMineralDeposit").value = hex?.mineralDeposit || "";
+  if ($("hexModalHexNumber")) $("hexModalHexNumber").value = hex?.hexNumber || "";
+  if ($("hexModalName")) $("hexModalName").value = hex?.name || "";
+  if ($("hexModalController")) $("hexModalController").value = hex?.controller || "Faction";
+  if ($("hexModalTroops")) $("hexModalTroops").value = hex?.troops || "";
+  if ($("hexModalNotes")) $("hexModalNotes").value = hex?.notes || "";
+  
+  // Line 234 equivalent (now with defensive check):
+  if ($("hexModalMineralDeposit")) $("hexModalMineralDeposit").value = hex?.mineralDeposit || "";
   
   // Set up terrain
-  $("hexModalTerrainsInput").value = hex?.terrain || "";
+  if ($("hexModalTerrainsInput")) $("hexModalTerrainsInput").value = hex?.terrain || "";
   renderTags("hexModalTerrainsInput", "hexModalTerrainsTags");
   
   // Set up structures
-  $("hexModalStructuresInput").value = hex?.structure || "";
+  if ($("hexModalStructuresInput")) $("hexModalStructuresInput").value = hex?.structure || "";
   
   // Re-populate the structures dropdown by cloning the template
   const selectEl = $("hexModalStructureSelect");
@@ -259,10 +262,12 @@ function openHexModal(hex) {
     ? hex.structure.split(",").map(s => s.trim()).filter(Boolean)
     : [];
   
-  currentStructures.forEach(struct => {
-    const option = selectEl.querySelector(`option[value="${struct}"]`);
-    if (option) option.remove();
-  });
+  if (selectEl) {
+    currentStructures.forEach(struct => {
+      const option = selectEl.querySelector(`option[value="${struct}"]`);
+      if (option) option.remove();
+    });
+  }
   
   renderTags("hexModalStructuresInput", "hexModalStructuresTags", "hexModalStructureSelect", true);
 
@@ -270,18 +275,19 @@ function openHexModal(hex) {
 }
 
 function saveHexFromModal() {
-  const id = $("hexModalId").value || null;
+  // FIX: Used defensive checks/optional chaining for getting values as well
+  const id = $("hexModalId")?.value || null;
 
-  const hexNumber = $("hexModalHexNumber").value.trim();
-  const name = $("hexModalName").value.trim();
-  const controller = $("hexModalController").value;
-  const troops = $("hexModalTroops").value.trim();
-  const notes = $("hexModalNotes").value.trim();
-  const mineralDeposit = $("hexModalMineralDeposit").value.trim();
+  const hexNumber = $("hexModalHexNumber")?.value.trim();
+  const name = $("hexModalName")?.value.trim();
+  const controller = $("hexModalController")?.value;
+  const troops = $("hexModalTroops")?.value.trim();
+  const notes = $("hexModalNotes")?.value.trim();
+  const mineralDeposit = $("hexModalMineralDeposit")?.value.trim();
 
   // Get comma-separated list values
-  const terrain = $("hexModalTerrainsInput").value.trim();
-  const structure = $("hexModalStructuresInput").value.trim();
+  const terrain = $("hexModalTerrainsInput")?.value.trim();
+  const structure = $("hexModalStructuresInput")?.value.trim();
   
   if (!hexNumber) {
     alert("Hex Number is required.");
@@ -289,7 +295,7 @@ function saveHexFromModal() {
   }
   
   // Prerequisite check for *new* structures
-  const structuresList = structure.split(",").map(s => s.trim()).filter(Boolean);
+  const structuresList = structure?.split(",").map(s => s.trim()).filter(Boolean) || [];
   let failedPrereq = false;
   structuresList.forEach(s => {
       const prereqs = structurePrerequisites[s];
@@ -357,11 +363,14 @@ function renderHexList() {
   const nameCol = currentHexSort.column === "name" ? "Name" : "";
   const nameDir = currentHexSort.direction === "asc" ? "▲" : "▼";
 
+  // FIX: Use a span for the indicator to prevent header text reflow/re-rendering
   if ($("hexSortHexHeader")) {
-      $("hexSortHexHeader").innerHTML = `Hex ${hexCol === 'Hex' ? hexDir : ''}`;
+      const header = $("hexSortHexHeader");
+      header.innerHTML = `Hex <span class="sort-indicator">${hexCol === 'Hex' ? hexDir : ''}</span>`;
   }
   if ($("hexSortNameHeader")) {
-      $("hexSortNameHeader").innerHTML = `Name ${nameCol === 'Name' ? nameDir : ''}`;
+      const header = $("hexSortNameHeader");
+      header.innerHTML = `Name <span class="sort-indicator">${nameCol === 'Name' ? nameDir : ''}</span>`;
   }
 
   // 3. Iterate over the sorted array

@@ -572,3 +572,13 @@ th.actions-col {
 .controlled-hexes-table td:last-child button {
   margin-left: 6px;
 }
+/* ADD THIS TO YOUR CSS FILE */
+.sort-indicator {
+    /* Prevents the indicator from taking up space and forcing the column wider */
+    display: inline-block;
+    width: 0.8em; /* Reserve a small, fixed amount of space for the arrow */
+    text-align: center;
+    margin-left: 2px;
+    font-size: 0.8em; /* Make the arrow a bit smaller */
+    color: var(--primary-color); /* Highlight the active sort indicator */
+}
